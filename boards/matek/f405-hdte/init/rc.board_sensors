@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Matek F405-HDTE specific board sensors init
+#------------------------------------------------------------------------------
+
+board_adc start
+
+# ICM42688-P IMU on SPI1
+icm42688p -s start
+
+# SPL06-001 barometer on I2C1 (external bus)
+spl06 -X start
