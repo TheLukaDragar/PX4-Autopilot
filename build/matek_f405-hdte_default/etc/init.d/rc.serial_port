@@ -1,0 +1,15 @@
+set SERIAL_DEV none
+if param compare "$PRT" 6; then
+if [ "$PRT_URT6_" = "" ]; then
+set SERIAL_DEV /dev/ttyS2
+set BAUD_PARAM SER_URT6_BAUD
+set PRT_URT6_ 1
+fi
+fi
+if param compare "$PRT" 102; then
+if [ "$PRT_TEL2_" = "" ]; then
+set SERIAL_DEV /dev/ttyS1
+set BAUD_PARAM SER_TEL2_BAUD
+set PRT_TEL2_ 1
+fi
+fi

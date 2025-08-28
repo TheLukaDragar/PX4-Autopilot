@@ -1,0 +1,630 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineSystem.cmake:200 (message)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      The target system is: Generic - 1 - cortex-m4
+      The host system is: Darwin - 24.6.0 - arm64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /opt/homebrew/bin/arm-none-eabi-g++ 
+      Build flags: 
+      Id flags: -c;--target=arm-none-eabi 
+      
+      The output was:
+      1
+      arm-none-eabi-g++: error: unrecognized command-line option '--target=arm-none-eabi'
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /opt/homebrew/bin/arm-none-eabi-g++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-exit.o): in function `exit':
+      exit.c:(.text.exit+0x28): undefined reference to `_exit'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-closer.o): in function `_close_r':
+      closer.c:(.text._close_r+0x18): undefined reference to `_close'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-lseekr.o): in function `_lseek_r':
+      lseekr.c:(.text._lseek_r+0x24): undefined reference to `_lseek'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-readr.o): in function `_read_r':
+      readr.c:(.text._read_r+0x24): undefined reference to `_read'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-sbrkr.o): in function `_sbrk_r':
+      sbrkr.c:(.text._sbrk_r+0x18): undefined reference to `_sbrk'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-writer.o): in function `_write_r':
+      writer.c:(.text._write_r+0x24): undefined reference to `_write'
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /opt/homebrew/bin/arm-none-eabi-g++ 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+      
+      The CXX compiler identification is GNU, found in:
+        /Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/4.0.3/CompilerIdCXX/CMakeCXXCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /opt/homebrew/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags: -c;--target=arm-none-eabi 
+      
+      The output was:
+      1
+      arm-none-eabi-gcc: error: unrecognized command-line option '--target=arm-none-eabi'
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /opt/homebrew/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-exit.o): in function `exit':
+      exit.c:(.text.exit+0x28): undefined reference to `_exit'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-closer.o): in function `_close_r':
+      closer.c:(.text._close_r+0x18): undefined reference to `_close'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-lseekr.o): in function `_lseek_r':
+      lseekr.c:(.text._lseek_r+0x24): undefined reference to `_lseek'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-readr.o): in function `_read_r':
+      readr.c:(.text._read_r+0x24): undefined reference to `_read'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-sbrkr.o): in function `_sbrk_r':
+      sbrkr.c:(.text._sbrk_r+0x18): undefined reference to `_sbrk'
+      /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-writer.o): in function `_write_r':
+      writer.c:(.text._write_r+0x24): undefined reference to `_write'
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /opt/homebrew/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+      
+      The C compiler identification is GNU, found in:
+        /Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/4.0.3/CompilerIdC/CMakeCCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:1271 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineASMCompiler.cmake:139 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Checking whether the ASM compiler is GNU using "--version" matched "(GNU assembler)|(GCC)|(Free Software Foundation)":
+      arm-none-eabi-gcc (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 13.2.1 20231009
+      Copyright (C) 2023 Free Software Foundation, Inc.
+      This is free software; see the source for copying conditions.  There is NO
+      warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:230 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/CMakeScratch/TryCompile-wbmypI"
+      binary: "/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/CMakeScratch/TryCompile-wbmypI"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_TARGET: "arm-none-eabi"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_C_COMPILER_TARGET: "arm-none-eabi"
+      CMAKE_EXE_LINKER_FLAGS: "--specs=nosys.specs"
+      CMAKE_MODULE_PATH: "/Users/carbs/Desktop/PX4-Autopilot/cmake;/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/cmake;/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/cmake"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/CMakeScratch/TryCompile-wbmypI'
+        
+        Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_af5a9
+        [1/2] /opt/homebrew/bin/arm-none-eabi-g++   -v -o CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        Using built-in specs.
+        COLLECT_GCC=/opt/homebrew/bin/arm-none-eabi-g++
+        Target: arm-none-eabi
+        Configured with: /Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure --target=arm-none-eabi --prefix=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install --with-gmp=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpfr=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpc=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-isl=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install/arm-none-eabi --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)' --with-bugurl=https://bugs.linaro.org/
+        Thread model: single
+        Supported LTO compression algorithms: zlib
+        gcc version 13.2.1 20231009 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_af5a9.dir/'
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/cc1plus -quiet -v -iprefix /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/ -isysroot /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi -D__USES_INITFINI__ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_af5a9.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mcpu=arm7tdmi -mfloat-abi=soft -marm -mlibarch=armv4t -march=armv4t -version -o /var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cctV1Iet.s
+        GNU C++17 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) version 13.2.1 20231009 (arm-none-eabi)
+        	compiled by GNU C version Apple LLVM 13.0.0 (clang-1300.0.29.30), GMP version 6.2.1, MPFR version 3.1.6, MPC version 1.0.3, isl version isl-0.15-1-g835ea3a-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/arm-none-eabi"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/backward"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/include"
+        ignoring nonexistent directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/usr/local/include"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/include-fixed"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/arm-none-eabi
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/backward
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include-fixed
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include
+        End of search list.
+        Compiler executable checksum: 4ff2f957a4f92f408126d7aa1ec592f3
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_af5a9.dir/'
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/as -v -march=armv4t -mfloat-abi=soft -meabi=5 -o CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj /var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cctV1Iet.s
+        GNU assembler version 2.41.0 (arm-none-eabi) using BFD version (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009
+        COMPILER_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/
+        LIBRARY_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib/
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.'
+        [2/2] : && /opt/homebrew/bin/arm-none-eabi-g++  --specs=nosys.specs -v CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj -o cmTC_af5a9   && :
+        Using built-in specs.
+        Reading specs from /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/nosys.specs
+        rename spec link_gcc_c_sequence to nosys_link_gcc_c_sequence
+        COLLECT_GCC=/opt/homebrew/bin/arm-none-eabi-g++
+        COLLECT_LTO_WRAPPER=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper
+        Target: arm-none-eabi
+        Configured with: /Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure --target=arm-none-eabi --prefix=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install --with-gmp=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpfr=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpc=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-isl=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install/arm-none-eabi --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)' --with-bugurl=https://bugs.linaro.org/
+        Thread model: single
+        Supported LTO compression algorithms: zlib
+        gcc version 13.2.1 20231009 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 
+        COMPILER_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/
+        LIBRARY_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib/
+        COLLECT_GCC_OPTIONS='-specs=nosys.specs' '-v' '-o' 'cmTC_af5a9' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'cmTC_af5a9.'
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/collect2 -plugin /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/liblto_plugin.so -plugin-opt=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper -plugin-opt=-fresolution=/var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cccfatyR.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lnosys --sysroot=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi -X -o cmTC_af5a9 /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1 -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj -lstdc++ -lm --start-group -lgcc -lc --end-group --start-group -lgcc -lc -lnosys --end-group /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o
+        /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-closer.o): in function `_close_r':
+        closer.c:(.text._close_r+0x18): warning: _close is not implemented and will always fail
+        /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-lseekr.o): in function `_lseek_r':
+        lseekr.c:(.text._lseek_r+0x24): warning: _lseek is not implemented and will always fail
+        /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-readr.o): in function `_read_r':
+        readr.c:(.text._read_r+0x24): warning: _read is not implemented and will always fail
+        /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-writer.o): in function `_write_r':
+        writer.c:(.text._write_r+0x24): warning: _write is not implemented and will always fail
+        COLLECT_GCC_OPTIONS='-specs=nosys.specs' '-v' '-o' 'cmTC_af5a9' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'cmTC_af5a9.'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:191 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1]
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/arm-none-eabi]
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/backward]
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include]
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include-fixed]
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include]
+        end of search list found
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include/c++/13.2.1]
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/arm-none-eabi] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include/c++/13.2.1/arm-none-eabi]
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/backward] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include/c++/13.2.1/backward]
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/include]
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include-fixed] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/include-fixed]
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include]
+        implicit include dirs: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include/c++/13.2.1;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include/c++/13.2.1/arm-none-eabi;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include/c++/13.2.1/backward;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/include;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/include-fixed;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:227 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
+        ignore line: [Change Dir: '/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/CMakeScratch/TryCompile-wbmypI']
+        ignore line: []
+        ignore line: [Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_af5a9]
+        ignore line: [[1/2] /opt/homebrew/bin/arm-none-eabi-g++   -v -o CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/opt/homebrew/bin/arm-none-eabi-g++]
+        ignore line: [Target: arm-none-eabi]
+        ignore line: [Configured with: /Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure --target=arm-none-eabi --prefix=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install --with-gmp=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpfr=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpc=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-isl=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install/arm-none-eabi --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)' --with-bugurl=https://bugs.linaro.org/]
+        ignore line: [Thread model: single]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 13.2.1 20231009 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_af5a9.dir/']
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/cc1plus -quiet -v -iprefix /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/ -isysroot /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi -D__USES_INITFINI__ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_af5a9.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mcpu=arm7tdmi -mfloat-abi=soft -marm -mlibarch=armv4t -march=armv4t -version -o /var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cctV1Iet.s]
+        ignore line: [GNU C++17 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) version 13.2.1 20231009 (arm-none-eabi)]
+        ignore line: [	compiled by GNU C version Apple LLVM 13.0.0 (clang-1300.0.29.30)  GMP version 6.2.1  MPFR version 3.1.6  MPC version 1.0.3  isl version isl-0.15-1-g835ea3a-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/arm-none-eabi"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/backward"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/include"]
+        ignore line: [ignoring nonexistent directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/usr/local/include"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/include-fixed"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/arm-none-eabi]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include/c++/13.2.1/backward]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include-fixed]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include]
+        ignore line: [End of search list.]
+        ignore line: [Compiler executable checksum: 4ff2f957a4f92f408126d7aa1ec592f3]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_af5a9.dir/']
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/as -v -march=armv4t -mfloat-abi=soft -meabi=5 -o CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj /var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cctV1Iet.s]
+        ignore line: [GNU assembler version 2.41.0 (arm-none-eabi) using BFD version (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009]
+        ignore line: [COMPILER_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/]
+        ignore line: [LIBRARY_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.']
+        ignore line: [[2/2] : && /opt/homebrew/bin/arm-none-eabi-g++  --specs=nosys.specs -v CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj -o cmTC_af5a9   && :]
+        ignore line: [Using built-in specs.]
+        ignore line: [Reading specs from /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/nosys.specs]
+        ignore line: [rename spec link_gcc_c_sequence to nosys_link_gcc_c_sequence]
+        ignore line: [COLLECT_GCC=/opt/homebrew/bin/arm-none-eabi-g++]
+        ignore line: [COLLECT_LTO_WRAPPER=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper]
+        ignore line: [Target: arm-none-eabi]
+        ignore line: [Configured with: /Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure --target=arm-none-eabi --prefix=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install --with-gmp=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpfr=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpc=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-isl=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install/arm-none-eabi --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)' --with-bugurl=https://bugs.linaro.org/]
+        ignore line: [Thread model: single]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 13.2.1 20231009 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) ]
+        ignore line: [COMPILER_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/]
+        ignore line: [LIBRARY_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-specs=nosys.specs' '-v' '-o' 'cmTC_af5a9' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'cmTC_af5a9.']
+        link line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/collect2 -plugin /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/liblto_plugin.so -plugin-opt=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper -plugin-opt=-fresolution=/var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cccfatyR.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lnosys --sysroot=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi -X -o cmTC_af5a9 /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1 -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj -lstdc++ -lm --start-group -lgcc -lc --end-group --start-group -lgcc -lc -lnosys --end-group /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o]
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/collect2] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/liblto_plugin.so] ==> ignore
+          arg [-plugin-opt=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper] ==> ignore
+          arg [-plugin-opt=-fresolution=/var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cccfatyR.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lnosys] ==> ignore
+          arg [--sysroot=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi] ==> ignore
+          arg [-X] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_af5a9] ==> ignore
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o]
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o]
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o]
+          arg [-L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1] ==> dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1]
+          arg [-L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc] ==> dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc]
+          arg [-L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib] ==> dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib]
+          arg [-L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib] ==> dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib]
+          arg [CMakeFiles/cmTC_af5a9.dir/CMakeCXXCompilerABI.cpp.obj] ==> ignore
+          arg [-lstdc++] ==> lib [stdc++]
+          arg [-lm] ==> lib [m]
+          arg [--start-group] ==> ignore
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lc] ==> lib [c]
+          arg [--end-group] ==> ignore
+          arg [--start-group] ==> ignore
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lc] ==> lib [c]
+          arg [-lnosys] ==> lib [nosys]
+          arg [--end-group] ==> ignore
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o]
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o]
+        ignore line: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-closer.o): in function `_close_r':]
+        ignore line: [closer.c:(.text._close_r+0x18): warning: _close is not implemented and will always fail]
+        ignore line: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-lseekr.o): in function `_lseek_r':]
+        ignore line: [lseekr.c:(.text._lseek_r+0x24): warning: _lseek is not implemented and will always fail]
+        ignore line: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-readr.o): in function `_read_r':]
+        ignore line: [readr.c:(.text._read_r+0x24): warning: _read is not implemented and will always fail]
+        ignore line: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-writer.o): in function `_write_r':]
+        ignore line: [writer.c:(.text._write_r+0x24): warning: _write is not implemented and will always fail]
+        ignore line: [COLLECT_GCC_OPTIONS='-specs=nosys.specs' '-v' '-o' 'cmTC_af5a9' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'cmTC_af5a9.']
+        ignore line: []
+        ignore line: []
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crti.o]
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtbegin.o]
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib/crt0.o]
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtend.o]
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtn.o]
+        collapse library dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1]
+        collapse library dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc]
+        collapse library dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib]
+        collapse library dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib]
+        implicit libs: [stdc++;m;gcc;c;gcc;c;nosys]
+        implicit objs: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crti.o;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtbegin.o;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib/crt0.o;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtend.o;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtn.o]
+        implicit dirs: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:230 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/CMakeScratch/TryCompile-QjeGyw"
+      binary: "/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/CMakeScratch/TryCompile-QjeGyw"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_TARGET: "arm-none-eabi"
+      CMAKE_C_COMPILER_TARGET: "arm-none-eabi"
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "--specs=nosys.specs"
+      CMAKE_MODULE_PATH: "/Users/carbs/Desktop/PX4-Autopilot/cmake;/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/cmake;/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/cmake"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/CMakeScratch/TryCompile-QjeGyw'
+        
+        Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_714a2
+        [1/2] /opt/homebrew/bin/arm-none-eabi-gcc   -v -o CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj -c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c
+        Using built-in specs.
+        COLLECT_GCC=/opt/homebrew/bin/arm-none-eabi-gcc
+        Target: arm-none-eabi
+        Configured with: /Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure --target=arm-none-eabi --prefix=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install --with-gmp=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpfr=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpc=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-isl=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install/arm-none-eabi --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)' --with-bugurl=https://bugs.linaro.org/
+        Thread model: single
+        Supported LTO compression algorithms: zlib
+        gcc version 13.2.1 20231009 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_714a2.dir/'
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/cc1 -quiet -v -iprefix /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/ -isysroot /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi -D__USES_INITFINI__ /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_714a2.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mcpu=arm7tdmi -mfloat-abi=soft -marm -mlibarch=armv4t -march=armv4t -version -o /var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cc53CRnL.s
+        GNU C17 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) version 13.2.1 20231009 (arm-none-eabi)
+        	compiled by GNU C version Apple LLVM 13.0.0 (clang-1300.0.29.30), GMP version 6.2.1, MPFR version 3.1.6, MPC version 1.0.3, isl version isl-0.15-1-g835ea3a-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/include"
+        ignoring nonexistent directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/usr/local/include"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/include-fixed"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include"
+        ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include-fixed
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include
+        End of search list.
+        Compiler executable checksum: 18f4550fe29065d7f2478f7cc0cc177e
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_714a2.dir/'
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/as -v -march=armv4t -mfloat-abi=soft -meabi=5 -o CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj /var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cc53CRnL.s
+        GNU assembler version 2.41.0 (arm-none-eabi) using BFD version (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009
+        COMPILER_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/
+        LIBRARY_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib/
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.'
+        [2/2] : && /opt/homebrew/bin/arm-none-eabi-gcc  --specs=nosys.specs -v CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj -o cmTC_714a2   && :
+        Using built-in specs.
+        Reading specs from /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/nosys.specs
+        rename spec link_gcc_c_sequence to nosys_link_gcc_c_sequence
+        COLLECT_GCC=/opt/homebrew/bin/arm-none-eabi-gcc
+        COLLECT_LTO_WRAPPER=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper
+        Target: arm-none-eabi
+        Configured with: /Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure --target=arm-none-eabi --prefix=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install --with-gmp=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpfr=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpc=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-isl=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install/arm-none-eabi --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)' --with-bugurl=https://bugs.linaro.org/
+        Thread model: single
+        Supported LTO compression algorithms: zlib
+        gcc version 13.2.1 20231009 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 
+        COMPILER_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/
+        LIBRARY_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib/
+        COLLECT_GCC_OPTIONS='-specs=nosys.specs' '-v' '-o' 'cmTC_714a2' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'cmTC_714a2.'
+         /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/collect2 -plugin /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/liblto_plugin.so -plugin-opt=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper -plugin-opt=-fresolution=/var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//ccKbS0Qe.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lnosys --sysroot=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi -X -o cmTC_714a2 /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1 -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj --start-group -lgcc -lc --end-group --start-group -lgcc -lc -lnosys --end-group /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o
+        /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-closer.o): in function `_close_r':
+        closer.c:(.text._close_r+0x18): warning: _close is not implemented and will always fail
+        /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-lseekr.o): in function `_lseek_r':
+        lseekr.c:(.text._lseek_r+0x24): warning: _lseek is not implemented and will always fail
+        /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-readr.o): in function `_read_r':
+        readr.c:(.text._read_r+0x24): warning: _read is not implemented and will always fail
+        /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-writer.o): in function `_write_r':
+        writer.c:(.text._write_r+0x24): warning: _write is not implemented and will always fail
+        COLLECT_GCC_OPTIONS='-specs=nosys.specs' '-v' '-o' 'cmTC_714a2' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'cmTC_714a2.'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:191 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include]
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include-fixed]
+          add: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include]
+        end of search list found
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/include]
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include-fixed] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/include-fixed]
+        collapse include dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include]
+        implicit include dirs: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/include;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/include-fixed;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:227 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:230 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
+        ignore line: [Change Dir: '/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/CMakeFiles/CMakeScratch/TryCompile-QjeGyw']
+        ignore line: []
+        ignore line: [Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_714a2]
+        ignore line: [[1/2] /opt/homebrew/bin/arm-none-eabi-gcc   -v -o CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj -c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/opt/homebrew/bin/arm-none-eabi-gcc]
+        ignore line: [Target: arm-none-eabi]
+        ignore line: [Configured with: /Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure --target=arm-none-eabi --prefix=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install --with-gmp=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpfr=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpc=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-isl=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install/arm-none-eabi --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)' --with-bugurl=https://bugs.linaro.org/]
+        ignore line: [Thread model: single]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 13.2.1 20231009 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_714a2.dir/']
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/cc1 -quiet -v -iprefix /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/ -isysroot /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi -D__USES_INITFINI__ /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_714a2.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mcpu=arm7tdmi -mfloat-abi=soft -marm -mlibarch=armv4t -march=armv4t -version -o /var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cc53CRnL.s]
+        ignore line: [GNU C17 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) version 13.2.1 20231009 (arm-none-eabi)]
+        ignore line: [	compiled by GNU C version Apple LLVM 13.0.0 (clang-1300.0.29.30)  GMP version 6.2.1  MPFR version 3.1.6  MPC version 1.0.3  isl version isl-0.15-1-g835ea3a-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/include"]
+        ignore line: [ignoring nonexistent directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/usr/local/include"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/include-fixed"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include"]
+        ignore line: [ignoring duplicate directory "/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/include-fixed]
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/include]
+        ignore line: [End of search list.]
+        ignore line: [Compiler executable checksum: 18f4550fe29065d7f2478f7cc0cc177e]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_714a2.dir/']
+        ignore line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/as -v -march=armv4t -mfloat-abi=soft -meabi=5 -o CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj /var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//cc53CRnL.s]
+        ignore line: [GNU assembler version 2.41.0 (arm-none-eabi) using BFD version (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009]
+        ignore line: [COMPILER_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/]
+        ignore line: [LIBRARY_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.']
+        ignore line: [[2/2] : && /opt/homebrew/bin/arm-none-eabi-gcc  --specs=nosys.specs -v CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj -o cmTC_714a2   && :]
+        ignore line: [Using built-in specs.]
+        ignore line: [Reading specs from /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/nosys.specs]
+        ignore line: [rename spec link_gcc_c_sequence to nosys_link_gcc_c_sequence]
+        ignore line: [COLLECT_GCC=/opt/homebrew/bin/arm-none-eabi-gcc]
+        ignore line: [COLLECT_LTO_WRAPPER=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper]
+        ignore line: [Target: arm-none-eabi]
+        ignore line: [Configured with: /Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure --target=arm-none-eabi --prefix=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install --with-gmp=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpfr=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-mpc=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --with-isl=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/Volumes/data/jenkins/workspace/GNU-toolchain/arm-13/build-arm-none-eabi/install/arm-none-eabi --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)' --with-bugurl=https://bugs.linaro.org/]
+        ignore line: [Thread model: single]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 13.2.1 20231009 (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) ]
+        ignore line: [COMPILER_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/]
+        ignore line: [LIBRARY_PATH=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/:/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-specs=nosys.specs' '-v' '-o' 'cmTC_714a2' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'cmTC_714a2.']
+        link line: [ /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/collect2 -plugin /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/liblto_plugin.so -plugin-opt=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper -plugin-opt=-fresolution=/var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//ccKbS0Qe.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lnosys --sysroot=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi -X -o cmTC_714a2 /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1 -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib -L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj --start-group -lgcc -lc --end-group --start-group -lgcc -lc -lnosys --end-group /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o]
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/collect2] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/liblto_plugin.so] ==> ignore
+          arg [-plugin-opt=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../libexec/gcc/arm-none-eabi/13.2.1/lto-wrapper] ==> ignore
+          arg [-plugin-opt=-fresolution=/var/folders/wk/1gf2_m552kl8lnst82lpjrn00000gn/T//ccKbS0Qe.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lnosys] ==> ignore
+          arg [--sysroot=/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi] ==> ignore
+          arg [-X] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_714a2] ==> ignore
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o]
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o]
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o]
+          arg [-L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1] ==> dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1]
+          arg [-L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc] ==> dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc]
+          arg [-L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib] ==> dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib]
+          arg [-L/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib] ==> dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib]
+          arg [CMakeFiles/cmTC_714a2.dir/CMakeCCompilerABI.c.obj] ==> ignore
+          arg [--start-group] ==> ignore
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lc] ==> lib [c]
+          arg [--end-group] ==> ignore
+          arg [--start-group] ==> ignore
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lc] ==> lib [c]
+          arg [-lnosys] ==> lib [nosys]
+          arg [--end-group] ==> ignore
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o]
+          arg [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o] ==> obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o]
+        ignore line: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-closer.o): in function `_close_r':]
+        ignore line: [closer.c:(.text._close_r+0x18): warning: _close is not implemented and will always fail]
+        ignore line: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-lseekr.o): in function `_lseek_r':]
+        ignore line: [lseekr.c:(.text._lseek_r+0x24): warning: _lseek is not implemented and will always fail]
+        ignore line: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-readr.o): in function `_read_r':]
+        ignore line: [readr.c:(.text._read_r+0x24): warning: _read is not implemented and will always fail]
+        ignore line: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/bin/ld: /opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/libc.a(libc_a-writer.o): in function `_write_r':]
+        ignore line: [writer.c:(.text._write_r+0x24): warning: _write is not implemented and will always fail]
+        ignore line: [COLLECT_GCC_OPTIONS='-specs=nosys.specs' '-v' '-o' 'cmTC_714a2' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'cmTC_714a2.']
+        ignore line: []
+        ignore line: []
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crti.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crti.o]
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtbegin.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtbegin.o]
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/crt0.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib/crt0.o]
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtend.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtend.o]
+        collapse obj [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/crtn.o] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtn.o]
+        collapse library dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1]
+        collapse library dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc]
+        collapse library dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib]
+        collapse library dir [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/bin/../arm-none-eabi/lib] ==> [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib]
+        implicit libs: [gcc;c;gcc;c;nosys]
+        implicit objs: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crti.o;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtbegin.o;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib/crt0.o;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtend.o;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1/crtn.o]
+        implicit dirs: [/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc/arm-none-eabi/13.2.1;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/lib/gcc;/opt/homebrew/Cellar/arm-gcc-bin@13/13.2.rel1/arm-none-eabi/lib]
+        implicit fwks: []
+      
+      
+...
