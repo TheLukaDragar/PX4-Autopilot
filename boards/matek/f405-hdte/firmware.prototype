@@ -1,0 +1,13 @@
+{
+    "board_id": 405,
+    "magic": "MATEKF405HDTE",
+    "description": "Firmware for the Matek F405-HDTE board",
+    "image": "",
+    "build_time": 0,
+    "summary": "PX4/MatekF405HDTE",
+    "version": "1.0",
+    "image_size": 0,
+    "image_maxsize": 1032192,
+    "git_identity": "",
+    "board_revision": 0
+}
