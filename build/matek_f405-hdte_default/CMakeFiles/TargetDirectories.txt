@@ -779,6 +779,14 @@
 /Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/sensors/vehicle_optical_flow/CMakeFiles/package_source.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/sensors/vehicle_optical_flow/CMakeFiles/edit_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/sensors/vehicle_optical_flow/CMakeFiles/rebuild_cache.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/CMakeFiles/git_micro_xrce_dds_client.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/CMakeFiles/libmicroxrceddsclient_project.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/CMakeFiles/topic_bridge_files.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/CMakeFiles/modules__uxrce_dds_client.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/CMakeFiles/package.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/CMakeFiles/package_source.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/CMakeFiles/edit_cache.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/CMakeFiles/rebuild_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/systemcmds/dmesg/CMakeFiles/systemcmds__dmesg.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/systemcmds/dmesg/CMakeFiles/package.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/systemcmds/dmesg/CMakeFiles/package_source.dir

@@ -1,0 +1,16 @@
+# ninja log v7
+2	42	1756805802012000317	ucdr-prefix/src/ucdr-stamp/ucdr-mkdir	18943d43ea9f7b5d
+2	42	1756805802012000317	/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/microcdr/src/microcdr-build/ucdr-prefix/src/ucdr-stamp/ucdr-mkdir	18943d43ea9f7b5d
+42	71	1756805802041747703	ucdr-prefix/src/ucdr-stamp/ucdr-download	467d87f0f8192c7f
+42	71	1756805802041747703	/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/microcdr/src/microcdr-build/ucdr-prefix/src/ucdr-stamp/ucdr-download	467d87f0f8192c7f
+72	99	1756805802068905542	ucdr-prefix/src/ucdr-stamp/ucdr-update	4d5cd4cd43e58df7
+72	99	1756805802068905542	/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/microcdr/src/microcdr-build/ucdr-prefix/src/ucdr-stamp/ucdr-update	4d5cd4cd43e58df7
+100	174	1756805802142513297	ucdr-prefix/src/ucdr-stamp/ucdr-patch	37d1003b9fdec2c
+100	174	1756805802142513297	/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/microcdr/src/microcdr-build/ucdr-prefix/src/ucdr-stamp/ucdr-patch	37d1003b9fdec2c
+2	59	1756805802261767299	CMakeFiles/microcdr.dir/src/c/types/string.c.obj	2f095c1a32571d9a
+1	94	1756805802260435088	CMakeFiles/microcdr.dir/src/c/common.c.obj	cb4e0d0b3e2ba3a7
+2	244	1756805802262076674	CMakeFiles/microcdr.dir/src/c/types/sequence.c.obj	dd64f831146598b3
+2	404	1756805802261938632	CMakeFiles/microcdr.dir/src/c/types/array.c.obj	7734aa33206acebb
+1	1487	1756805802260961881	CMakeFiles/microcdr.dir/src/c/types/basic.c.obj	f76920386d2c6f7
+1488	1539	1756805803747351916	libmicrocdr.a	57507d375c5a9504
+1	27	1756805803927988068	CMakeFiles/install.util	3892a9e08e0db15d

@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -46,7 +46,7 @@
 
 
 static_assert(static_cast<orb_id_size_t>(ORB_ID::arming_check_request) == 16, "ORB_ID index mismatch");
-ORB_DEFINE(arming_check_request, struct arming_check_request_s, 9, 2071694766u, static_cast<orb_id_size_t>(ORB_ID::arming_check_request), 1);
+ORB_DEFINE(arming_check_request, struct arming_check_request_s, 13, 1848233421u, static_cast<orb_id_size_t>(ORB_ID::arming_check_request), 1);
 
 
 void print_message(const orb_metadata *meta, const arming_check_request_s& message)

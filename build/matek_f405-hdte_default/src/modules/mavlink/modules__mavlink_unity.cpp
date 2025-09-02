@@ -3587,6 +3587,11 @@ Mavlink::update_rate_mult()
 	/* scale up and down as the link permits */
 	float bandwidth_mult = (float)(_datarate * mavlink_ulog_streaming_rate_inv - const_rate) / rate;
 
+	/* Reduce rate while sending parameters in low bandwidth mode */
+	if (sending_parameters() && _mode == Mavlink::MAVLINK_MODE_LOW_BANDWIDTH) {
+		bandwidth_mult = fminf(bandwidth_mult, 0.25f);
+	}
+
 	/* if we do not have flow control, limit to the set data rate */
 	if (!get_flow_control_enabled()) {
 		bandwidth_mult = fminf(1.0f, bandwidth_mult);
@@ -4096,7 +4101,6 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("AVAILABLE_MODES", 0.3f);
 		configure_stream_local("BATTERY_STATUS", 0.5f);
 		configure_stream_local("CAMERA_IMAGE_CAPTURED", 2.0f);
-		configure_stream_local("COLLISION", 2.0f);
 		configure_stream_local("CURRENT_MODE", 0.5f);
 		configure_stream_local("ESTIMATOR_STATUS", 1.0f);
 		configure_stream_local("EXTENDED_SYS_STATE", 0.5f);
@@ -4116,7 +4120,6 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("SYS_STATUS", 0.5f);
 		configure_stream_local("SYSTEM_TIME", 2.0f);
 		configure_stream_local("TIME_ESTIMATE_TO_TARGET", 0.5f);
-		configure_stream_local("TRAJECTORY_REPRESENTATION_WAYPOINTS", 2.0f);
 		configure_stream_local("VFR_HUD", 1.0f);
 		configure_stream_local("VIBRATION", 0.1f);
 		configure_stream_local("WIND_COV", 0.1f);
@@ -8826,6 +8829,8 @@ MavlinkParametersManager::send_param(param_t param, int component_id)
 		_mavlink_resend_uart(_mavlink.get_channel(), &mavlink_packet);
 	}
 
+	_last_param_sent = hrt_absolute_time();
+
 	return 0;
 }
 
@@ -9590,9 +9595,15 @@ void MavlinkReceiver::handle_message_command_both(mavlink_message_t *msg, const 
 	} else if (cmd_mavlink.command == MAV_CMD_REQUEST_MESSAGE) {
 
 		uint16_t message_id = (uint16_t)roundf(vehicle_command.param1);
-		result = handle_request_message_command(message_id,
-							vehicle_command.param2, vehicle_command.param3, vehicle_command.param4,
-							vehicle_command.param5, vehicle_command.param6, vehicle_command.param7);
+
+		if (message_id == MAVLINK_MSG_ID_MESSAGE_INTERVAL) {
+			get_message_interval((int)(cmd_mavlink.param2 + 0.5f));
+
+		} else {
+			result = handle_request_message_command(message_id,
+								vehicle_command.param2, vehicle_command.param3, vehicle_command.param4,
+								vehicle_command.param5, vehicle_command.param6, vehicle_command.param7);
+		}
 
 	} else if (cmd_mavlink.command == MAV_CMD_INJECT_FAILURE) {
 		if (_mavlink.failure_injection_enabled()) {
@@ -11284,7 +11295,7 @@ MavlinkReceiver::set_message_interval(int msgId, float interval, float param3, f
 void
 MavlinkReceiver::get_message_interval(int msgId)
 {
-	unsigned interval = 0;
+	int interval = -1;
 
 	for (const auto &stream : _mavlink.get_streams()) {
 		if (stream->get_id() == msgId) {
@@ -12288,6 +12299,7 @@ MavlinkReceiver::run()
 
 			if (_mavlink.get_mode() != Mavlink::MAVLINK_MODE::MAVLINK_MODE_IRIDIUM) {
 				_parameters_manager.send();
+				_mavlink.set_sending_parameters(_parameters_manager.send_active());
 			}
 
 			if (_mavlink.ftp_enabled()) {

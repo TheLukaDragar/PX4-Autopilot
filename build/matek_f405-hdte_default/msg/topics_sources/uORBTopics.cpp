@@ -194,10 +194,10 @@
 #include <uORB/topics/rover_position_setpoint.h>
 #include <uORB/topics/rover_rate_setpoint.h>
 #include <uORB/topics/rover_rate_status.h>
+#include <uORB/topics/rover_speed_setpoint.h>
+#include <uORB/topics/rover_speed_status.h>
 #include <uORB/topics/rover_steering_setpoint.h>
 #include <uORB/topics/rover_throttle_setpoint.h>
-#include <uORB/topics/rover_velocity_setpoint.h>
-#include <uORB/topics/rover_velocity_status.h>
 #include <uORB/topics/rpm.h>
 #include <uORB/topics/rtl_status.h>
 #include <uORB/topics/rtl_time_estimate.h>
@@ -482,10 +482,10 @@ const constexpr struct orb_metadata *const uorb_topics_list[ORB_TOPICS_COUNT] = 
 	ORB_ID(rover_position_setpoint), 
 	ORB_ID(rover_rate_setpoint), 
 	ORB_ID(rover_rate_status), 
+	ORB_ID(rover_speed_setpoint), 
+	ORB_ID(rover_speed_status), 
 	ORB_ID(rover_steering_setpoint), 
 	ORB_ID(rover_throttle_setpoint), 
-	ORB_ID(rover_velocity_setpoint), 
-	ORB_ID(rover_velocity_status), 
 	ORB_ID(rpm), 
 	ORB_ID(rtl_status), 
 	ORB_ID(rtl_time_estimate), 

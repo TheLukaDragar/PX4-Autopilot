@@ -141,6 +141,16 @@ set MAV_ARGS "${MAV_ARGS} -F p:MAV_${i}_HL_FREQ"
 fi
 mavlink start ${MAV_ARGS} -x
 fi
+set PRT UXRCE_DDS_CFG
+. $PRT_F
+if [ $SERIAL_DEV != none ]; then
+if [ $SERIAL_DEV != ethernet ]; then
+set UXRCE_DDS_ARGS "-t serial -d ${SERIAL_DEV} -b p:${BAUD_PARAM}"
+else
+set UXRCE_DDS_ARGS "-t udp"
+fi
+uxrce_dds_client start ${UXRCE_DDS_ARGS}
+fi
 unset PRT_URT6_
 unset PRT_TEL2_
 unset i

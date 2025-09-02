@@ -1,0 +1,84 @@
+[1/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/stream/output_best_effort_stream.c.obj
+[2/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/stream/stream_id.c.obj
+[3/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/stream/input_best_effort_stream.c.obj
+[4/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/submessage.c.obj
+[5/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/stream/seq_num.c.obj
+[6/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/object_id.c.obj
+[7/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/stream/input_reliable_stream.c.obj
+[8/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/stream/output_reliable_stream.c.obj
+[9/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/serialization/xrce_header.c.obj
+[10/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/serialization/xrce_subheader.c.obj
+[11/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/session_info.c.obj
+[12/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/util/time.c.obj
+[13/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/stream/stream_storage.c.obj
+[14/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/util/ping.c.obj
+In file included from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/ip/udp/udp_transport_posix.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/transport.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/util/ping.h:28,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/util/ping.c:1:
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h: In function '__cmsg_nxthdr':
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h:342:11: warning: cast increases required alignment of target type [-Wcast-align]
+  342 |   __ptr = (FAR struct cmsghdr *)
+      |           ^
+[15/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/create_entities_ref.c.obj
+[16/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/common_create_entities.c.obj
+[17/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/profile/transport/ip/udp/udp_transport.c.obj
+In file included from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/ip/udp/udp_transport_posix.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/transport.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/ip/udp/udp_transport.h:31,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/ip/udp/udp_transport_internal.h:23,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/ip/udp/udp_transport.c:2:
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h: In function '__cmsg_nxthdr':
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h:342:11: warning: cast increases required alignment of target type [-Wcast-align]
+  342 |   __ptr = (FAR struct cmsghdr *)
+      |           ^
+[18/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/profile/transport/serial/serial_transport.c.obj
+In file included from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/ip/udp/udp_transport_posix.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/transport.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/serial/serial_transport.h:31,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/serial/serial_transport_platform.h:23,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/serial/serial_transport.c:1:
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h: In function '__cmsg_nxthdr':
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h:342:11: warning: cast increases required alignment of target type [-Wcast-align]
+  342 |   __ptr = (FAR struct cmsghdr *)
+      |           ^
+[19/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/profile/transport/ip/ip_posix.c.obj
+In file included from /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/netinet/in.h:31,
+                 from /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/arpa/inet.h:32,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/ip/ip_posix.c:18:
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h: In function '__cmsg_nxthdr':
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h:342:11: warning: cast increases required alignment of target type [-Wcast-align]
+  342 |   __ptr = (FAR struct cmsghdr *)
+      |           ^
+[20/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/profile/transport/serial/serial_transport_posix.c.obj
+In file included from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/ip/udp/udp_transport_posix.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/transport.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/serial/serial_transport.h:31,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/serial/serial_transport_platform.h:23,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/serial/serial_transport_posix.c:2:
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h: In function '__cmsg_nxthdr':
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h:342:11: warning: cast increases required alignment of target type [-Wcast-align]
+  342 |   __ptr = (FAR struct cmsghdr *)
+      |           ^
+[21/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/read_access.c.obj
+[22/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/profile/transport/ip/udp/udp_transport_posix.c.obj
+In file included from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/include/uxr/client/profile/transport/ip/udp/udp_transport_posix.h:24,
+                 from /Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/ip/udp/udp_transport_posix.c:1:
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h: In function '__cmsg_nxthdr':
+/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/include/sys/socket.h:342:11: warning: cast increases required alignment of target type [-Wcast-align]
+  342 |   __ptr = (FAR struct cmsghdr *)
+      |           ^
+/Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/ip/udp/udp_transport_posix.c: In function 'uxr_init_udp_platform':
+/Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/ip/udp/udp_transport_posix.c:46:18: warning: implicit declaration of function 'getaddrinfo' [-Wimplicit-function-declaration]
+   46 |         if (0 == getaddrinfo(ip, port, &hints, &result))
+      |                  ^~~~~~~~~~~
+/Users/carbs/Desktop/PX4-Autopilot/src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client/src/c/profile/transport/ip/udp/udp_transport_posix.c:57:13: warning: implicit declaration of function 'freeaddrinfo' [-Wimplicit-function-declaration]
+   57 |             freeaddrinfo(result);
+      |             ^~~~~~~~~~~~
+[23/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/create_entities_xml.c.obj
+[24/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/create_entities_bin.c.obj
+[25/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/write_access.c.obj
+[26/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/profile/transport/stream_framing/stream_framing_protocol.c.obj
+[27/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/session/session.c.obj
+[28/29] Building C object CMakeFiles/microxrcedds_client.dir/src/c/core/serialization/xrce_types.c.obj
+[29/29] Linking C static library libmicroxrcedds_client.a

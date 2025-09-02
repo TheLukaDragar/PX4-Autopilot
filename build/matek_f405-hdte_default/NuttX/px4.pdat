@@ -24,6 +24,7 @@ int mc_rate_control_main(int argc, char *argv[]);
 int navigator_main(int argc, char *argv[]);
 int rc_update_main(int argc, char *argv[]);
 int sensors_main(int argc, char *argv[]);
+int uxrce_dds_client_main(int argc, char *argv[]);
 int dmesg_main(int argc, char *argv[]);
 int hardfault_log_main(int argc, char *argv[]);
 int param_main(int argc, char *argv[]);
