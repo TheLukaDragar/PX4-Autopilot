@@ -1,0 +1,16 @@
+# ninja log v7
+1	26	1756817212163684633	ucdr-prefix/src/ucdr-stamp/ucdr-mkdir	c60713f5741d4eaa
+1	26	1756817212163684633	/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/microcdr/src/microcdr-build/ucdr-prefix/src/ucdr-stamp/ucdr-mkdir	c60713f5741d4eaa
+26	44	1756817212181783878	ucdr-prefix/src/ucdr-stamp/ucdr-download	a55664f1e130bd8f
+26	44	1756817212181783878	/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/microcdr/src/microcdr-build/ucdr-prefix/src/ucdr-stamp/ucdr-download	a55664f1e130bd8f
+45	69	1756817212206922022	ucdr-prefix/src/ucdr-stamp/ucdr-update	5dedcc0f02074345
+45	69	1756817212206922022	/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/microcdr/src/microcdr-build/ucdr-prefix/src/ucdr-stamp/ucdr-update	5dedcc0f02074345
+69	98	1756817212235667073	ucdr-prefix/src/ucdr-stamp/ucdr-patch	6b26692ea984f5f9
+69	98	1756817212235667073	/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/uxrce_dds_client/src/libmicroxrceddsclient_project-build/microcdr/src/microcdr-build/ucdr-prefix/src/ucdr-stamp/ucdr-patch	6b26692ea984f5f9
+1	73	1756817212344265377	CMakeFiles/microcdr.dir/src/c/types/string.c.obj	ffc085e0bae9401
+0	86	1756817212343500087	CMakeFiles/microcdr.dir/src/c/common.c.obj	78e4301cc188e945
+1	130	1756817212344595501	CMakeFiles/microcdr.dir/src/c/types/sequence.c.obj	19bfd656b6ca358d
+1	168	1756817212344440543	CMakeFiles/microcdr.dir/src/c/types/array.c.obj	a56de6eb63ee7e2f
+1	304	1756817212343988044	CMakeFiles/microcdr.dir/src/c/types/basic.c.obj	99ae5850af033184
+304	341	1756817212647261722	libmicrocdr.a	d8167ad3c734918c
+1	15	1756817212756793232	CMakeFiles/install.util	6b98e2a7cb151e89

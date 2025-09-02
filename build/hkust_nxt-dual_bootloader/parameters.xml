@@ -1,0 +1,1283 @@
+<parameters>
+  <version>3</version>
+  <parameter_version_major>1</parameter_version_major>
+  <parameter_version_minor>15</parameter_version_minor>
+  <group name="UAVCAN Motor Parameters" no_code_generation="true">
+    <parameter name="ctl_bw" default="75" type="INT32">
+      <short_desc>Speed controller bandwidth</short_desc>
+      <long_desc>Speed controller bandwidth, in Hz. Higher values result in faster speed and current rise times, but may result in overshoot and higher current consumption. For fixed-wing aircraft, this value should be less than 50 Hz; for multirotors, values up to 100 Hz may provide improvements in responsiveness.</long_desc>
+      <min>10</min>
+      <max>250</max>
+      <unit>Hz</unit>
+    </parameter>
+    <parameter name="ctl_dir" default="1" type="INT32">
+      <short_desc>Reverse direction</short_desc>
+      <long_desc>Motor spin direction as detected during initial enumeration. Use 0 or 1 to reverse direction.</long_desc>
+      <min>0</min>
+      <max>1</max>
+    </parameter>
+    <parameter name="ctl_gain" default="1" type="FLOAT">
+      <short_desc>Speed (RPM) controller gain</short_desc>
+      <long_desc>Speed (RPM) controller gain. Determines controller
+            aggressiveness; units are amp-seconds per radian. Systems with
+            higher rotational inertia (large props) will need gain increased;
+            systems with low rotational inertia (small props) may need gain
+            decreased. Higher values result in faster response, but may result
+            in oscillation and excessive overshoot. Lower values result in a
+            slower, smoother response.</long_desc>
+      <min>0.00</min>
+      <max>1.00</max>
+      <unit>C/rad</unit>
+      <decimal>3</decimal>
+    </parameter>
+    <parameter name="ctl_hz_idle" default="3.5" type="FLOAT">
+      <short_desc>Idle speed (e Hz)</short_desc>
+      <long_desc>Idle speed (e Hz)</long_desc>
+      <min>0.0</min>
+      <max>100.0</max>
+      <unit>Hz</unit>
+      <decimal>3</decimal>
+    </parameter>
+    <parameter name="ctl_start_rate" default="25" type="INT32">
+      <short_desc>Spin-up rate (e Hz/s)</short_desc>
+      <long_desc>Spin-up rate (e Hz/s)</long_desc>
+      <min>5</min>
+      <max>1000</max>
+      <unit>1/s^2</unit>
+    </parameter>
+    <parameter name="esc_index" default="0" type="INT32">
+      <short_desc>Index of this ESC in throttle command messages.</short_desc>
+      <long_desc>Index of this ESC in throttle command messages.</long_desc>
+      <min>0</min>
+      <max>15</max>
+    </parameter>
+    <parameter name="id_ext_status" default="20034" type="INT32">
+      <short_desc>Extended status ID</short_desc>
+      <long_desc>Extended status ID</long_desc>
+      <min>1</min>
+      <max>1000000</max>
+    </parameter>
+    <parameter name="int_ext_status" default="50000" type="INT32">
+      <short_desc>Extended status interval (µs)</short_desc>
+      <long_desc>Extended status interval (µs)</long_desc>
+      <min>0</min>
+      <max>1000000</max>
+      <unit>us</unit>
+    </parameter>
+    <parameter name="int_status" default="50000" type="INT32">
+      <short_desc>ESC status interval (µs)</short_desc>
+      <long_desc>ESC status interval (µs)</long_desc>
+      <max>1000000</max>
+      <unit>us</unit>
+    </parameter>
+    <parameter name="mot_i_max" default="12" type="FLOAT">
+      <short_desc>Motor current limit in amps</short_desc>
+      <long_desc>Motor current limit in amps. This determines the maximum
+            current controller setpoint, as well as the maximum allowable
+            current setpoint slew rate. This value should generally be set to
+            the continuous current rating listed in the motor’s specification
+            sheet, or set equal to the motor’s specified continuous power
+            divided by the motor voltage limit.</long_desc>
+      <min>1</min>
+      <max>80</max>
+      <unit>A</unit>
+      <decimal>3</decimal>
+    </parameter>
+    <parameter name="mot_kv" default="2300" type="INT32">
+      <short_desc>Motor Kv in RPM per volt</short_desc>
+      <long_desc>Motor Kv in RPM per volt. This can be taken from the motor’s
+            specification sheet; accuracy will help control performance but
+            some deviation from the specified value is acceptable.</long_desc>
+      <min>0</min>
+      <max>4000</max>
+      <unit>rpm/V</unit>
+    </parameter>
+    <parameter name="mot_ls" default="0.0" type="FLOAT">
+      <short_desc>READ ONLY: Motor inductance in henries.</short_desc>
+      <long_desc>READ ONLY: Motor inductance in henries. This is measured on start-up.</long_desc>
+      <unit>H</unit>
+      <decimal>3</decimal>
+    </parameter>
+    <parameter name="mot_num_poles" default="14" type="INT32">
+      <short_desc>Number of motor poles.</short_desc>
+      <long_desc>Number of motor poles. Used to convert mechanical speeds to
+            electrical speeds. This number should be taken from the motor’s
+            specification sheet.</long_desc>
+      <min>2</min>
+      <max>40</max>
+    </parameter>
+    <parameter name="mot_rs" default="0.0" type="FLOAT">
+      <short_desc>READ ONLY: Motor resistance in ohms</short_desc>
+      <long_desc>READ ONLY: Motor resistance in ohms. This is measured on start-up. When
+            tuning a new motor, check that this value is approximately equal
+            to the value shown in the motor’s specification sheet.</long_desc>
+      <unit>Ohm</unit>
+      <decimal>3</decimal>
+    </parameter>
+    <parameter name="mot_v_accel" default="0.5" type="FLOAT">
+      <short_desc>Acceleration limit (V)</short_desc>
+      <long_desc>Acceleration limit (V)</long_desc>
+      <min>0.01</min>
+      <max>1.00</max>
+      <unit>V</unit>
+      <decimal>3</decimal>
+    </parameter>
+    <parameter name="mot_v_max" default="14.8" type="FLOAT">
+      <short_desc>Motor voltage limit in volts</short_desc>
+      <long_desc>Motor voltage limit in volts. The current controller’s
+            commanded voltage will never exceed this value. Note that this may
+            safely be above the nominal voltage of the motor; to determine the
+            actual motor voltage limit, divide the motor’s rated power by the
+            motor current limit.</long_desc>
+      <min>0</min>
+      <unit>V</unit>
+      <decimal>3</decimal>
+    </parameter>
+  </group>
+  <group name="UAVCAN GNSS" no_code_generation="true">
+    <parameter name="gnss.dyn_model" default="2" type="INT32">
+      <short_desc>GNSS dynamic model</short_desc>
+      <long_desc>Dynamic model used in the GNSS positioning engine. 0 –
+        Automotive, 1 – Sea, 2 – Airborne.
+      </long_desc>
+      <min>0</min>
+      <max>2</max>
+      <values>
+        <value code="0">Automotive</value>
+        <value code="1">Sea</value>
+        <value code="2">Airborne</value>
+      </values>
+    </parameter>
+    <parameter name="gnss.old_fix_msg" default="1" type="INT32">
+      <short_desc>Broadcast old GNSS fix message</short_desc>
+      <long_desc>Broadcast the old (deprecated) GNSS fix message
+        uavcan.equipment.gnss.Fix alongside the new alternative
+        uavcan.equipment.gnss.Fix2. It is recommended to
+        disable this feature to reduce the CAN bus traffic.
+      </long_desc>
+      <min>0</min>
+      <max>1</max>
+      <values>
+        <value code="0">Fix2</value>
+        <value code="1">Fix and Fix2</value>
+      </values>
+    </parameter>
+    <parameter name="gnss.warn_dimens" default="0" type="INT32">
+      <short_desc>device health warning</short_desc>
+      <long_desc>Set the device health to Warning if the dimensionality of
+              the GNSS solution is less than this value. 3 for the full (3D)
+              solution, 2 for planar (2D) solution, 1 for time-only solution,
+              0 disables the feature.
+      </long_desc>
+      <min>0</min>
+      <max>3</max>
+      <values>
+        <value code="0">disables the feature</value>
+        <value code="1">time-only solution</value>
+        <value code="2">planar (2D) solution</value>
+        <value code="3">full (3D) solution</value>
+      </values>
+    </parameter>
+    <parameter name="gnss.warn_sats" default="0" type="INT32">
+      <short_desc />
+      <long_desc>Set the device health to Warning if the number of satellites
+        used in the GNSS solution is below this threshold. Zero
+        disables the feature
+      </long_desc>
+    </parameter>
+    <parameter name="uavcan.pubp-pres" default="0" type="INT32">
+      <short_desc />
+      <long_desc>Set the device health to Warning if the number of satellites
+        used in the GNSS solution is below this threshold. Zero
+        disables the feature
+      </long_desc>
+      <min>0</min>
+      <max>1000000</max>
+      <unit>us</unit>
+    </parameter>
+  </group>
+  <group name="ADSB">
+    <parameter name="ADSB_CALLSIGN_1" default="0" type="INT32">
+      <short_desc>First 4 characters of CALLSIGN</short_desc>
+      <long_desc>Sets first 4 characters of a total of 8. Valid characters are A-Z, 0-9, " ". Example "PX4 " -&gt; 1347957792
+For CALLSIGN shorter than 8 characters use the null terminator at the end '\0'.</long_desc>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="ADSB_CALLSIGN_2" default="0" type="INT32">
+      <short_desc>Second 4 characters of CALLSIGN</short_desc>
+      <long_desc>Sets second 4 characters of a total of 8. Valid characters are A-Z, 0-9, " " only. Example "TEST" -&gt; 1413829460
+For CALLSIGN shorter than 8 characters use the null terminator at the end '\0'.</long_desc>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="ADSB_EMERGC" default="0" type="INT32">
+      <short_desc>ADSB-Out Emergency State</short_desc>
+      <long_desc>Sets the vehicle emergency state</long_desc>
+      <min>0</min>
+      <max>6</max>
+      <reboot_required>false</reboot_required>
+      <values>
+        <value code="0">NoEmergency</value>
+        <value code="1">General</value>
+        <value code="2">Medical</value>
+        <value code="3">LowFuel</value>
+        <value code="4">NoCommunications</value>
+        <value code="5">Interference</value>
+        <value code="6">Downed</value>
+      </values>
+    </parameter>
+    <parameter name="ADSB_EMIT_TYPE" default="14" type="INT32">
+      <short_desc>ADSB-Out Vehicle Emitter Type</short_desc>
+      <long_desc>Configure the emitter type of the vehicle.</long_desc>
+      <min>0</min>
+      <max>15</max>
+      <reboot_required>true</reboot_required>
+      <values>
+        <value code="0">Unknown</value>
+        <value code="1">Light</value>
+        <value code="2">Small</value>
+        <value code="3">Large</value>
+        <value code="4">HighVortex</value>
+        <value code="5">Heavy</value>
+        <value code="6">Performance</value>
+        <value code="7">Rotorcraft</value>
+        <value code="8">RESERVED</value>
+        <value code="9">Glider</value>
+        <value code="10">LightAir</value>
+        <value code="11">Parachute</value>
+        <value code="12">UltraLight</value>
+        <value code="13">RESERVED</value>
+        <value code="14">UAV</value>
+        <value code="15">Space</value>
+        <value code="16">RESERVED</value>
+        <value code="17">EmergencySurf</value>
+        <value code="18">ServiceSurf</value>
+        <value code="19">PointObstacle</value>
+      </values>
+    </parameter>
+    <parameter name="ADSB_GPS_OFF_LAT" default="0" type="INT32">
+      <short_desc>ADSB-Out GPS Offset lat</short_desc>
+      <long_desc>Sets GPS lataral offset encoding</long_desc>
+      <min>0</min>
+      <max>7</max>
+      <reboot_required>false</reboot_required>
+      <values>
+        <value code="0">NoData</value>
+        <value code="1">LatLeft2M</value>
+        <value code="2">LatLeft4M</value>
+        <value code="3">LatLeft6M</value>
+        <value code="4">LatRight0M</value>
+        <value code="5">LatRight2M</value>
+        <value code="6">LatRight4M</value>
+        <value code="7">LatRight6M</value>
+      </values>
+    </parameter>
+    <parameter name="ADSB_GPS_OFF_LON" default="0" type="INT32">
+      <short_desc>ADSB-Out GPS Offset lon</short_desc>
+      <long_desc>Sets GPS longitudinal offset encoding</long_desc>
+      <min>0</min>
+      <max>1</max>
+      <reboot_required>false</reboot_required>
+      <values>
+        <value code="0">NoData</value>
+        <value code="1">AppliedBySensor</value>
+      </values>
+    </parameter>
+    <parameter name="ADSB_ICAO_ID" default="1194684" type="INT32">
+      <short_desc>ADSB-Out ICAO configuration</short_desc>
+      <long_desc>Defines the ICAO ID of the vehicle</long_desc>
+      <min>-1</min>
+      <max>16777215</max>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="ADSB_ICAO_SPECL" default="0" type="INT32">
+      <short_desc>ADSB-In Special ICAO configuration</short_desc>
+      <long_desc>This vehicle is always tracked. Use 0 to disable.</long_desc>
+      <min>0</min>
+      <max>16777215</max>
+      <reboot_required>false</reboot_required>
+    </parameter>
+    <parameter name="ADSB_IDENT" default="0" type="INT32" boolean="true">
+      <short_desc>ADSB-Out Ident Configuration</short_desc>
+      <long_desc>Enable Identification of Position feature</long_desc>
+      <reboot_required>false</reboot_required>
+    </parameter>
+    <parameter name="ADSB_LEN_WIDTH" default="1" type="INT32">
+      <short_desc>ADSB-Out Vehicle Size Configuration</short_desc>
+      <long_desc>Report the length and width of the vehicle in meters. In most cases, use '1' for the smallest vehicle size.</long_desc>
+      <min>0</min>
+      <max>15</max>
+      <reboot_required>true</reboot_required>
+      <values>
+        <value code="0">SizeUnknown</value>
+        <value code="1">Len15_Wid23</value>
+        <value code="2">Len25_Wid28</value>
+        <value code="3">Len25_Wid34</value>
+        <value code="4">Len35_Wid33</value>
+        <value code="5">Len35_Wid38</value>
+        <value code="6">Len45_Wid39</value>
+        <value code="7">Len45_Wid45</value>
+        <value code="8">Len55_Wid45</value>
+        <value code="9">Len55_Wid52</value>
+        <value code="10">Len65_Wid59</value>
+        <value code="11">Len65_Wid67</value>
+        <value code="12">Len75_Wid72</value>
+        <value code="13">Len75_Wid80</value>
+        <value code="14">Len85_Wid80</value>
+        <value code="15">Len85_Wid90</value>
+      </values>
+    </parameter>
+    <parameter name="ADSB_LIST_MAX" default="25" type="INT32">
+      <short_desc>ADSB-In Vehicle List Size</short_desc>
+      <long_desc>Change number of targets to track</long_desc>
+      <min>0</min>
+      <max>50</max>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="ADSB_MAX_SPEED" default="0" type="INT32">
+      <short_desc>ADSB-Out Vehicle Max Speed</short_desc>
+      <long_desc>Informs ADSB vehicles of this vehicle's max speed capability</long_desc>
+      <min>0</min>
+      <max>6</max>
+      <reboot_required>true</reboot_required>
+      <values>
+        <value code="0">UnknownMaxSpeed</value>
+        <value code="1">75Kts</value>
+        <value code="2">150Kts</value>
+        <value code="3">300Kts</value>
+        <value code="4">600Kts</value>
+        <value code="5">1200Kts</value>
+        <value code="6">Over1200Kts</value>
+      </values>
+    </parameter>
+    <parameter name="ADSB_SQUAWK" default="1200" type="INT32">
+      <short_desc>ADSB-Out squawk code configuration</short_desc>
+      <long_desc>This parameter defines the squawk code. Value should be between 0000 and 7777.</long_desc>
+      <min>0</min>
+      <max>7777</max>
+      <reboot_required>false</reboot_required>
+    </parameter>
+  </group>
+  <group name="Battery Calibration">
+    <parameter name="BAT1_CAPACITY" default="-1.0" type="FLOAT">
+      <short_desc>Battery 1 capacity</short_desc>
+      <long_desc>Defines the capacity of battery 1 in mAh.</long_desc>
+      <min>-1.0</min>
+      <max>100000</max>
+      <unit>mAh</unit>
+      <decimal>0</decimal>
+      <increment>50</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT1_N_CELLS" default="0" type="INT32">
+      <short_desc>Number of cells for battery 1</short_desc>
+      <long_desc>Defines the number of cells the attached battery consists of.</long_desc>
+      <values>
+        <value code="0">Unknown</value>
+        <value code="1">1S Battery</value>
+        <value code="2">2S Battery</value>
+        <value code="3">3S Battery</value>
+        <value code="4">4S Battery</value>
+        <value code="5">5S Battery</value>
+        <value code="6">6S Battery</value>
+        <value code="7">7S Battery</value>
+        <value code="8">8S Battery</value>
+        <value code="9">9S Battery</value>
+        <value code="10">10S Battery</value>
+        <value code="11">11S Battery</value>
+        <value code="12">12S Battery</value>
+        <value code="13">13S Battery</value>
+        <value code="14">14S Battery</value>
+        <value code="15">15S Battery</value>
+        <value code="16">16S Battery</value>
+      </values>
+    </parameter>
+    <parameter name="BAT1_R_INTERNAL" default="-1.0" type="FLOAT">
+      <short_desc>Explicitly defines the per cell internal resistance for battery 1</short_desc>
+      <long_desc>If non-negative, then this will be used instead of the online estimated internal resistance.</long_desc>
+      <min>-1.0</min>
+      <max>0.2</max>
+      <unit>Ohm</unit>
+      <decimal>4</decimal>
+      <increment>0.0005</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT1_SOURCE" default="0" type="INT32">
+      <short_desc>Battery 1 monitoring source</short_desc>
+      <long_desc>This parameter controls the source of battery data. The value 'Power Module'
+means that measurements are expected to come from a power module. If the value is set to
+'External' then the system expects to receive mavlink battery status messages.
+If the value is set to 'ESCs', the battery information are taken from the esc_status message.
+This requires the ESC to provide both voltage as well as current.</long_desc>
+      <reboot_required>True</reboot_required>
+      <values>
+        <value code="-1">Disabled</value>
+        <value code="0">Power Module</value>
+        <value code="1">External</value>
+        <value code="2">ESCs</value>
+      </values>
+    </parameter>
+    <parameter name="BAT1_V_CHARGED" default="4.05" type="FLOAT">
+      <short_desc>Full cell voltage</short_desc>
+      <long_desc>Defines the voltage where a single cell of the battery is considered full.
+For a more accurate estimate set this below the nominal voltage of e.g. 4.2V</long_desc>
+      <unit>V</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT1_V_EMPTY" default="3.6" type="FLOAT">
+      <short_desc>Empty cell voltage</short_desc>
+      <long_desc>Defines the voltage where a single cell of the battery is considered empty.
+The voltage should be chosen above the steep dropoff at 3.5V. A typical
+lithium battery can only be discharged under high load down to 10% before
+it drops off to a voltage level damaging the cells.</long_desc>
+      <unit>V</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT2_CAPACITY" default="-1.0" type="FLOAT">
+      <short_desc>Battery 2 capacity</short_desc>
+      <long_desc>Defines the capacity of battery 2 in mAh.</long_desc>
+      <min>-1.0</min>
+      <max>100000</max>
+      <unit>mAh</unit>
+      <decimal>0</decimal>
+      <increment>50</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT2_N_CELLS" default="0" type="INT32">
+      <short_desc>Number of cells for battery 2</short_desc>
+      <long_desc>Defines the number of cells the attached battery consists of.</long_desc>
+      <values>
+        <value code="0">Unknown</value>
+        <value code="1">1S Battery</value>
+        <value code="2">2S Battery</value>
+        <value code="3">3S Battery</value>
+        <value code="4">4S Battery</value>
+        <value code="5">5S Battery</value>
+        <value code="6">6S Battery</value>
+        <value code="7">7S Battery</value>
+        <value code="8">8S Battery</value>
+        <value code="9">9S Battery</value>
+        <value code="10">10S Battery</value>
+        <value code="11">11S Battery</value>
+        <value code="12">12S Battery</value>
+        <value code="13">13S Battery</value>
+        <value code="14">14S Battery</value>
+        <value code="15">15S Battery</value>
+        <value code="16">16S Battery</value>
+      </values>
+    </parameter>
+    <parameter name="BAT2_R_INTERNAL" default="-1.0" type="FLOAT">
+      <short_desc>Explicitly defines the per cell internal resistance for battery 2</short_desc>
+      <long_desc>If non-negative, then this will be used instead of the online estimated internal resistance.</long_desc>
+      <min>-1.0</min>
+      <max>0.2</max>
+      <unit>Ohm</unit>
+      <decimal>4</decimal>
+      <increment>0.0005</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT2_SOURCE" default="-1" type="INT32">
+      <short_desc>Battery 2 monitoring source</short_desc>
+      <long_desc>This parameter controls the source of battery data. The value 'Power Module'
+means that measurements are expected to come from a power module. If the value is set to
+'External' then the system expects to receive mavlink battery status messages.
+If the value is set to 'ESCs', the battery information are taken from the esc_status message.
+This requires the ESC to provide both voltage as well as current.</long_desc>
+      <reboot_required>True</reboot_required>
+      <values>
+        <value code="-1">Disabled</value>
+        <value code="0">Power Module</value>
+        <value code="1">External</value>
+        <value code="2">ESCs</value>
+      </values>
+    </parameter>
+    <parameter name="BAT2_V_CHARGED" default="4.05" type="FLOAT">
+      <short_desc>Full cell voltage</short_desc>
+      <long_desc>Defines the voltage where a single cell of the battery is considered full.
+For a more accurate estimate set this below the nominal voltage of e.g. 4.2V</long_desc>
+      <unit>V</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT2_V_EMPTY" default="3.6" type="FLOAT">
+      <short_desc>Empty cell voltage</short_desc>
+      <long_desc>Defines the voltage where a single cell of the battery is considered empty.
+The voltage should be chosen above the steep dropoff at 3.5V. A typical
+lithium battery can only be discharged under high load down to 10% before
+it drops off to a voltage level damaging the cells.</long_desc>
+      <unit>V</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT3_CAPACITY" default="-1.0" type="FLOAT">
+      <short_desc>Battery 3 capacity</short_desc>
+      <long_desc>Defines the capacity of battery 3 in mAh.</long_desc>
+      <min>-1.0</min>
+      <max>100000</max>
+      <unit>mAh</unit>
+      <decimal>0</decimal>
+      <increment>50</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT3_N_CELLS" default="0" type="INT32">
+      <short_desc>Number of cells for battery 3</short_desc>
+      <long_desc>Defines the number of cells the attached battery consists of.</long_desc>
+      <values>
+        <value code="0">Unknown</value>
+        <value code="1">1S Battery</value>
+        <value code="2">2S Battery</value>
+        <value code="3">3S Battery</value>
+        <value code="4">4S Battery</value>
+        <value code="5">5S Battery</value>
+        <value code="6">6S Battery</value>
+        <value code="7">7S Battery</value>
+        <value code="8">8S Battery</value>
+        <value code="9">9S Battery</value>
+        <value code="10">10S Battery</value>
+        <value code="11">11S Battery</value>
+        <value code="12">12S Battery</value>
+        <value code="13">13S Battery</value>
+        <value code="14">14S Battery</value>
+        <value code="15">15S Battery</value>
+        <value code="16">16S Battery</value>
+      </values>
+    </parameter>
+    <parameter name="BAT3_R_INTERNAL" default="-1.0" type="FLOAT">
+      <short_desc>Explicitly defines the per cell internal resistance for battery 3</short_desc>
+      <long_desc>If non-negative, then this will be used instead of the online estimated internal resistance.</long_desc>
+      <min>-1.0</min>
+      <max>0.2</max>
+      <unit>Ohm</unit>
+      <decimal>4</decimal>
+      <increment>0.0005</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT3_SOURCE" default="-1" type="INT32">
+      <short_desc>Battery 3 monitoring source</short_desc>
+      <long_desc>This parameter controls the source of battery data. The value 'Power Module'
+means that measurements are expected to come from a power module. If the value is set to
+'External' then the system expects to receive mavlink battery status messages.
+If the value is set to 'ESCs', the battery information are taken from the esc_status message.
+This requires the ESC to provide both voltage as well as current.</long_desc>
+      <reboot_required>True</reboot_required>
+      <values>
+        <value code="-1">Disabled</value>
+        <value code="0">Power Module</value>
+        <value code="1">External</value>
+        <value code="2">ESCs</value>
+      </values>
+    </parameter>
+    <parameter name="BAT3_V_CHARGED" default="4.05" type="FLOAT">
+      <short_desc>Full cell voltage</short_desc>
+      <long_desc>Defines the voltage where a single cell of the battery is considered full.
+For a more accurate estimate set this below the nominal voltage of e.g. 4.2V</long_desc>
+      <unit>V</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT3_V_EMPTY" default="3.6" type="FLOAT">
+      <short_desc>Empty cell voltage</short_desc>
+      <long_desc>Defines the voltage where a single cell of the battery is considered empty.
+The voltage should be chosen above the steep dropoff at 3.5V. A typical
+lithium battery can only be discharged under high load down to 10% before
+it drops off to a voltage level damaging the cells.</long_desc>
+      <unit>V</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="BAT_AVRG_CURRENT" default="15" type="FLOAT">
+      <short_desc>Expected battery current in flight</short_desc>
+      <long_desc>This value is used to initialize the in-flight average current estimation,
+which in turn is used for estimating remaining flight time and RTL triggering.</long_desc>
+      <min>0</min>
+      <max>500</max>
+      <unit>A</unit>
+      <decimal>2</decimal>
+      <increment>0.1</increment>
+    </parameter>
+    <parameter name="BAT_CRIT_THR" default="0.07" type="FLOAT">
+      <short_desc>Critical threshold</short_desc>
+      <long_desc>Sets the threshold when the battery will be reported as critically low.
+This has to be lower than the low threshold. This threshold commonly
+will trigger RTL.</long_desc>
+      <min>0.05</min>
+      <max>0.5</max>
+      <unit>norm</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="BAT_EMERGEN_THR" default="0.05" type="FLOAT">
+      <short_desc>Emergency threshold</short_desc>
+      <long_desc>Sets the threshold when the battery will be reported as dangerously low.
+This has to be lower than the critical threshold. This threshold commonly
+will trigger landing.</long_desc>
+      <min>0.03</min>
+      <max>0.5</max>
+      <unit>norm</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="BAT_LOW_THR" default="0.15" type="FLOAT">
+      <short_desc>Low threshold</short_desc>
+      <long_desc>Sets the threshold when the battery will be reported as low.
+This has to be higher than the critical threshold.</long_desc>
+      <min>0.12</min>
+      <max>0.5</max>
+      <unit>norm</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+  </group>
+  <group name="Circuit Breaker">
+    <parameter name="CBRK_BUZZER" default="0" type="INT32" category="Developer">
+      <short_desc>Circuit breaker for disabling buzzer</short_desc>
+      <long_desc>Setting this parameter to 782097 will disable the buzzer audio notification.
+Setting this parameter to 782090 will disable the startup tune, while keeping
+all others enabled.</long_desc>
+      <min>0</min>
+      <max>782097</max>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="CBRK_FLIGHTTERM" default="121212" type="INT32" category="Developer">
+      <short_desc>Circuit breaker for flight termination</short_desc>
+      <long_desc>Setting this parameter to 121212 will disable the flight termination action if triggered
+by the FailureDetector logic or if FMU is lost.
+This circuit breaker does not affect the RC loss, data link loss, geofence,
+and takeoff failure detection safety logic.</long_desc>
+      <min>0</min>
+      <max>121212</max>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="CBRK_IO_SAFETY" default="22027" type="INT32" category="Developer">
+      <short_desc>Circuit breaker for IO safety</short_desc>
+      <long_desc>Setting this parameter to 22027 will disable IO safety.
+WARNING: ENABLING THIS CIRCUIT BREAKER IS AT OWN RISK</long_desc>
+      <min>0</min>
+      <max>22027</max>
+    </parameter>
+    <parameter name="CBRK_SUPPLY_CHK" default="0" type="INT32" category="Developer">
+      <short_desc>Circuit breaker for power supply check</short_desc>
+      <long_desc>Setting this parameter to 894281 will disable the power valid
+checks in the commander.
+WARNING: ENABLING THIS CIRCUIT BREAKER IS AT OWN RISK</long_desc>
+      <min>0</min>
+      <max>894281</max>
+    </parameter>
+    <parameter name="CBRK_USB_CHK" default="197848" type="INT32" category="Developer">
+      <short_desc>Circuit breaker for USB link check</short_desc>
+      <long_desc>Setting this parameter to 197848 will disable the USB connected
+checks in the commander, setting it to 0 keeps them enabled (recommended).
+We are generally recommending to not fly with the USB link
+connected and production vehicles should set this parameter to
+zero to prevent users from flying USB powered. However, for R&amp;D purposes
+it has proven over the years to work just fine.</long_desc>
+      <min>0</min>
+      <max>197848</max>
+    </parameter>
+    <parameter name="CBRK_VTOLARMING" default="0" type="INT32" category="Developer">
+      <short_desc>Circuit breaker for arming in fixed-wing mode check</short_desc>
+      <long_desc>Setting this parameter to 159753 will enable arming in fixed-wing
+mode for VTOLs.
+WARNING: ENABLING THIS CIRCUIT BREAKER IS AT OWN RISK</long_desc>
+      <min>0</min>
+      <max>159753</max>
+    </parameter>
+  </group>
+  <group name="FW Performance">
+    <parameter name="FW_AIRSPD_FLP_SC" default="1." type="FLOAT">
+      <short_desc>Airspeed scale with full flaps</short_desc>
+      <long_desc>Factor applied to the minimum and stall airspeed when flaps are fully deployed.</long_desc>
+      <min>0.5</min>
+      <max>1</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="FW_AIRSPD_MAX" default="20.0" type="FLOAT">
+      <short_desc>Maximum Airspeed (CAS)</short_desc>
+      <long_desc>The maximal airspeed (calibrated airspeed) the user is able to command.</long_desc>
+      <min>0.5</min>
+      <unit>m/s</unit>
+      <decimal>1</decimal>
+      <increment>0.5</increment>
+    </parameter>
+    <parameter name="FW_AIRSPD_MIN" default="10.0" type="FLOAT">
+      <short_desc>Minimum Airspeed (CAS)</short_desc>
+      <long_desc>The minimal airspeed (calibrated airspeed) the user is able to command.
+Further, if the airspeed falls below this value, the TECS controller will try to
+increase airspeed more aggressively.
+Has to be set according to the vehicle's stall speed (which should be set in FW_AIRSPD_STALL),
+with some margin between the stall speed and minimum airspeed.
+This value corresponds to the desired minimum speed with the default load factor (level flight, default weight),
+and is automatically adpated to the current load factor (calculated from roll setpoint and WEIGHT_GROSS/WEIGHT_BASE).</long_desc>
+      <min>0.5</min>
+      <unit>m/s</unit>
+      <decimal>1</decimal>
+      <increment>0.5</increment>
+    </parameter>
+    <parameter name="FW_AIRSPD_STALL" default="7.0" type="FLOAT">
+      <short_desc>Stall Airspeed (CAS)</short_desc>
+      <long_desc>The stall airspeed (calibrated airspeed) of the vehicle.
+It is used for airspeed sensor failure detection and for the control
+surface scaling airspeed limits.</long_desc>
+      <min>0.5</min>
+      <unit>m/s</unit>
+      <decimal>1</decimal>
+      <increment>0.5</increment>
+    </parameter>
+    <parameter name="FW_AIRSPD_TRIM" default="15.0" type="FLOAT">
+      <short_desc>Trim (Cruise) Airspeed</short_desc>
+      <long_desc>The trim CAS (calibrated airspeed) of the vehicle. If an airspeed controller is active,
+this is the default airspeed setpoint that the controller will try to achieve.
+This value corresponds to the trim airspeed with the default load factor (level flight, default weight).</long_desc>
+      <min>0.5</min>
+      <unit>m/s</unit>
+      <decimal>1</decimal>
+      <increment>0.5</increment>
+    </parameter>
+    <parameter name="FW_SERVICE_CEIL" default="-1.0" type="FLOAT">
+      <short_desc>Service ceiling</short_desc>
+      <long_desc>Altitude in standard atmosphere at which the vehicle in normal configuration (WEIGHT_BASE) is still able to achieve a maximum climb rate of
+0.5m/s at maximum throttle (FW_THR_MAX). Used to compensate for air density in FW_T_CLMB_MAX.
+Set negative to disable.</long_desc>
+      <min>-1.0</min>
+      <unit>m</unit>
+      <decimal>0</decimal>
+      <increment>1.0</increment>
+    </parameter>
+    <parameter name="FW_THR_ASPD_MAX" default="0." type="FLOAT">
+      <short_desc>Throttle at max airspeed</short_desc>
+      <long_desc>Required throttle (at sea level, standard atmosphere) for level flight at maximum airspeed FW_AIRSPD_MAX
+Set to 0 to disable mapping of airspeed to trim throttle.</long_desc>
+      <min>0</min>
+      <max>1</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="FW_THR_ASPD_MIN" default="0." type="FLOAT">
+      <short_desc>Throttle at min airspeed</short_desc>
+      <long_desc>Required throttle (at sea level, standard atmosphere) for level flight at minimum airspeed FW_AIRSPD_MIN
+Set to 0 to disable mapping of airspeed to trim throttle below FW_AIRSPD_TRIM.</long_desc>
+      <min>0</min>
+      <max>1</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="FW_THR_TRIM" default="0.6" type="FLOAT">
+      <short_desc>Trim throttle</short_desc>
+      <long_desc>Required throttle (at sea level, standard atmosphere) for level flight at FW_AIRSPD_TRIM</long_desc>
+      <min>0.0</min>
+      <max>1.0</max>
+      <unit>norm</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="FW_T_CLMB_MAX" default="5.0" type="FLOAT">
+      <short_desc>Maximum climb rate</short_desc>
+      <long_desc>This is the maximum calibrated climb rate that the aircraft can achieve with
+the throttle set to FW_THR_MAX and the airspeed set to the
+trim value. For electric aircraft make sure this number can be
+achieved towards the end of flight when the battery voltage has reduced.</long_desc>
+      <min>1.0</min>
+      <unit>m/s</unit>
+      <decimal>1</decimal>
+      <increment>0.5</increment>
+    </parameter>
+    <parameter name="FW_T_SINK_MIN" default="2.0" type="FLOAT">
+      <short_desc>Minimum descent rate</short_desc>
+      <long_desc>This is the minimum calibrated sink rate of the aircraft with the throttle
+set to THR_MIN and flown at the same airspeed as used
+to measure FW_T_CLMB_MAX.</long_desc>
+      <min>1.0</min>
+      <unit>m/s</unit>
+      <decimal>1</decimal>
+      <increment>0.5</increment>
+    </parameter>
+    <parameter name="WEIGHT_BASE" default="-1.0" type="FLOAT">
+      <short_desc>Vehicle base weight</short_desc>
+      <long_desc>This is the weight of the vehicle at which it's performance limits were derived. A zero or negative value
+disables trim throttle and minimum airspeed compensation based on weight.</long_desc>
+      <unit>kg</unit>
+      <decimal>1</decimal>
+      <increment>0.5</increment>
+    </parameter>
+    <parameter name="WEIGHT_GROSS" default="-1.0" type="FLOAT">
+      <short_desc>Vehicle gross weight</short_desc>
+      <long_desc>This is the actual weight of the vehicle at any time. This value will differ from WEIGHT_BASE in case weight was added
+or removed from the base weight. Examples are the addition of payloads or larger batteries. A zero or negative value
+disables trim throttle and minimum airspeed compensation based on weight.</long_desc>
+      <unit>kg</unit>
+      <decimal>1</decimal>
+      <increment>0.1</increment>
+    </parameter>
+  </group>
+  <group name="Mixer Output">
+    <parameter name="MC_AIRMODE" default="0" type="INT32">
+      <short_desc>Multicopter air-mode</short_desc>
+      <long_desc>The air-mode enables the mixer to increase the total thrust of the multirotor
+in order to keep attitude and rate control even at low and high throttle.
+This function should be disabled during tuning as it will help the controller
+to diverge if the closed-loop is unstable (i.e. the vehicle is not tuned yet).
+Enabling air-mode for yaw requires the use of an arming switch.</long_desc>
+      <values>
+        <value code="0">Disabled</value>
+        <value code="1">Roll/Pitch</value>
+        <value code="2">Roll/Pitch/Yaw</value>
+      </values>
+    </parameter>
+  </group>
+  <group name="Multicopter Position Control">
+    <parameter name="CP_DELAY" default="0.4" type="FLOAT">
+      <short_desc>Average delay of the range sensor message plus the tracking delay of the position controller in seconds</short_desc>
+      <long_desc>Only used in Position mode.</long_desc>
+      <min>0</min>
+      <max>1</max>
+      <unit>s</unit>
+    </parameter>
+    <parameter name="CP_DIST" default="-1.0" type="FLOAT">
+      <short_desc>Minimum distance the vehicle should keep to all obstacles</short_desc>
+      <long_desc>Only used in Position mode. Collision avoidance is disabled by setting this parameter to a negative value</long_desc>
+      <min>-1</min>
+      <max>15</max>
+      <unit>m</unit>
+    </parameter>
+    <parameter name="CP_GO_NO_DATA" default="0" type="INT32" boolean="true">
+      <short_desc>Boolean to allow moving into directions where there is no sensor data (outside FOV)</short_desc>
+      <long_desc>Only used in Position mode.</long_desc>
+    </parameter>
+    <parameter name="CP_GUIDE_ANG" default="30." type="FLOAT">
+      <short_desc>Angle left/right from the commanded setpoint by which the collision prevention algorithm can choose to change the setpoint direction</short_desc>
+      <long_desc>Only used in Position mode.</long_desc>
+      <min>0</min>
+      <max>90</max>
+      <unit>deg</unit>
+    </parameter>
+    <parameter name="WV_EN" default="0" type="INT32" boolean="true">
+      <short_desc>Enable weathervane</short_desc>
+    </parameter>
+    <parameter name="WV_ROLL_MIN" default="1.0" type="FLOAT">
+      <short_desc>Minimum roll angle setpoint for weathervane controller to demand a yaw-rate</short_desc>
+      <min>0</min>
+      <max>5</max>
+      <unit>deg</unit>
+    </parameter>
+    <parameter name="WV_YRATE_MAX" default="90.0" type="FLOAT">
+      <short_desc>Maximum yawrate the weathervane controller is allowed to demand</short_desc>
+      <min>0</min>
+      <max>120</max>
+      <unit>deg/s</unit>
+    </parameter>
+  </group>
+  <group name="PWM Outputs">
+    <parameter name="THR_MDL_FAC" default="0.0" type="FLOAT">
+      <short_desc>Thrust to motor control signal model parameter</short_desc>
+      <long_desc>Parameter used to model the nonlinear relationship between
+motor control signal (e.g. PWM) and static thrust.
+The model is: rel_thrust = factor * rel_signal^2 + (1-factor) * rel_signal,
+where rel_thrust is the normalized thrust between 0 and 1, and
+rel_signal is the relative motor control signal between 0 and 1.</long_desc>
+      <min>0.0</min>
+      <max>1.0</max>
+      <decimal>1</decimal>
+      <increment>0.1</increment>
+    </parameter>
+  </group>
+  <group name="Pure Pursuit">
+    <parameter name="PP_LOOKAHD_GAIN" default="1.0" type="FLOAT">
+      <short_desc>Tuning parameter for the pure pursuit controller</short_desc>
+      <long_desc>Lower value -&gt; More aggressive controller (beware overshoot/oscillations)</long_desc>
+      <min>0.1</min>
+      <max>100</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="PP_LOOKAHD_MAX" default="10.0" type="FLOAT">
+      <short_desc>Maximum lookahead distance for the pure pursuit controller</short_desc>
+      <min>0.1</min>
+      <max>100</max>
+      <unit>m</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="PP_LOOKAHD_MIN" default="1.0" type="FLOAT">
+      <short_desc>Minimum lookahead distance for the pure pursuit controller</short_desc>
+      <min>0.1</min>
+      <max>100</max>
+      <unit>m</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+  </group>
+  <group name="Rover Attitude Control">
+    <parameter name="RO_YAW_P" default="0." type="FLOAT">
+      <short_desc>Proportional gain for closed loop yaw controller</short_desc>
+      <min>0</min>
+      <max>100</max>
+      <decimal>3</decimal>
+      <increment>0.01</increment>
+    </parameter>
+  </group>
+  <group name="Rover Rate Control">
+    <parameter name="RO_YAW_ACCEL_LIM" default="-1." type="FLOAT">
+      <short_desc>Yaw acceleration limit</short_desc>
+      <long_desc>Used to cap how quickly the magnitude of yaw rate setpoints can increase.
+Set to -1 to disable.</long_desc>
+      <min>-1</min>
+      <max>10000</max>
+      <unit>deg/s^2</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_DECEL_LIM" default="-1." type="FLOAT">
+      <short_desc>Yaw deceleration limit</short_desc>
+      <long_desc>Used to cap how quickly the magnitude of yaw rate setpoints can decrease.
+Set to -1 to disable.</long_desc>
+      <min>-1</min>
+      <max>10000</max>
+      <unit>deg/s^2</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_EXPO" default="0." type="FLOAT">
+      <short_desc>Yaw rate expo factor</short_desc>
+      <long_desc>Exponential factor for tuning the input curve shape.
+0 Purely linear input curve
+1 Purely cubic input curve</long_desc>
+      <min>0</min>
+      <max>1</max>
+      <decimal>2</decimal>
+    </parameter>
+    <parameter name="RO_YAW_RATE_CORR" default="1." type="FLOAT">
+      <short_desc>Yaw rate correction factor</short_desc>
+      <long_desc>Multiplicative correction factor for the feedforward mapping of the yaw rate controller.
+Increase this value (x &gt; 1) if the measured yaw rate is lower than the setpoint, decrease (0 &lt; x &lt; 1) otherwise.
+Note: Tuning this is particularly useful for skid-steered rovers, or rovers with misaligned wheels/steering axes
+that cause a lot of friction when turning.</long_desc>
+      <min>0.01</min>
+      <max>10000</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_RATE_I" default="0." type="FLOAT">
+      <short_desc>Integral gain for closed loop yaw rate controller</short_desc>
+      <min>0</min>
+      <max>100</max>
+      <decimal>3</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_RATE_LIM" default="0." type="FLOAT">
+      <short_desc>Yaw rate limit</short_desc>
+      <long_desc>Used to cap yaw rate setpoints and map controller inputs to yaw rate setpoints
+in Acro, Stabilized and Position mode.</long_desc>
+      <min>0</min>
+      <max>10000</max>
+      <unit>deg/s</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_RATE_P" default="0." type="FLOAT">
+      <short_desc>Proportional gain for closed loop yaw rate controller</short_desc>
+      <min>0</min>
+      <max>100</max>
+      <decimal>3</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_RATE_TH" default="3." type="FLOAT">
+      <short_desc>Yaw rate measurement threshold</short_desc>
+      <long_desc>The minimum threshold for the yaw rate measurement not to be interpreted as zero.</long_desc>
+      <min>0</min>
+      <max>100</max>
+      <unit>deg/s</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_STICK_DZ" default="0.1" type="FLOAT">
+      <short_desc>Yaw stick deadzone</short_desc>
+      <long_desc>Percentage of stick input range that will be interpreted as zero around the stick centered value.</long_desc>
+      <min>0</min>
+      <max>1</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_SUPEXPO" default="0." type="FLOAT">
+      <short_desc>Yaw rate super expo factor</short_desc>
+      <long_desc>"Superexponential" factor for refining the input curve shape tuned using RO_YAW_EXPO.
+0 Pure Expo function
+0.7 reasonable shape enhancement for intuitive stick feel
+0.95 very strong bent input curve only near maxima have effect</long_desc>
+      <min>0</min>
+      <max>0.95</max>
+      <decimal>2</decimal>
+    </parameter>
+  </group>
+  <group name="Rover Velocity Control">
+    <parameter name="RO_ACCEL_LIM" default="-1." type="FLOAT">
+      <short_desc>Acceleration limit</short_desc>
+      <long_desc>Set to -1 to disable.
+For mecanum rovers this limit is used for longitudinal and lateral acceleration.</long_desc>
+      <min>-1</min>
+      <max>100</max>
+      <unit>m/s^2</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_DECEL_LIM" default="-1." type="FLOAT">
+      <short_desc>Deceleration limit</short_desc>
+      <long_desc>Set to -1 to disable.
+Note that if it is disabled the rover will not slow down when approaching waypoints in auto modes.
+For mecanum rovers this limit is used for longitudinal and lateral deceleration.</long_desc>
+      <min>-1</min>
+      <max>100</max>
+      <unit>m/s^2</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_JERK_LIM" default="-1." type="FLOAT">
+      <short_desc>Jerk limit</short_desc>
+      <long_desc>Set to -1 to disable.
+Note that if it is disabled the rover will not slow down when approaching waypoints in auto modes.
+For mecanum rovers this limit is used for longitudinal and lateral jerk.</long_desc>
+      <min>-1</min>
+      <max>100</max>
+      <unit>m/s^3</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_MAX_THR_SPEED" default="0." type="FLOAT">
+      <short_desc>Speed the rover drives at maximum throttle</short_desc>
+      <long_desc>Used to linearly map speeds [m/s] to throttle values [-1. 1].</long_desc>
+      <min>0</min>
+      <max>100</max>
+      <unit>m/s</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_SPEED_I" default="0." type="FLOAT">
+      <short_desc>Integral gain for ground speed controller</short_desc>
+      <min>0</min>
+      <max>100</max>
+      <decimal>3</decimal>
+      <increment>0.001</increment>
+    </parameter>
+    <parameter name="RO_SPEED_LIM" default="-1." type="FLOAT">
+      <short_desc>Speed limit</short_desc>
+      <long_desc>Used to cap speed setpoints and map controller inputs to speed setpoints in Position mode.</long_desc>
+      <min>-1</min>
+      <max>100</max>
+      <unit>m/s</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_SPEED_P" default="0." type="FLOAT">
+      <short_desc>Proportional gain for ground speed controller</short_desc>
+      <min>0</min>
+      <max>100</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_SPEED_RED" default="-1." type="FLOAT">
+      <short_desc>Tuning parameter for the speed reduction based on the course error</short_desc>
+      <long_desc>Reduced_speed = RO_MAX_THR_SPEED * (1 - normalized_course_error * RO_SPEED_RED)
+The normalized course error is the angle between the current course and the bearing setpoint
+interpolated from [0, 180] -&gt; [0, 1].
+Higher value -&gt; More speed reduction.
+Note: This is also used to calculate the speed at which the vehicle arrives at a waypoint in auto modes.
+Set to -1 to disable bearing error based speed reduction.</long_desc>
+      <min>-1</min>
+      <max>100</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_SPEED_TH" default="0.1" type="FLOAT">
+      <short_desc>Speed measurement threshold</short_desc>
+      <long_desc>Set to -1 to disable.
+The minimum threshold for the speed measurement not to be interpreted as zero.</long_desc>
+      <min>0</min>
+      <max>100</max>
+      <unit>m/s</unit>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
+  </group>
+  <group name="System">
+    <parameter name="SYS_AUTOCONFIG" default="0" type="INT32">
+      <short_desc>Automatically configure default values</short_desc>
+      <long_desc>Set to 1 to reset parameters on next system startup (setting defaults).
+Platform-specific values are used if available.
+RC* parameters are preserved.</long_desc>
+      <values>
+        <value code="0">Keep parameters</value>
+        <value code="1">Reset parameters to airframe defaults</value>
+      </values>
+    </parameter>
+    <parameter name="SYS_AUTOSTART" default="0" type="INT32">
+      <short_desc>Auto-start script index</short_desc>
+      <long_desc>CHANGING THIS VALUE REQUIRES A RESTART. Defines the auto-start script used to bootstrap the system.</long_desc>
+      <min>0</min>
+      <max>9999999</max>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="SYS_BL_UPDATE" default="0" type="INT32" boolean="true">
+      <short_desc>Bootloader update</short_desc>
+      <long_desc>If enabled, update the bootloader on the next boot.
+WARNING: do not cut the power during an update process, otherwise you will
+have to recover using some alternative method (e.g. JTAG).
+Instructions:
+- Insert an SD card
+- Enable this parameter
+- Reboot the board (plug the power or send a reboot command)
+- Wait until the board comes back up (or at least 2 minutes)
+- If it does not come back, check the file bootlog.txt on the SD card</long_desc>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="SYS_CAL_ACCEL" default="0" type="INT32">
+      <short_desc>Enable auto start of accelerometer thermal calibration at the next power up</short_desc>
+      <long_desc>0 : Set to 0 to do nothing
+1 : Set to 1 to start a calibration at next boot
+This parameter is reset to zero when the temperature calibration starts.
+default (0, no calibration)</long_desc>
+      <min>0</min>
+      <max>1</max>
+    </parameter>
+    <parameter name="SYS_CAL_BARO" default="0" type="INT32">
+      <short_desc>Enable auto start of barometer thermal calibration at the next power up</short_desc>
+      <long_desc>0 : Set to 0 to do nothing
+1 : Set to 1 to start a calibration at next boot
+This parameter is reset to zero when the temperature calibration starts.
+default (0, no calibration)</long_desc>
+      <min>0</min>
+      <max>1</max>
+    </parameter>
+    <parameter name="SYS_CAL_GYRO" default="0" type="INT32">
+      <short_desc>Enable auto start of rate gyro thermal calibration at the next power up</short_desc>
+      <long_desc>0 : Set to 0 to do nothing
+1 : Set to 1 to start a calibration at next boot
+This parameter is reset to zero when the temperature calibration starts.
+default (0, no calibration)</long_desc>
+      <min>0</min>
+      <max>1</max>
+    </parameter>
+    <parameter name="SYS_CAL_TDEL" default="24" type="INT32">
+      <short_desc>Required temperature rise during thermal calibration</short_desc>
+      <long_desc>A temperature increase greater than this value is required during calibration.
+Calibration will complete for each sensor when the temperature increase above the starting temperature exceeds the value set by SYS_CAL_TDEL.
+If the temperature rise is insufficient, the calibration will continue indefinitely and the board will need to be repowered to exit.</long_desc>
+      <min>10</min>
+      <unit>celcius</unit>
+    </parameter>
+    <parameter name="SYS_CAL_TMAX" default="10" type="INT32">
+      <short_desc>Maximum starting temperature for thermal calibration</short_desc>
+      <long_desc>Temperature calibration will not start if the temperature of any sensor is higher than the value set by SYS_CAL_TMAX.</long_desc>
+      <unit>celcius</unit>
+    </parameter>
+    <parameter name="SYS_CAL_TMIN" default="5" type="INT32">
+      <short_desc>Minimum starting temperature for thermal calibration</short_desc>
+      <long_desc>Temperature calibration for each sensor will ignore data if the temperature is lower than the value set by SYS_CAL_TMIN.</long_desc>
+      <unit>celcius</unit>
+    </parameter>
+    <parameter name="SYS_FAC_CAL_MODE" default="0" type="INT32">
+      <short_desc>Enable factory calibration mode</short_desc>
+      <long_desc>If enabled, future sensor calibrations will be stored to /fs/mtd_caldata.
+Note: this is only supported on boards with a separate calibration storage
+/fs/mtd_caldata.</long_desc>
+      <values>
+        <value code="0">Disabled</value>
+        <value code="1">All sensors</value>
+        <value code="2">All sensors except mag</value>
+      </values>
+    </parameter>
+    <parameter name="SYS_FAILURE_EN" default="0" type="INT32" boolean="true">
+      <short_desc>Enable failure injection</short_desc>
+      <long_desc>If enabled allows MAVLink INJECT_FAILURE commands.
+WARNING: the failures can easily cause crashes and are to be used with caution!</long_desc>
+    </parameter>
+    <parameter name="SYS_HAS_BARO" default="1" type="INT32" boolean="true">
+      <short_desc>Control if the vehicle has a barometer</short_desc>
+      <long_desc>Disable this if the board has no barometer, such as some of the Omnibus
+F4 SD variants.
+If disabled, the preflight checks will not check for the presence of a
+barometer.</long_desc>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="SYS_HAS_GPS" default="1" type="INT32" boolean="true">
+      <short_desc>Control if the vehicle has a GPS</short_desc>
+      <long_desc>Disable this if the system has no GPS.
+If disabled, the sensors hub will not process sensor_gps,
+and GPS will not be available for the rest of the system.</long_desc>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="SYS_HAS_MAG" default="1" type="INT32">
+      <short_desc>Control if and how many magnetometers are expected</short_desc>
+      <long_desc>0: System has no magnetometer, preflight checks should pass without one.
+1-N: Require the presence of N magnetometer sensors for check to pass.</long_desc>
+      <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="SYS_HAS_NUM_ASPD" default="0" type="INT32">
+      <short_desc>Control if the vehicle has an airspeed sensor</short_desc>
+      <long_desc>Set this to 0 if the board has no airspeed sensor.
+If set to 0, the preflight checks will not check for the presence of an
+airspeed sensor.</long_desc>
+      <min>0</min>
+      <max>1</max>
+    </parameter>
+    <parameter name="SYS_HAS_NUM_DIST" default="0" type="INT32">
+      <short_desc>Number of distance sensors to check being available</short_desc>
+      <long_desc>The preflight check will fail if fewer than this number of distance sensors with valid data is present.
+Disable the check with 0.</long_desc>
+      <min>0</min>
+      <max>4</max>
+    </parameter>
+    <parameter name="SYS_HAS_NUM_OF" default="0" type="INT32">
+      <short_desc>Number of optical flow sensors required to be available</short_desc>
+      <long_desc>The preflight check will fail if fewer than this number of optical flow sensors with valid data are present.</long_desc>
+      <min>0</min>
+      <max>1</max>
+    </parameter>
+    <parameter name="SYS_HITL" default="0" type="INT32">
+      <short_desc>Enable HITL/SIH mode on next boot</short_desc>
+      <long_desc>While enabled the system will boot in Hardware-In-The-Loop (HITL)
+or Simulation-In-Hardware (SIH) mode and not enable all sensors and checks.
+When disabled the same vehicle can be flown normally.
+Set to 'external HITL', if the system should perform as if it were a real
+vehicle (the only difference to a real system is then only the parameter
+value, which can be used for log analysis).</long_desc>
+      <reboot_required>true</reboot_required>
+      <values>
+        <value code="-1">external HITL</value>
+        <value code="0">HITL and SIH disabled</value>
+        <value code="1">HITL enabled</value>
+        <value code="2">SIH enabled</value>
+      </values>
+    </parameter>
+    <parameter name="SYS_PARAM_VER" default="1" type="INT32">
+      <short_desc>Parameter version</short_desc>
+      <long_desc>This is used internally only: an airframe configuration might set an expected
+parameter version value via PARAM_DEFAULTS_VER. This is checked on bootup
+against SYS_PARAM_VER, and if they do not match, parameters are reset and
+reloaded from the airframe configuration.</long_desc>
+      <min>0</min>
+    </parameter>
+    <parameter name="SYS_RGB_MAXBRT" default="1." type="FLOAT">
+      <short_desc>RGB Led brightness limit</short_desc>
+      <long_desc>Set to 0 to disable, 1 for maximum brightness</long_desc>
+      <unit>%</unit>
+    </parameter>
+  </group>
+  <group name="VTOL Attitude Control">
+    <parameter name="WV_GAIN" default="1.0" type="FLOAT">
+      <short_desc>Weather-vane roll angle to yawrate</short_desc>
+      <long_desc>The desired gain to convert roll sp into yaw rate sp.</long_desc>
+      <min>0.0</min>
+      <max>3.0</max>
+      <unit>Hz</unit>
+      <decimal>3</decimal>
+      <increment>0.01</increment>
+    </parameter>
+  </group>
+</parameters>

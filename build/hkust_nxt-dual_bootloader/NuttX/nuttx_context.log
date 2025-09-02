@@ -1,0 +1,13 @@
+Create version.h
+CP: arch/dummy/Kconfig to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/arch/dummy/dummy_kconfig
+CP: boards/dummy/Kconfig to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/../../../../boards/hkust/nxt-dual/nuttx-config/Kconfig
+LN: platform/board to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/apps/platform/dummy
+LN: include/arch to arch/arm/include
+LN: include/arch/board to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/../../../../boards/hkust/nxt-dual/nuttx-config/include
+LN: drivers/platform to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/drivers/dummy
+LN: include/arch/chip to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/arch/arm/include/stm32h7
+LN: arch/arm/src/chip to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/arch/arm/src/stm32h7
+LN: arch/arm/src/board to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/nuttx/../../../../boards/hkust/nxt-dual/nuttx-config/src
+LN: platform/board to /Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/NuttX/apps/platform/dummy
+Register: sercon
+Register: serdis
