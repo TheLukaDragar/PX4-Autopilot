@@ -1,8 +1,8 @@
 
 
 {
-		"fields": "\u0089 timestamp;\u0086 request_id;\u0086[7] _padding0;",
-		"fields_total_length": 59,
+		"fields": "\u0089 timestamp;\u0088 valid_registrations_mask;\u0086 request_id;\u0086[3] _padding0;",
+		"fields_total_length": 93,
 		"orb_ids": [16],
 		"main_orb_id": 16,
 		"dependencies": [],

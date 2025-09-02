@@ -155,6 +155,7 @@
 		"/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/sensors/vehicle_gps_position/cmake_install.cmake",
 		"/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/sensors/vehicle_magnetometer/cmake_install.cmake",
 		"/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/sensors/vehicle_optical_flow/cmake_install.cmake",
+		"/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/modules/uxrce_dds_client/cmake_install.cmake",
 		"/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/systemcmds/dmesg/cmake_install.cmake",
 		"/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/systemcmds/hardfault_log/cmake_install.cmake",
 		"/Users/carbs/Desktop/PX4-Autopilot/build/matek_f405-hdte_default/src/systemcmds/param/cmake_install.cmake",

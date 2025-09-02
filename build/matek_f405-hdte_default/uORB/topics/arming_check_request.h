@@ -41,7 +41,7 @@
 
 
 #ifndef __cplusplus
-#define ARMING_CHECK_REQUEST_MESSAGE_VERSION 0
+#define ARMING_CHECK_REQUEST_MESSAGE_VERSION 1
 
 #endif
 
@@ -52,12 +52,13 @@ struct __EXPORT arming_check_request_s {
 struct arming_check_request_s {
 #endif
 	uint64_t timestamp;
+	uint32_t valid_registrations_mask;
 	uint8_t request_id;
-	uint8_t _padding0[7]; // required for logger
+	uint8_t _padding0[3]; // required for logger
 
 
 #ifdef __cplusplus
-	static constexpr uint32_t MESSAGE_VERSION = 0;
+	static constexpr uint32_t MESSAGE_VERSION = 1;
 
 #endif
 };
