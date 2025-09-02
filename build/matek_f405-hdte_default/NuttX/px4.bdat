@@ -24,6 +24,7 @@
 { "navigator", SCHED_PRIORITY_DEFAULT, 2048 * (__SIZEOF_POINTER__ >> 2), navigator_main },
 { "rc_update", SCHED_PRIORITY_DEFAULT, 2048 * (__SIZEOF_POINTER__ >> 2), rc_update_main },
 { "sensors", SCHED_PRIORITY_DEFAULT, 2048 * (__SIZEOF_POINTER__ >> 2), sensors_main },
+{ "uxrce_dds_client", SCHED_PRIORITY_DEFAULT, 9000 * (__SIZEOF_POINTER__ >> 2), uxrce_dds_client_main },
 { "dmesg", SCHED_PRIORITY_DEFAULT, 2048 * (__SIZEOF_POINTER__ >> 2), dmesg_main },
 { "hardfault_log", SCHED_PRIORITY_DEFAULT, 4096 * (__SIZEOF_POINTER__ >> 2), hardfault_log_main },
 { "param", SCHED_PRIORITY_DEFAULT, 4096 * (__SIZEOF_POINTER__ >> 2), param_main },

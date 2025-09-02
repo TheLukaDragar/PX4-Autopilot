@@ -1963,7 +1963,7 @@ A negative value disables the check.</long_desc>
       <increment>1</increment>
     </parameter>
     <parameter name="COM_RCL_EXCEPT" default="0" type="INT32">
-      <short_desc>RC loss exceptions</short_desc>
+      <short_desc>Manual control loss exceptions</short_desc>
       <long_desc>Specify modes where manual control loss is ignored and no failsafe is triggered.
 External modes requiring stick input will still failsafe.</long_desc>
       <min>0</min>
@@ -1976,7 +1976,7 @@ External modes requiring stick input will still failsafe.</long_desc>
       </bitmask>
     </parameter>
     <parameter name="COM_RC_ARM_HYST" default="1000" type="INT32">
-      <short_desc>RC input arm/disarm command duration</short_desc>
+      <short_desc>Manual control input arm/disarm command duration</short_desc>
       <long_desc>The default value of 1000 requires the stick to be held in the arm or disarm position for 1 second.</long_desc>
       <min>100</min>
       <max>1500</max>
@@ -2015,8 +2015,8 @@ Ensure the value is not set lower than the update interval of the RC or Joystick
       <increment>0.1</increment>
     </parameter>
     <parameter name="COM_RC_OVERRIDE" default="1" type="INT32">
-      <short_desc>Enable RC stick override of auto and/or offboard modes</short_desc>
-      <long_desc>When RC stick override is enabled, moving the RC sticks more than COM_RC_STICK_OV
+      <short_desc>Enable manual control stick override</short_desc>
+      <long_desc>When enabled, moving the sticks more than COM_RC_STICK_OV
 immediately gives control back to the pilot by switching to Position mode and
 if position is unavailable Altitude mode.
 Note: Only has an effect on multicopters, and VTOLs in multicopter mode.</long_desc>
@@ -2028,7 +2028,7 @@ Note: Only has an effect on multicopters, and VTOLs in multicopter mode.</long_d
       </bitmask>
     </parameter>
     <parameter name="COM_RC_STICK_OV" default="30.0" type="FLOAT">
-      <short_desc>RC stick override threshold</short_desc>
+      <short_desc>Stick override threshold</short_desc>
       <long_desc>If COM_RC_OVERRIDE is enabled and the joystick input is moved more than this threshold
 the autopilot the pilot takes over control.</long_desc>
       <min>5</min>
@@ -2136,10 +2136,9 @@ action will be executed.</long_desc>
       </values>
     </parameter>
     <parameter name="NAV_RCL_ACT" default="2" type="INT32">
-      <short_desc>Set RC loss failsafe mode</short_desc>
-      <long_desc>The RC loss failsafe will only be entered after a timeout,
-set by COM_RC_LOSS_T in seconds. If RC input checks have been disabled
-by setting the COM_RC_IN_MODE param it will not be triggered.</long_desc>
+      <short_desc>Set manual control loss failsafe mode</short_desc>
+      <long_desc>The manual control loss failsafe will only be entered after a timeout,
+set by COM_RC_LOSS_T in seconds.</long_desc>
       <min>1</min>
       <max>6</max>
       <values>
@@ -2188,7 +2187,7 @@ sure to set this high enough so that the motors are always spinning while
 armed.</long_desc>
       <min>0</min>
       <max>1</max>
-      <unit>%</unit>
+      <unit>norm</unit>
       <decimal>2</decimal>
       <increment>0.01</increment>
     </parameter>
@@ -2621,7 +2620,8 @@ heading information, whereas the secondary will act as moving base.
 Modes 1 and 2 require each F9P UART1 to be connected to the Autopilot. In addition, UART2 on the
 F9P units are connected to each other.
 Modes 3 and 4 only require UART1 on each F9P connected to the Autopilot or Can Node. UART RX DMA is required.
-RTK is still possible with this setup.</long_desc>
+RTK is still possible with this setup.
+Mode 6 is intended for use with a ground control station (not necessarily an RTK correction base).</long_desc>
       <min>0</min>
       <max>1</max>
       <reboot_required>true</reboot_required>
@@ -2632,6 +2632,7 @@ RTK is still possible with this setup.</long_desc>
         <value code="3">Heading (Rover With Moving Base UART1 Connected to Autopilot Or Can Node At 921600)</value>
         <value code="4">Moving Base (Moving Base UART1 Connected to Autopilot Or Can Node At 921600)</value>
         <value code="5">Rover with Static Base on UART2 (similar to Default, except coming in on UART2)</value>
+        <value code="6">Ground Control Station (UART2 outputs NMEA)</value>
       </values>
     </parameter>
     <parameter name="GPS_YAW_OFFSET" default="0." type="FLOAT">
@@ -8465,6 +8466,15 @@ Set to -1 to disable.</long_desc>
       <decimal>2</decimal>
       <increment>0.01</increment>
     </parameter>
+    <parameter name="RO_YAW_EXPO" default="0." type="FLOAT">
+      <short_desc>Yaw rate expo factor</short_desc>
+      <long_desc>Exponential factor for tuning the input curve shape.
+0 Purely linear input curve
+1 Purely cubic input curve</long_desc>
+      <min>0</min>
+      <max>1</max>
+      <decimal>2</decimal>
+    </parameter>
     <parameter name="RO_YAW_RATE_CORR" default="1." type="FLOAT">
       <short_desc>Yaw rate correction factor</short_desc>
       <long_desc>Multiplicative correction factor for the feedforward mapping of the yaw rate controller.
@@ -8516,6 +8526,16 @@ in Acro, Stabilized and Position mode.</long_desc>
       <max>1</max>
       <decimal>2</decimal>
       <increment>0.01</increment>
+    </parameter>
+    <parameter name="RO_YAW_SUPEXPO" default="0." type="FLOAT">
+      <short_desc>Yaw rate super expo factor</short_desc>
+      <long_desc>"Superexponential" factor for refining the input curve shape tuned using RO_YAW_EXPO.
+0 Pure Expo function
+0.7 reasonable shape enhancement for intuitive stick feel
+0.95 very strong bent input curve only near maxima have effect</long_desc>
+      <min>0</min>
+      <max>0.95</max>
+      <decimal>2</decimal>
     </parameter>
   </group>
   <group name="Rover Velocity Control">
@@ -8616,6 +8636,20 @@ The minimum threshold for the speed measurement not to be interpreted as zero.</
         <value code="2">XChaCha20</value>
       </values>
     </parameter>
+    <parameter name="SDLOG_BACKEND" default="3" type="INT32">
+      <short_desc>Logging Backend (integer bitmask)</short_desc>
+      <long_desc>If no logging is set the logger will not be started.
+Set bits true to enable:
+0: SD card logging
+1: Mavlink logging</long_desc>
+      <min>0</min>
+      <max>3</max>
+      <reboot_required>true</reboot_required>
+      <bitmask>
+        <bit index="0">SD card logging</bit>
+        <bit index="1">Mavlink logging</bit>
+      </bitmask>
+    </parameter>
     <parameter name="SDLOG_BOOT_BAT" default="0" type="INT32" boolean="true">
       <short_desc>Battery-only Logging</short_desc>
       <long_desc>When enabled, logging will not start from boot if battery power is not detected
@@ -8676,10 +8710,12 @@ the data in the mission log (and more).</long_desc>
     <parameter name="SDLOG_MODE" default="0" type="INT32">
       <short_desc>Logging Mode</short_desc>
       <long_desc>Determines when to start and stop logging. By default, logging is started
-when arming the system, and stopped when disarming.</long_desc>
+when arming the system, and stopped when disarming.
+Note: The logging start/end points that can be configured here only apply to
+SD logging. The mavlink backend is started/stopped independently
+of these points.</long_desc>
       <reboot_required>true</reboot_required>
       <values>
-        <value code="-1">disabled</value>
         <value code="0">when armed until disarm (default)</value>
         <value code="1">from boot until disarm</value>
         <value code="2">from boot until shutdown</value>
@@ -10950,6 +10986,70 @@ reloaded from the airframe configuration.</long_desc>
         <value code="6">UART 6</value>
         <value code="102">TELEM 2</value>
       </values>
+    </parameter>
+  </group>
+  <group name="UXRCE-DDS Client">
+    <parameter name="UXRCE_DDS_CFG" default="0" type="INT32">
+      <short_desc>Serial Configuration for UXRCE-DDS Client</short_desc>
+      <long_desc>Configure on which serial port to run UXRCE-DDS Client.</long_desc>
+      <reboot_required>true</reboot_required>
+      <values>
+        <value code="0">Disabled</value>
+        <value code="6">UART 6</value>
+        <value code="102">TELEM 2</value>
+      </values>
+    </parameter>
+    <parameter name="UXRCE_DDS_DOM_ID" default="0" type="INT32" category="System">
+      <short_desc>uXRCE-DDS domain ID</short_desc>
+      <long_desc>uXRCE-DDS domain ID</long_desc>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="UXRCE_DDS_KEY" default="1" type="INT32" category="System">
+      <short_desc>uXRCE-DDS session key</short_desc>
+      <long_desc>uXRCE-DDS key, must be different from zero.
+In a single agent - multi client configuration, each client
+must have a unique session key.</long_desc>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="UXRCE_DDS_PTCFG" default="0" type="INT32" category="System">
+      <short_desc>uXRCE-DDS participant configuration</short_desc>
+      <long_desc>Set the participant configuration on the Agent's system.
+0: Use the default configuration.
+1: Restrict messages to localhost
+(use in combination with ROS_LOCALHOST_ONLY=1).
+2: Use a custom participant with the profile name "px4_participant".</long_desc>
+      <min>0</min>
+      <max>2</max>
+      <reboot_required>True</reboot_required>
+      <values>
+        <value code="0">Default</value>
+        <value code="1">Localhost-only</value>
+        <value code="2">Custom participant</value>
+      </values>
+    </parameter>
+    <parameter name="UXRCE_DDS_RX_TO" default="-1" type="INT32" category="System">
+      <short_desc>RX rate timeout configuration</short_desc>
+      <long_desc>Specifies after how many seconds without receiving data the DDS connection is reestablished.
+A value less than one disables the RX rate timeout.</long_desc>
+      <unit>s</unit>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="UXRCE_DDS_SYNCC" default="0" type="INT32" boolean="true" category="System">
+      <short_desc>Enable uXRCE-DDS system clock synchronization</short_desc>
+      <long_desc>When enabled along with UXRCE_DDS_SYNCT, uxrce_dds_client will set the system clock using the agents UTC timestamp.</long_desc>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="UXRCE_DDS_SYNCT" default="1" type="INT32" boolean="true" category="System">
+      <short_desc>Enable uXRCE-DDS timestamp synchronization</short_desc>
+      <long_desc>When enabled, uxrce_dds_client will synchronize the timestamps of the incoming and outgoing messages measuring the offset between the Agent OS time and the PX4 time.</long_desc>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="UXRCE_DDS_TX_TO" default="3" type="INT32" category="System">
+      <short_desc>TX rate timeout configuration</short_desc>
+      <long_desc>Specifies after how many seconds without sending data the DDS connection is reestablished.
+A value less than one disables the TX rate timeout.</long_desc>
+      <unit>s</unit>
+      <reboot_required>True</reboot_required>
     </parameter>
   </group>
   <group name="VTOL Attitude Control">

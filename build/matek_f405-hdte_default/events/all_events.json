@@ -1970,7 +1970,7 @@
                   "type": "uint8_t"
                 }
               ],
-              "description": "To arm, at least a data link or manual control (RC) must be present.\n\n<profile name=\"dev\"> This check can be configured via <param>NAV_DLL_ACT</param> parameter.\n</profile>",
+              "description": "To arm, at least a data link or RC must be present.\n\n<profile name=\"dev\"> This check can be configured via <param>NAV_DLL_ACT</param> parameter.\n</profile>",
               "message": "No connection to the ground control station",
               "name": "check_rc_dl_no_dllink"
             },

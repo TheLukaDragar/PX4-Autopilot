@@ -198,3 +198,18 @@ PARAM_DEFINE_INT32(MAV_1_CONFIG, 0);
  */
 PARAM_DEFINE_INT32(MAV_2_CONFIG, 0);
 
+/**
+ * Serial Configuration for UXRCE-DDS Client
+ *
+ * Configure on which serial port to run UXRCE-DDS Client.
+ *
+ * 
+ *
+ * @value 0 Disabled
+ * @value 6 UART 6
+ * @value 102 TELEM 2
+ * @group UXRCE-DDS Client
+ * @reboot_required true
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_CFG, 0);
+
