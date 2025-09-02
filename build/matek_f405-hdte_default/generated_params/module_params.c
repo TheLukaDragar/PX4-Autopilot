@@ -408,7 +408,7 @@ PARAM_DEFINE_FLOAT(BAT_AVRG_CURRENT, 15);
  * @increment 0.01
  * @min 0
  * @max 1
- * @unit %
+ * @unit norm
  */
 PARAM_DEFINE_FLOAT(DSHOT_MIN, 0.055);
 
@@ -7704,3 +7704,101 @@ PARAM_DEFINE_FLOAT(CAL_MAG2_ZCOMP, 0.0);
  * @volatile True
  */
 PARAM_DEFINE_FLOAT(CAL_MAG3_ZCOMP, 0.0);
+
+/**
+ * uXRCE-DDS domain ID
+ *
+ * uXRCE-DDS domain ID
+ *
+ * @group UXRCE-DDS Client
+ * @category System
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_DOM_ID, 0);
+
+/**
+ * uXRCE-DDS session key
+ *
+ * uXRCE-DDS key, must be different from zero.
+ * In a single agent - multi client configuration, each client
+ * must have a unique session key.
+ * 
+ *
+ * @group UXRCE-DDS Client
+ * @category System
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_KEY, 1);
+
+/**
+ * uXRCE-DDS participant configuration
+ *
+ * Set the participant configuration on the Agent's system.
+ * 0: Use the default configuration.
+ * 1: Restrict messages to localhost
+ *    (use in combination with ROS_LOCALHOST_ONLY=1).
+ * 2: Use a custom participant with the profile name "px4_participant".
+ * 
+ *
+ * @group UXRCE-DDS Client
+ * @value 0 Default
+ * @value 1 Localhost-only
+ * @value 2 Custom participant
+ * @category System
+ * @min 0
+ * @max 2
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_PTCFG, 0);
+
+/**
+ * Enable uXRCE-DDS timestamp synchronization
+ *
+ * When enabled, uxrce_dds_client will synchronize the timestamps of the incoming and outgoing messages measuring the offset between the Agent OS time and the PX4 time.
+ *
+ * @group UXRCE-DDS Client
+ * @boolean
+ * @category System
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_SYNCT, 1);
+
+/**
+ * Enable uXRCE-DDS system clock synchronization
+ *
+ * When enabled along with UXRCE_DDS_SYNCT, uxrce_dds_client will set the system clock using the agents UTC timestamp.
+ *
+ * @group UXRCE-DDS Client
+ * @boolean
+ * @category System
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_SYNCC, 0);
+
+/**
+ * TX rate timeout configuration
+ *
+ * Specifies after how many seconds without sending data the DDS connection is reestablished.
+ * A value less than one disables the TX rate timeout.
+ * 
+ *
+ * @group UXRCE-DDS Client
+ * @category System
+ * @unit s
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_TX_TO, 3);
+
+/**
+ * RX rate timeout configuration
+ *
+ * Specifies after how many seconds without receiving data the DDS connection is reestablished.
+ * A value less than one disables the RX rate timeout.
+ * 
+ *
+ * @group UXRCE-DDS Client
+ * @category System
+ * @unit s
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_RX_TO, -1);

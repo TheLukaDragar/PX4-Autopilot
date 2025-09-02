@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_COMMON.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_COMMON_XML_HASH 6648189852665437247
+#define MAVLINK_COMMON_XML_HASH 7193324150349912941
 
 #ifdef __cplusplus
 extern "C" {
@@ -671,6 +671,20 @@ typedef enum PREFLIGHT_STORAGE_MISSION_ACTION
 } PREFLIGHT_STORAGE_MISSION_ACTION;
 #endif
 
+/** @brief Reboot/shutdown action for selected component in MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN. */
+#ifndef HAVE_ENUM_REBOOT_SHUTDOWN_ACTION
+#define HAVE_ENUM_REBOOT_SHUTDOWN_ACTION
+typedef enum REBOOT_SHUTDOWN_ACTION
+{
+   REBOOT_SHUTDOWN_ACTION_NONE=0, /* Do nothing. | */
+   REBOOT_SHUTDOWN_ACTION_REBOOT=1, /* Reboot component. | */
+   REBOOT_SHUTDOWN_ACTION_SHUTDOWN=2, /* Shutdown component. | */
+   REBOOT_SHUTDOWN_ACTION_REBOOT_TO_BOOTLOADER=3, /* Reboot component and keep it in the bootloader until upgraded. | */
+   REBOOT_SHUTDOWN_ACTION_POWER_ON=4, /* Power on component. Do nothing if component is already powered (ACK command with MAV_RESULT_ACCEPTED). | */
+   REBOOT_SHUTDOWN_ACTION_ENUM_END=5, /*  | */
+} REBOOT_SHUTDOWN_ACTION;
+#endif
+
 /** @brief Specifies the conditions under which the MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN command should be accepted. */
 #ifndef HAVE_ENUM_REBOOT_SHUTDOWN_CONDITIONS
 #define HAVE_ENUM_REBOOT_SHUTDOWN_CONDITIONS
@@ -814,7 +828,7 @@ typedef enum MAV_CMD
    MAV_CMD_PREFLIGHT_SET_SENSOR_OFFSETS=242, /* Set sensor offsets. This command will be only accepted if in pre-flight mode. |Sensor to adjust the offsets for: 0: gyros, 1: accelerometer, 2: magnetometer, 3: barometer, 4: optical flow, 5: second magnetometer, 6: third magnetometer| X axis offset (or generic dimension 1), in the sensor's raw units| Y axis offset (or generic dimension 2), in the sensor's raw units| Z axis offset (or generic dimension 3), in the sensor's raw units| Generic dimension 4, in the sensor's raw units| Generic dimension 5, in the sensor's raw units| Generic dimension 6, in the sensor's raw units|  */
    MAV_CMD_PREFLIGHT_UAVCAN=243, /* Trigger UAVCAN configuration (actuator ID assignment and direction mapping). Note that this maps to the legacy UAVCAN v0 function UAVCAN_ENUMERATE, which is intended to be executed just once during initial vehicle configuration (it is not a normal pre-flight command and has been poorly named). |1: Trigger actuator ID assignment and direction mapping. 0: Cancel command.| Reserved| Reserved| Reserved| Reserved| Reserved| Reserved|  */
    MAV_CMD_PREFLIGHT_STORAGE=245, /* Request storage of different parameter values and logs. This command will be only accepted if in pre-flight mode. |Action to perform on the persistent parameter storage| Action to perform on the persistent mission storage| Onboard logging: 0: Ignore, 1: Start default rate logging, -1: Stop logging, > 1: logging rate (e.g. set to 1000 for 1000 Hz logging)| Reserved| Empty| Empty| Empty|  */
-   MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN=246, /* Request the reboot or shutdown of system components. |0: Do nothing for autopilot, 1: Reboot autopilot, 2: Shutdown autopilot, 3: Reboot autopilot and keep it in the bootloader until upgraded.| 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer, 3: Reboot onboard computer and keep it in the bootloader until upgraded.| 0: Do nothing for component, 1: Reboot component, 2: Shutdown component, 3: Reboot component and keep it in the bootloader until upgraded| MAVLink Component ID targeted in param3 (0 for all components).| Reserved (set to 0)| Conditions under which reboot/shutdown is allowed.| WIP: ID (e.g. camera ID -1 for all IDs)|  */
+   MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN=246, /* Request the reboot or shutdown of system components. |Action to take for autopilot.| Action to take for onboard computer.| Action to take for component specified in param4.| MAVLink Component ID targeted in param3 (0 for all components).| Reserved (set to 0)| Conditions under which reboot/shutdown is allowed.| WIP: ID (e.g. camera ID -1 for all IDs)|  */
    MAV_CMD_OVERRIDE_GOTO=252, /* Override current mission with command to pause mission, pause mission and move to position, continue/resume mission. When param 1 indicates that the mission is paused (MAV_GOTO_DO_HOLD), param 2 defines whether it holds in place or moves to another position. |MAV_GOTO_DO_HOLD: pause mission and either hold or move to specified position (depending on param2), MAV_GOTO_DO_CONTINUE: resume mission.| MAV_GOTO_HOLD_AT_CURRENT_POSITION: hold at current position, MAV_GOTO_HOLD_AT_SPECIFIED_POSITION: hold at specified position.| Coordinate frame of hold point.| Desired yaw angle.| Latitude/X position.| Longitude/Y position.| Altitude/Z position.|  */
    MAV_CMD_OBLIQUE_SURVEY=260, /* Mission command to set a Camera Auto Mount Pivoting Oblique Survey (Replaces CAM_TRIGG_DIST for this purpose). The camera is triggered each time this distance is exceeded, then the mount moves to the next position. Params 4~6 set-up the angle limits and number of positions for oblique survey, where mount-enabled vehicles automatically roll the camera between shots to emulate an oblique camera setup (providing an increased HFOV). This command can also be used to set the shutter integration time for the camera. |Camera trigger distance. 0 to stop triggering.| Camera shutter integration time. 0 to ignore| The minimum interval in which the camera is capable of taking subsequent pictures repeatedly. 0 to ignore.| Total number of roll positions at which the camera will capture photos (images captures spread evenly across the limits defined by param5).| Angle limits that the camera can be rolled to left and right of center.| Fixed pitch angle that the camera will hold in oblique mode if the mount is actuated in the pitch axis.| Empty|  */
    MAV_CMD_DO_SET_STANDARD_MODE=262, /* Enable the specified standard MAVLink mode.
@@ -1651,7 +1665,8 @@ typedef enum CAMERA_CAP_FLAGS
    CAMERA_CAP_FLAGS_HAS_TRACKING_RECTANGLE=1024, /* Camera supports tracking of a selection rectangle on the camera view. | */
    CAMERA_CAP_FLAGS_HAS_TRACKING_GEO_STATUS=2048, /* Camera supports tracking geo status (CAMERA_TRACKING_GEO_STATUS). | */
    CAMERA_CAP_FLAGS_HAS_THERMAL_RANGE=4096, /* Camera supports absolute thermal range (request CAMERA_THERMAL_RANGE with MAV_CMD_REQUEST_MESSAGE). | */
-   CAMERA_CAP_FLAGS_ENUM_END=4097, /*  | */
+   CAMERA_CAP_FLAGS_HAS_MTI=8192, /* Camera supports Moving Target Indicators (MTI) on the camera view (using MAV_CMD_CAMERA_START_MTI). | */
+   CAMERA_CAP_FLAGS_ENUM_END=8193, /*  | */
 } CAMERA_CAP_FLAGS;
 #endif
 
@@ -1700,7 +1715,9 @@ typedef enum CAMERA_TRACKING_STATUS_FLAGS
    CAMERA_TRACKING_STATUS_FLAGS_IDLE=0, /* Camera is not tracking | */
    CAMERA_TRACKING_STATUS_FLAGS_ACTIVE=1, /* Camera is tracking | */
    CAMERA_TRACKING_STATUS_FLAGS_ERROR=2, /* Camera tracking in error state | */
-   CAMERA_TRACKING_STATUS_FLAGS_ENUM_END=3, /*  | */
+   CAMERA_TRACKING_STATUS_FLAGS_MTI=4, /* Camera Moving Target Indicators (MTI) are active | */
+   CAMERA_TRACKING_STATUS_FLAGS_COASTING=8, /* Camera tracking target is obscured and is being predicted | */
+   CAMERA_TRACKING_STATUS_FLAGS_ENUM_END=9, /*  | */
 } CAMERA_TRACKING_STATUS_FLAGS;
 #endif
 

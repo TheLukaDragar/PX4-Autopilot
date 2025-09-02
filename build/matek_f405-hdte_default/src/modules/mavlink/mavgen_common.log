@@ -1,5 +1,6 @@
 Validating /Users/carbs/Desktop/PX4-Autopilot/src/modules/mavlink/mavlink/message_definitions/v1.0/common.xml
 Parsing /Users/carbs/Desktop/PX4-Autopilot/src/modules/mavlink/mavlink/message_definitions/v1.0/common.xml
+CAMERA_TRACKING_STATUS_FLAGS_IDLE has invalid values (bitmask must have powers of 2)
 Validating /Users/carbs/Desktop/PX4-Autopilot/src/modules/mavlink/mavlink/message_definitions/v1.0/standard.xml
 Parsing /Users/carbs/Desktop/PX4-Autopilot/src/modules/mavlink/mavlink/message_definitions/v1.0/standard.xml
 MAV_BOOL_FALSE has invalid values (bitmask must have powers of 2)
