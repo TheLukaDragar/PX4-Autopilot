@@ -49,7 +49,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static constexpr char NAMESPACE_PREFIX[] = "uav_";
+static constexpr char NAMESPACE_PREFIX[] = "px4_";
 #define PARTICIPANT_XML_SIZE 512
 static constexpr uint8_t TIMESYNC_MAX_TIMEOUTS = 10;
 
