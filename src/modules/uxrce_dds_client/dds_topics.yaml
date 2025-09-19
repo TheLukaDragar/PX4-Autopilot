@@ -101,6 +101,11 @@ publications:
     type: px4_msgs::msg::Wind
     rate_limit: 1.
 
+  #added by luka ssrd
+  - topic: /fmu/out/obstacle_distance_fused
+    type: px4_msgs::msg::ObstacleDistance
+
+
 # Create uORB::Publication
 subscriptions:
   - topic: /fmu/in/register_ext_component_request

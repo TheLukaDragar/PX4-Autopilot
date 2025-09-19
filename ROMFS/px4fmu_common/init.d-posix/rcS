@@ -194,6 +194,7 @@ param set-default COM_LOW_BAT_ACT 3
 param set-default UXRCE_DDS_AG_IP 2130706433  # 127.0.0.1
 
 
+
 # Adapt timeout parameters if simulation runs faster or slower than realtime.
 if [ -n "$PX4_SIM_SPEED_FACTOR" ]; then
 	COM_DL_LOSS_T_LONGER=$(echo "$PX4_SIM_SPEED_FACTOR * 10" | bc)
