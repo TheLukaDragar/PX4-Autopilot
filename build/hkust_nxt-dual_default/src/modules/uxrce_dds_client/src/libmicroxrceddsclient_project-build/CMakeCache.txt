@@ -32,8 +32,8 @@ CMAKE_AR:FILEPATH=/opt/homebrew/bin/arm-none-eabi-gcc-ar
 //Initial cache
 CMAKE_BUILD_TYPE:STRING=MinSizeRel
 
-//CXX compiler
-CMAKE_CXX_COMPILER:STRING=/opt/homebrew/bin/arm-none-eabi-g++
+//Initial cache
+CMAKE_CXX_COMPILER:FILEPATH=/opt/homebrew/bin/arm-none-eabi-g++
 
 //A wrapper around 'ar' adding the appropriate '--plugin' option
 // for the GCC compiler
@@ -58,8 +58,8 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 //Flags used by the CXX compiler during RELWITHDEBINFO builds.
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
-//C compiler
-CMAKE_C_COMPILER:STRING=/opt/homebrew/bin/arm-none-eabi-gcc
+//Initial cache
+CMAKE_C_COMPILER:FILEPATH=/opt/homebrew/bin/arm-none-eabi-gcc
 
 //A wrapper around 'ar' adding the appropriate '--plugin' option
 // for the GCC compiler
@@ -286,8 +286,8 @@ CMAKE_STRIP:FILEPATH=/opt/homebrew/bin/arm-none-eabi-strip
 //Path to a program.
 CMAKE_TAPI:FILEPATH=CMAKE_TAPI-NOTFOUND
 
-//The CMake toolchain file
-CMAKE_TOOLCHAIN_FILE:FILEPATH=/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/cmake/Toolchain-arm-none-eabi.cmake
+//Initial cache
+CMAKE_TOOLCHAIN_FILE:STRING=/Users/carbs/Desktop/PX4-Autopilot/platforms/nuttx/cmake/Toolchain-arm-none-eabi.cmake
 
 //If this value is on, makefiles will be generated without the
 // .SILENT directive, and all commands will be echoed to the console

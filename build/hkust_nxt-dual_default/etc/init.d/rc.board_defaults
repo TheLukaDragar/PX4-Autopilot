@@ -21,9 +21,16 @@ param set-default SER_TEL2_BAUD 921600
 param set-default UXRCE_DDS_KEY 1
 param set-default UXRCE_DDS_PRT 8888
 param set-default UXRCE_DDS_DOM_ID 0
+param set-default UXRCE_DDS_NS_IDX 0
 param set-default PX4_UXRCE_DDS_NS 1
 param set-default PX4_UXRCE_DDS_PORT 8888
 param set-default RC_PORT_CONFIG 0          # No RC port
-param set-default COM_RC_IN_MODE 4        # No RC input
+param set-default COM_RC_IN_MODE 1       # only joystick
 param set-default COM_ARM_WO_GPS 1          # Allow arming without GPS
 param set-default COM_DISARM_MAN 0
+param set-default CBRK_GPSFAIL 240024
+param set-default MPC_ALT_MODE 0
+param set-default EKF2_GPS_CTRL 0
+param set-default EKF2_HGT_REF 0
+param set-default NAV_RCL_ACT 3
+param set-default COM_RCL_EXCEPT 0

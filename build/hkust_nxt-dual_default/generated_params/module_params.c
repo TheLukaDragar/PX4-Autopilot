@@ -10289,3 +10289,18 @@ PARAM_DEFINE_INT32(UXRCE_DDS_TX_TO, 3);
  * @reboot_required True
  */
 PARAM_DEFINE_INT32(UXRCE_DDS_RX_TO, -1);
+
+/**
+ * Define an index-based message namespace
+ *
+ * Defines an index-based namespace for DDS messages, e.g, px4_0, px4_1, up to px4_9999
+ * A value less than zero leaves the namespace empty
+ * 
+ *
+ * @group UXRCE-DDS Client
+ * @category System
+ * @min -1
+ * @max 9999
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(UXRCE_DDS_NS_IDX, -1);
