@@ -15825,6 +15825,14 @@ In a single agent - multi client configuration, each client
 must have a unique session key.</long_desc>
       <reboot_required>True</reboot_required>
     </parameter>
+    <parameter name="UXRCE_DDS_NS_IDX" default="-1" type="INT32" category="System">
+      <short_desc>Define an index-based message namespace</short_desc>
+      <long_desc>Defines an index-based namespace for DDS messages, e.g, px4_0, px4_1, up to px4_9999
+A value less than zero leaves the namespace empty</long_desc>
+      <min>-1</min>
+      <max>9999</max>
+      <reboot_required>True</reboot_required>
+    </parameter>
     <parameter name="UXRCE_DDS_PTCFG" default="0" type="INT32" category="System">
       <short_desc>uXRCE-DDS participant configuration</short_desc>
       <long_desc>Set the participant configuration on the Agent's system.

@@ -1743,6 +1743,7 @@ enum class params : uint16_t {
 	UXRCE_DDS_CFG,
 	UXRCE_DDS_DOM_ID,
 	UXRCE_DDS_KEY,
+	UXRCE_DDS_NS_IDX,
 	UXRCE_DDS_PTCFG,
 	UXRCE_DDS_RX_TO,
 	UXRCE_DDS_SYNCC,
@@ -10445,6 +10446,11 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
+		.name = "UXRCE_DDS_NS_IDX",
+		.val = { .i = -1},
+	},
+
+	{
 		.name = "UXRCE_DDS_PTCFG",
 		.val = { .i = 0},
 	},
@@ -12404,6 +12410,7 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
+	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,

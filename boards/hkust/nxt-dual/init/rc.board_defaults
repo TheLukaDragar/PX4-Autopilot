@@ -28,6 +28,7 @@ param set-default SER_TEL2_BAUD 921600
 param set-default UXRCE_DDS_KEY 1
 param set-default UXRCE_DDS_PRT 8888
 param set-default UXRCE_DDS_DOM_ID 0
+param set-default UXRCE_DDS_NS_IDX 0
 param set-default PX4_UXRCE_DDS_NS 1
 param set-default PX4_UXRCE_DDS_PORT 8888
 
@@ -35,9 +36,57 @@ param set-default PX4_UXRCE_DDS_PORT 8888
 
 #param set-default UXRCE_DDS_SYNCT 1
 param set-default RC_PORT_CONFIG 0          # No RC port
-param set-default COM_RC_IN_MODE 4        # No RC input
+param set-default COM_RC_IN_MODE 1       # only joystick
 param set-default COM_ARM_WO_GPS 1          # Allow arming without GPS
 param set-default COM_DISARM_MAN 0
+param set-default CBRK_GPSFAIL 240024
 
+
+#NO GPS
+param set-default MPC_ALT_MODE 0
+param set-default EKF2_GPS_CTRL 0
+param set-default EKF2_HGT_REF 0
+#param set-default EKF2_EVP_NOISE 0.05
+#param set-default EKF2_EVA_NOISE 0.05
+param set-default EKF2_OF_CTRL 0
+
+param set-default NAV_RCL_ACT 3
+param set-default COM_RCL_EXCEPT 0
+
+# LPE: Flow-only mode
+# param set-default LPE_FUSION 144
+# param set-default LPE_FAKE_ORIGIN 1
+
+
+# TF Luna LiDAR Rangefinder Configuration (via distance_sensor topic)
+# Add these parameters to your existing script
+
+# No driver needed - data comes via distance_sensor topic from ROS2
+
+# EKF2 Range Finder Parameters - Optimized for TF-Luna specs
+# param set-default EKF2_RNG_CTRL 2         # Enable conditional range fusion
+# param set-default EKF2_RNG_DELAY 10        # 10ms delay (100Hz = 10ms period)
+# param set-default EKF2_RNG_NOISE 0.06      # 6cm accuracy spec (0.2-3m range)
+# param set-default EKF2_RNG_SFE 0.02        # 2% range-dependent error (3-8m range)
+# param set-default EKF2_RNG_GATE 5.0        # Higher gate for 6cm accuracy
+# param set-default EKF2_RNG_K_GATE 1.0      # Kinematic consistency gate
+
+# # Conditional mode limits - Based on TF-Luna 8m max range
+# param set-default EKF2_RNG_A_HMAX 8.0      # Max height for range aid (TF-Luna max range)
+# param set-default EKF2_RNG_A_VMAX 1.5      # Max velocity for range aid
+
+# # Sensor positioning (adjust based on your mounting)
+# param set-default EKF2_RNG_POS_X 0.0       # Forward offset from CG
+# param set-default EKF2_RNG_POS_Y 0.0       # Right offset from CG
+# param set-default EKF2_RNG_POS_Z 0.05      # Down offset from CG (5cm below)
+
+# # Sensor orientation
+# param set-default EKF2_RNG_PITCH 0.0       # Pitch offset (0 = pointing down)
+
+# # Quality and fog detection
+# param set-default EKF2_RNG_QLTY_T 1.0      # Quality time threshold
+# param set-default EKF2_RNG_FOG 0.0
+# UART configuration not needed - using distance_sensor topic
+# Make sure your ROS2 node publishes to: /fmu/in/distance_sensor
 
 
