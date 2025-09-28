@@ -24,6 +24,15 @@ param set-default UXRCE_DDS_DOM_ID 0
 param set-default UXRCE_DDS_NS_IDX 0
 param set-default PX4_UXRCE_DDS_NS 1
 param set-default PX4_UXRCE_DDS_PORT 8888
+param set-default SER_TEL1_BAUD 115200
+param set-defailt SENS_FLOW_ROT 0
+param set-default EKF2_OF_CTRL 1
+param set-default EKF2_OF_POS_X 0.065
+param set-default EKF2_RNG_CTRL 1 #conditianly! if 1 SET EKF2_RNG_A_HMAX AND OTHERS TOO!
+param set-default EKF2_RNG_POS_X 0.065
+param set-default EKF2_HGT_REF 1 #USE BARO FOR ABS REF!
+param set-default EKF2_RNG_A_HMAX 8.0
+param set-default EKF2_RNG_A_VMAX 5.0
 param set-default RC_PORT_CONFIG 0          # No RC port
 param set-default COM_RC_IN_MODE 1       # only joystick
 param set-default COM_ARM_WO_GPS 1          # Allow arming without GPS
@@ -32,5 +41,6 @@ param set-default CBRK_GPSFAIL 240024
 param set-default MPC_ALT_MODE 0
 param set-default EKF2_GPS_CTRL 0
 param set-default EKF2_HGT_REF 0
+param set-default EKF2_OF_CTRL 0
 param set-default NAV_RCL_ACT 3
 param set-default COM_RCL_EXCEPT 0
