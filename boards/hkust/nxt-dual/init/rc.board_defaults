@@ -50,6 +50,10 @@ param set-default EKF2_RNG_A_VMAX 5.0
 #param set-default UXRCE_DDS_SYNCT 1
 param set-default RC_PORT_CONFIG 0          # No RC port
 param set-default COM_RC_IN_MODE 1       # only joystick
+
+# Configure UART5 (ttyS4) for MAVLink with RF module
+param set-default SER_TEL5_BAUD 57600    # Set baud rate for UART5 MAVLink
+param set-default MAV_0_CONFIG 102       # Enable MAVLink on UART5
 param set-default COM_ARM_WO_GPS 1          # Allow arming without GPS
 param set-default COM_DISARM_MAN 0
 param set-default CBRK_GPSFAIL 240024
