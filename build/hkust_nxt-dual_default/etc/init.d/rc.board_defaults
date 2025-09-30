@@ -25,6 +25,7 @@ param set-default UXRCE_DDS_NS_IDX 0
 param set-default PX4_UXRCE_DDS_NS 1
 param set-default PX4_UXRCE_DDS_PORT 8888
 param set-default SER_TEL1_BAUD 115200
+param set-default MAV_1_CONFIG 101
 param set-defailt SENS_FLOW_ROT 0
 param set-default EKF2_OF_CTRL 1
 param set-default EKF2_OF_POS_X 0.065
@@ -35,6 +36,8 @@ param set-default EKF2_RNG_A_HMAX 8.0
 param set-default EKF2_RNG_A_VMAX 5.0
 param set-default RC_PORT_CONFIG 0          # No RC port
 param set-default COM_RC_IN_MODE 1       # only joystick
+param set-default SER_TEL5_BAUD 57600    # Set baud rate for UART5 MAVLink
+param set-default MAV_0_CONFIG 102       # Enable MAVLink on UART5
 param set-default COM_ARM_WO_GPS 1          # Allow arming without GPS
 param set-default COM_DISARM_MAN 0
 param set-default CBRK_GPSFAIL 240024
