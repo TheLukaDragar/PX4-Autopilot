@@ -102,6 +102,7 @@ struct estimator_status_flags_s {
 	bool cs_gnss_vel;
 	bool cs_gnss_fault;
 	bool cs_yaw_manual;
+	bool cs_gnss_hgt_fault;
 	bool fs_bad_mag_x;
 	bool fs_bad_mag_y;
 	bool fs_bad_mag_z;
@@ -123,6 +124,7 @@ struct estimator_status_flags_s {
 	bool reject_hagl;
 	bool reject_optflow_x;
 	bool reject_optflow_y;
+	uint8_t _padding0[7]; // required for logger
 
 
 #ifdef __cplusplus

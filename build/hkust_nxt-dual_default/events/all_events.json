@@ -184,28 +184,12 @@
         "arm_disarm_reason_t": {
           "description": "Reason for arming/disarming",
           "entries": {
-            "0": {
-              "description": "Transition to standby",
-              "name": "transition_to_standby"
-            },
             "1": {
-              "description": "Stick gesture",
+              "description": "stick gesture",
               "name": "stick_gesture"
             },
-            "10": {
-              "description": "failure detector",
-              "name": "failure_detector"
-            },
-            "11": {
-              "description": "shutdown request",
-              "name": "shutdown"
-            },
-            "12": {
-              "description": "unit tests",
-              "name": "unit_test"
-            },
             "13": {
-              "description": "RC (button)",
+              "description": "RC button",
               "name": "rc_button"
             },
             "14": {
@@ -230,19 +214,15 @@
             },
             "6": {
               "description": "landing",
-              "name": "auto_disarm_land"
+              "name": "landing"
             },
             "7": {
-              "description": "auto preflight disarming",
-              "name": "auto_disarm_preflight"
+              "description": "preflight inaction",
+              "name": "preflight_inaction"
             },
             "8": {
               "description": "kill switch",
               "name": "kill_switch"
-            },
-            "9": {
-              "description": "lockdown",
-              "name": "lockdown"
             }
           },
           "type": "uint8_t"
@@ -1939,29 +1919,6 @@
               "description": "<profile name=\"dev\"> Can be configured with <param>EKF2_GPS_CHECK</param> and <param>COM_ARM_WO_GPS</param>.\n</profile>",
               "message": "GPS Vertical Speed Drift too high",
               "name": "check_estimator_gps_vert_speed_drift_too_high"
-            },
-            "6659180": {
-              "arguments": [
-                {
-                  "name": "modes",
-                  "type": "navigation_mode_group_t"
-                },
-                {
-                  "name": "health_component_index",
-                  "type": "uint8_t"
-                },
-                {
-                  "name": "arg0",
-                  "type": "uint8_t"
-                },
-                {
-                  "name": "arg1",
-                  "type": "uint16_t"
-                }
-              ],
-              "description": "Recalibrate the RC.",
-              "message": "RC calibration for channel {3} invalid: DZ greater than {4}",
-              "name": "check_rc_dz_too_high"
             },
             "6801787": {
               "arguments": [

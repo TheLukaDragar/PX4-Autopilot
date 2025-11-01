@@ -2456,12 +2456,7 @@ Mavlink::mavlink_update_parameters()
 {
 	updateParams();
 
-	int32_t proto = _param_mav_proto_ver.get();
-
-	if (_protocol_version_switch != proto) {
-		_protocol_version_switch = proto;
-		set_proto_version(proto);
-	}
+	setProtocolVersion(_param_mav_proto_ver.get());
 
 	if (_param_mav_type.get() < 0 || _param_mav_type.get() >= MAV_TYPE_ENUM_END) {
 		_param_mav_type.set(0);
@@ -2546,16 +2541,13 @@ Mavlink::set_instance_id()
 	return false;
 }
 
-void
-Mavlink::set_proto_version(unsigned version)
+void Mavlink::setProtocolVersion(uint8_t version)
 {
-	if ((version == 1 || version == 0) &&
-	    ((_protocol_version_switch == 0) || (_protocol_version_switch == 1))) {
+	if (version == 1) {
 		get_status()->flags |= MAVLINK_STATUS_FLAG_OUT_MAVLINK1;
 		_protocol_version = 1;
 
-	} else if (version == 2 &&
-		   ((_protocol_version_switch == 0) || (_protocol_version_switch == 2))) {
+	} else {
 		get_status()->flags &= ~(MAVLINK_STATUS_FLAG_OUT_MAVLINK1);
 		_protocol_version = 2;
 	}
@@ -3425,13 +3417,7 @@ Mavlink::send_protocol_version()
 	//memcpy(&msg.spec_version_hash, &mavlink_spec_git_version_binary, sizeof(msg.spec_version_hash));
 	memcpy(&msg.library_version_hash, &mavlink_lib_git_version_binary, sizeof(msg.library_version_hash));
 
-	// Switch to MAVLink 2
-	int curr_proto_ver = _protocol_version;
-	set_proto_version(2);
-	// Send response - if it passes through the link its fine to use MAVLink 2
 	mavlink_msg_protocol_version_send_struct(get_channel(), &msg);
-	// Reset to previous value
-	set_proto_version(curr_proto_ver);
 }
 
 int
@@ -4029,7 +4015,6 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("DISTANCE_SENSOR", 10.0f);
 		configure_stream_local("MOUNT_ORIENTATION", 10.0f);
 		configure_stream_local("OBSTACLE_DISTANCE", 10.0f);
-		configure_stream_local("ODOMETRY", 30.0f);
 		configure_stream_local("GIMBAL_DEVICE_ATTITUDE_STATUS", 1.0f);
 		configure_stream_local("GIMBAL_MANAGER_STATUS", 0.5f);
 		configure_stream_local("GIMBAL_DEVICE_SET_ATTITUDE", 5.0f);
@@ -5324,7 +5309,7 @@ Mavlink::display_status()
 	}
 
 	printf("\tForwarding: %s\n", get_forwarding_on() ? "On" : "Off");
-	printf("\tMAVLink version: %" PRId32 "\n", _protocol_version);
+	printf("\tMAVLink version: %" PRId8 "\n", _protocol_version);
 
 	printf("\ttransport protocol: ");
 
@@ -8292,7 +8277,7 @@ MavlinkMissionManager::update_mission_state()
 }
 /****************************************************************************
  *
- *   Copyright (c) 2015-2018 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2015-2025 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -8330,6 +8315,7 @@ MavlinkMissionManager::update_mission_state()
  * @author Anton Babushkin <anton.babushkin@me.com>
  * @author Lorenz Meier <lorenz@px4.io>
  * @author Beat Kueng <beat@px4.io>
+ * @author Hamish Willee <hamishwillee@gmail.com>
  */
 
 #include <stdio.h>
@@ -8408,6 +8394,9 @@ MavlinkParametersManager::handle_message(const mavlink_message_t *msg)
 						_send_all_index = -1;
 					}
 
+					/* Error report that _HASH_CHECK parameter is read-only */
+					send_error(MAV_PARAM_ERROR_READ_ONLY, name, -1, msg->sysid, msg->compid);
+
 					/* No other action taken, return */
 					return;
 				}
@@ -8417,10 +8406,17 @@ MavlinkParametersManager::handle_message(const mavlink_message_t *msg)
 
 				if (param == PARAM_INVALID) {
 					PX4_ERR("unknown param: %s", name);
+					send_error(MAV_PARAM_ERROR_DOES_NOT_EXIST, name, -1, msg->sysid, msg->compid);
+
+				} else if (!((set.param_type == MAV_PARAM_TYPE_INT32) || (set.param_type == MAV_PARAM_TYPE_REAL32))) {
+					PX4_ERR("param type unsupported: %s", name);
+					send_error(MAV_PARAM_ERROR_TYPE_UNSUPPORTED, name, -1, msg->sysid, msg->compid);
 
 				} else if (!((param_type(param) == PARAM_TYPE_INT32 && set.param_type == MAV_PARAM_TYPE_INT32) ||
 					     (param_type(param) == PARAM_TYPE_FLOAT && set.param_type == MAV_PARAM_TYPE_REAL32))) {
 					PX4_ERR("param types mismatch param: %s", name);
+					send_error(MAV_PARAM_ERROR_TYPE_MISMATCH, name, -1, msg->sysid, msg->compid);
+
 
 				} else {
 					// According to the mavlink spec we should always acknowledge a write operation.
@@ -8492,18 +8488,32 @@ MavlinkParametersManager::handle_message(const mavlink_message_t *msg)
 						/* enforce null termination */
 						name[MAVLINK_MSG_PARAM_VALUE_FIELD_PARAM_ID_LEN] = '\0';
 						/* attempt to find parameter and send it */
-						send_param(param_find_no_notification(name));
+
+						const int result = send_param(param_find_no_notification(name));
+
+						if (result == 1) {
+							PX4_ERR("Unknown param name: %s", name);
+							send_error(MAV_PARAM_ERROR_DOES_NOT_EXIST, name, -1, msg->sysid, msg->compid);
+
+						} else if (result == 2) {
+							PX4_ERR("Failed loading param from storage: %s", name);
+							send_error(MAV_PARAM_ERROR_READ_FAIL, name, -1, msg->sysid, msg->compid);
+						}
 					}
 
 				} else {
+
 					/* when index is >= 0, send this parameter again */
 					int ret = send_param(param_for_used_index(req_read.param_index));
 
 					if (ret == 1) {
-						PX4_ERR("unknown param ID: %i", req_read.param_index);
+						PX4_ERR("Unknown param index: %i", req_read.param_index);
+						send_error(MAV_PARAM_ERROR_DOES_NOT_EXIST, nullptr, req_read.param_index, msg->sysid, msg->compid);
 
 					} else if (ret == 2) {
-						PX4_ERR("failed loading param from storage ID: %i", req_read.param_index);
+						PX4_ERR("Failed loading param from storage index: %i", req_read.param_index);
+						send_error(MAV_PARAM_ERROR_READ_FAIL, nullptr, req_read.param_index, msg->sysid, msg->compid);
+
 					}
 				}
 			}
@@ -8766,6 +8776,7 @@ MavlinkParametersManager::send_one()
 int
 MavlinkParametersManager::send_param(param_t param, int component_id)
 {
+
 	if (param == PARAM_INVALID) {
 		return 1;
 	}
@@ -8841,13 +8852,64 @@ MavlinkParametersManager::send_param(param_t param, int component_id)
 		mavlink_msg_param_value_send_struct(_mavlink.get_channel(), &msg);
 
 	} else {
-		// Re-pack the message with a different component ID
+		// Re-pack the message with a passed component ID
 		mavlink_message_t mavlink_packet;
 		mavlink_msg_param_value_encode_chan(mavlink_system.sysid, component_id, _mavlink.get_channel(), &mavlink_packet, &msg);
 		_mavlink_resend_uart(_mavlink.get_channel(), &mavlink_packet);
 	}
 
 	_last_param_sent = hrt_absolute_time();
+
+	return 0;
+}
+
+
+int MavlinkParametersManager:: send_error(MAV_PARAM_ERROR error, const char *param_id, const int param_index,
+		const int target_sysid, const int target_compid,
+		int component_id)
+{
+	/* no free TX buf to send this param error message */
+	if (_mavlink.get_free_tx_buf() < MAVLINK_MSG_ID_PARAM_ERROR_LEN) {
+		return 1;
+	}
+
+	mavlink_param_error_t msg;
+	msg.target_system = target_sysid;
+	msg.target_component = target_compid;
+	msg.error = error;
+
+	if (param_index > -1) { // param_id is not used
+
+		msg.param_index = param_index;
+
+	} else {
+#if defined(__GNUC__) && __GNUC__ >= 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+		/*
+		 * coverity[buffer_size_warning : FALSE]
+		 *
+		 * The MAVLink spec does not require the string to be NUL-terminated if it
+		 * has length 16. In this case the receiving end needs to terminate it
+		 * when copying it.
+		 */
+		strncpy(msg.param_id, param_id, MAVLINK_MSG_PARAM_ERROR_FIELD_PARAM_ID_LEN);
+#if defined(__GNUC__) && __GNUC__ >= 8
+#pragma GCC diagnostic pop
+#endif/* code */
+	}
+
+	/* default component ID */
+	if (component_id < 0) {
+		mavlink_msg_param_error_send_struct(_mavlink.get_channel(), &msg);
+
+	} else {
+		// Re-pack the message with a different component ID
+		mavlink_message_t mavlink_packet;
+		mavlink_msg_param_error_encode_chan(mavlink_system.sysid, component_id, _mavlink.get_channel(), &mavlink_packet, &msg);
+		_mavlink_resend_uart(_mavlink.get_channel(), &mavlink_packet);
+	}
 
 	return 0;
 }
@@ -12248,10 +12310,11 @@ MavlinkReceiver::run()
 				for (ssize_t i = 0; i < nread; i++) {
 					if (mavlink_parse_char(_mavlink.get_channel(), buf[i], &msg, &_status)) {
 
-						/* check if we received version 2 and request a switch. */
-						if (!(_mavlink.get_status()->flags & MAVLINK_STATUS_FLAG_IN_MAVLINK1)) {
-							/* this will only switch to proto version 2 if allowed in settings */
-							_mavlink.set_proto_version(2);
+						// If we receive a complete MAVLink 2 packet, also switch the outgoing protocol version
+						if (!(_mavlink.get_status()->flags & MAVLINK_STATUS_FLAG_IN_MAVLINK1)
+						    && _mavlink.getProtocolVersion() != 2) {
+							PX4_INFO("Upgrade to MAVLink v2 because of incoming packet");
+							_mavlink.setProtocolVersion(2);
 						}
 
 						switch (_mavlink.get_mode()) {

@@ -184,28 +184,12 @@
         "arm_disarm_reason_t": {
           "description": "Reason for arming/disarming",
           "entries": {
-            "0": {
-              "description": "Transition to standby",
-              "name": "transition_to_standby"
-            },
             "1": {
-              "description": "Stick gesture",
+              "description": "stick gesture",
               "name": "stick_gesture"
             },
-            "10": {
-              "description": "failure detector",
-              "name": "failure_detector"
-            },
-            "11": {
-              "description": "shutdown request",
-              "name": "shutdown"
-            },
-            "12": {
-              "description": "unit tests",
-              "name": "unit_test"
-            },
             "13": {
-              "description": "RC (button)",
+              "description": "RC button",
               "name": "rc_button"
             },
             "14": {
@@ -230,19 +214,15 @@
             },
             "6": {
               "description": "landing",
-              "name": "auto_disarm_land"
+              "name": "landing"
             },
             "7": {
-              "description": "auto preflight disarming",
-              "name": "auto_disarm_preflight"
+              "description": "preflight inaction",
+              "name": "preflight_inaction"
             },
             "8": {
               "description": "kill switch",
               "name": "kill_switch"
-            },
-            "9": {
-              "description": "lockdown",
-              "name": "lockdown"
             }
           },
           "type": "uint8_t"
