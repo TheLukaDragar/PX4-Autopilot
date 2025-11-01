@@ -182,15 +182,16 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 					aid_src.time_last_fuse = imu_sample.time_us;
 				}
 
-		} else {
-			if ((do_conditional_range_aid || do_range_aid)) {
-				ECL_INFO("starting %s height fusion", HGT_SRC_NAME);
-				_control_status.flags.rng_hgt = true;
+			} else {
+				if (do_conditional_range_aid || do_range_aid) {
+					ECL_INFO("starting %s height fusion", HGT_SRC_NAME);
+					_control_status.flags.rng_hgt = true;
 
-				if (!_control_status.flags.opt_flow_terrain && aid_src.innovation_rejected) {
-					ECL_INFO("starting %s height fusion, resetting terrain", HGT_SRC_NAME);
-					resetTerrainToRng(aid_src);
-					resetAidSourceStatusZeroInnovation(aid_src);
+					if (!_control_status.flags.opt_flow_terrain && aid_src.innovation_rejected) {
+						ECL_INFO("starting %s height fusion, resetting terrain", HGT_SRC_NAME);
+						resetTerrainToRng(aid_src);
+						resetAidSourceStatusZeroInnovation(aid_src);
+					}
 				}
 			}
 		}
