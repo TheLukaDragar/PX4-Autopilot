@@ -269,26 +269,6 @@ PARAM_DEFINE_INT32(SER_RC_BAUD, 0);
 
 
 /**
- * Serial Configuration for Lanbao PSK-CM8JL65-CC5
- *
- * Configure on which serial port to run Lanbao PSK-CM8JL65-CC5.
- *
- * 
- *
- * @value 0 Disabled
- * @value 201 GPS 1
- * @value 202 GPS 2
- * @value 101 TELEM 1
- * @value 102 TELEM 2
- * @value 103 TELEM 3
- * @value 104 TELEM/SERIAL 4
- * @value 300 Radio Controller
- * @group Sensors
- * @reboot_required true
- */
-PARAM_DEFINE_INT32(SENS_CM8JL65_CFG, 0);
-
-/**
  * Serial Configuration for Lightware Laser Rangefinder (serial)
  *
  * Configure on which serial port to run Lightware Laser Rangefinder (serial).

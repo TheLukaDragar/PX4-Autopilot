@@ -82,6 +82,8 @@
 #define ESTIMATOR_STATUS_CS_GPS_YAW_FAULT 27
 #define ESTIMATOR_STATUS_CS_RNG_FAULT 28
 #define ESTIMATOR_STATUS_CS_GNSS_VEL 44
+#define ESTIMATOR_STATUS_CS_GNSS_FAULT 45
+#define ESTIMATOR_STATUS_CS_YAW_MANUAL 46
 
 #endif
 
@@ -174,6 +176,8 @@ struct estimator_status_s {
 	static constexpr uint8_t CS_GPS_YAW_FAULT = 27;
 	static constexpr uint8_t CS_RNG_FAULT = 28;
 	static constexpr uint8_t CS_GNSS_VEL = 44;
+	static constexpr uint8_t CS_GNSS_FAULT = 45;
+	static constexpr uint8_t CS_YAW_MANUAL = 46;
 
 #endif
 };

@@ -93,6 +93,10 @@ int FlightModeManager::_initTask(FlightTaskIndex task_index)
 		_current_task.task = new (&_task_union.Transition) FlightTaskTransition();
 		break;
 
+	case FlightTaskIndex::AltitudeCruise:
+		_current_task.task = new (&_task_union.AltitudeCruise) FlightTaskAltitudeCruise();
+		break;
+
 	case FlightTaskIndex::AutoFollowTarget:
 		_current_task.task = new (&_task_union.AutoFollowTarget) FlightTaskAutoFollowTarget();
 		break;

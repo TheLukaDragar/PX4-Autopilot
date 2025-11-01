@@ -50,6 +50,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/ManualAltitudeSmoothVel/cmake_install.cmake")
   include("/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/ManualPosition/cmake_install.cmake")
   include("/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/Transition/cmake_install.cmake")
+  include("/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AltitudeCruise/cmake_install.cmake")
   include("/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AutoFollowTarget/cmake_install.cmake")
   include("/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/Orbit/cmake_install.cmake")
 

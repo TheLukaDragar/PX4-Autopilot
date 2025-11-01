@@ -45,10 +45,10 @@
 #include <lib/mathlib/mathlib.h>
 
 
-static_assert(static_cast<orb_id_size_t>(ORB_ID::sensor_gps) == 228, "ORB_ID index mismatch");
-ORB_DEFINE(sensor_gps, struct sensor_gps_s, 142, 1054822089u, static_cast<orb_id_size_t>(ORB_ID::sensor_gps), 1);
-static_assert(static_cast<orb_id_size_t>(ORB_ID::vehicle_gps_position) == 273, "ORB_ID index mismatch");
-ORB_DEFINE(vehicle_gps_position, struct sensor_gps_s, 142, 1054822089u, static_cast<orb_id_size_t>(ORB_ID::vehicle_gps_position), 1);
+static_assert(static_cast<orb_id_size_t>(ORB_ID::sensor_gps) == 229, "ORB_ID index mismatch");
+ORB_DEFINE(sensor_gps, struct sensor_gps_s, 147, 298903452u, static_cast<orb_id_size_t>(ORB_ID::sensor_gps), 1);
+static_assert(static_cast<orb_id_size_t>(ORB_ID::vehicle_gps_position) == 274, "ORB_ID index mismatch");
+ORB_DEFINE(vehicle_gps_position, struct sensor_gps_s, 147, 298903452u, static_cast<orb_id_size_t>(ORB_ID::vehicle_gps_position), 1);
 
 
 void print_message(const orb_metadata *meta, const sensor_gps_s& message)

@@ -45,9 +45,9 @@
 #include <lib/mathlib/mathlib.h>
 
 
-static_assert(static_cast<orb_id_size_t>(ORB_ID::sensors_status_baro) == 238, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::sensors_status_baro) == 239, "ORB_ID index mismatch");
 ORB_DEFINE(sensors_status_baro, struct sensors_status_s, 60, 4047285676u, static_cast<orb_id_size_t>(ORB_ID::sensors_status_baro), 1);
-static_assert(static_cast<orb_id_size_t>(ORB_ID::sensors_status_mag) == 240, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::sensors_status_mag) == 241, "ORB_ID index mismatch");
 ORB_DEFINE(sensors_status_mag, struct sensors_status_s, 60, 4047285676u, static_cast<orb_id_size_t>(ORB_ID::sensors_status_mag), 1);
 
 

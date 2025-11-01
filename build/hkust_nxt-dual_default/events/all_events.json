@@ -761,6 +761,10 @@
               "description": "External 8",
               "name": "external8"
             },
+            "24": {
+              "description": "Altitude Cruise",
+              "name": "altitude_cruise"
+            },
             "255": {
               "description": "[Unknown]",
               "name": "unknown"
@@ -1144,7 +1148,7 @@
                   "type": "uint8_t"
                 }
               ],
-              "message": "GPS reports critical jamming state",
+              "message": "GPS jamming detected",
               "name": "check_estimator_gps_jamming_critical"
             },
             "12805643": {

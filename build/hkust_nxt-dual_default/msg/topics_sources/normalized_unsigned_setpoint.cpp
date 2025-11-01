@@ -47,7 +47,7 @@
 
 static_assert(static_cast<orb_id_size_t>(ORB_ID::flaps_setpoint) == 99, "ORB_ID index mismatch");
 ORB_DEFINE(flaps_setpoint, struct normalized_unsigned_setpoint_s, 12, 363109612u, static_cast<orb_id_size_t>(ORB_ID::flaps_setpoint), 1);
-static_assert(static_cast<orb_id_size_t>(ORB_ID::spoilers_setpoint) == 241, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::spoilers_setpoint) == 242, "ORB_ID index mismatch");
 ORB_DEFINE(spoilers_setpoint, struct normalized_unsigned_setpoint_s, 12, 363109612u, static_cast<orb_id_size_t>(ORB_ID::spoilers_setpoint), 1);
 
 

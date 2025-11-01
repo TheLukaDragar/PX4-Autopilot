@@ -45,9 +45,9 @@
 #include <lib/mathlib/mathlib.h>
 
 
-static_assert(static_cast<orb_id_size_t>(ORB_ID::vehicle_angular_velocity) == 261, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::vehicle_angular_velocity) == 262, "ORB_ID index mismatch");
 ORB_DEFINE(vehicle_angular_velocity, struct vehicle_angular_velocity_s, 40, 1221301608u, static_cast<orb_id_size_t>(ORB_ID::vehicle_angular_velocity), 1);
-static_assert(static_cast<orb_id_size_t>(ORB_ID::vehicle_angular_velocity_groundtruth) == 262, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::vehicle_angular_velocity_groundtruth) == 263, "ORB_ID index mismatch");
 ORB_DEFINE(vehicle_angular_velocity_groundtruth, struct vehicle_angular_velocity_s, 40, 1221301608u, static_cast<orb_id_size_t>(ORB_ID::vehicle_angular_velocity_groundtruth), 1);
 
 

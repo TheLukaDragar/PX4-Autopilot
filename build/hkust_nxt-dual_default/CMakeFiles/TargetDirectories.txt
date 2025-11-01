@@ -272,6 +272,11 @@
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/slew_rate/CMakeFiles/package_source.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/slew_rate/CMakeFiles/edit_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/slew_rate/CMakeFiles/rebuild_cache.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/sticks/CMakeFiles/Sticks.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/sticks/CMakeFiles/package.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/sticks/CMakeFiles/package_source.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/sticks/CMakeFiles/edit_cache.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/sticks/CMakeFiles/rebuild_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/stick_yaw/CMakeFiles/StickYaw.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/stick_yaw/CMakeFiles/package.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/lib/stick_yaw/CMakeFiles/package_source.dir
@@ -563,11 +568,6 @@
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/differential_pressure/sdp3x/CMakeFiles/package_source.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/differential_pressure/sdp3x/CMakeFiles/edit_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/differential_pressure/sdp3x/CMakeFiles/rebuild_cache.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/cm8jl65/CMakeFiles/drivers__cm8jl65.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/cm8jl65/CMakeFiles/package.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/cm8jl65/CMakeFiles/package_source.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/cm8jl65/CMakeFiles/edit_cache.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/cm8jl65/CMakeFiles/rebuild_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/lightware_laser_i2c/CMakeFiles/drivers__distance_sensor__lightware_laser_i2c.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/lightware_laser_i2c/CMakeFiles/package.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/lightware_laser_i2c/CMakeFiles/package_source.dir
@@ -583,11 +583,6 @@
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/ll40ls/CMakeFiles/package_source.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/ll40ls/CMakeFiles/edit_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/ll40ls/CMakeFiles/rebuild_cache.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/teraranger/CMakeFiles/drivers__distance_sensor__teraranger.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/teraranger/CMakeFiles/package.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/teraranger/CMakeFiles/package_source.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/teraranger/CMakeFiles/edit_cache.dir
-/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/teraranger/CMakeFiles/rebuild_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/tf02pro/CMakeFiles/drivers__distance_sensor__tf02pro.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/tf02pro/CMakeFiles/package.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/drivers/distance_sensor/tf02pro/CMakeFiles/package_source.dir
@@ -976,6 +971,11 @@
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/Transition/CMakeFiles/package_source.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/Transition/CMakeFiles/edit_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/Transition/CMakeFiles/rebuild_cache.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AltitudeCruise/CMakeFiles/FlightTaskAltitudeCruise.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AltitudeCruise/CMakeFiles/package.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AltitudeCruise/CMakeFiles/package_source.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AltitudeCruise/CMakeFiles/edit_cache.dir
+/Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AltitudeCruise/CMakeFiles/rebuild_cache.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AutoFollowTarget/CMakeFiles/FlightTaskAutoFollowTarget.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AutoFollowTarget/CMakeFiles/package.dir
 /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/src/modules/flight_mode_manager/tasks/AutoFollowTarget/CMakeFiles/package_source.dir

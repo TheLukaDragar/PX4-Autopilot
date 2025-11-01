@@ -46,7 +46,7 @@
 
 
 static_assert(static_cast<orb_id_size_t>(ORB_ID::control_allocator_status) == 31, "ORB_ID index mismatch");
-ORB_DEFINE(control_allocator_status, struct control_allocator_status_s, 52, 1698870778u, static_cast<orb_id_size_t>(ORB_ID::control_allocator_status), 1);
+ORB_DEFINE(control_allocator_status, struct control_allocator_status_s, 54, 3709264580u, static_cast<orb_id_size_t>(ORB_ID::control_allocator_status), 1);
 
 
 void print_message(const orb_metadata *meta, const control_allocator_status_s& message)

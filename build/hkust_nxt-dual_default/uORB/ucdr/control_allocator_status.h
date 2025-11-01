@@ -43,7 +43,7 @@
 
 static inline constexpr int ucdr_topic_size_control_allocator_status()
 {
-	return 58;
+	return 60;
 }
 
 static inline bool ucdr_serialize_control_allocator_status(const void* data, ucdrBuffer& buf, int64_t time_offset = 0)
@@ -82,6 +82,10 @@ static inline bool ucdr_serialize_control_allocator_status(const void* data, ucd
 	memcpy(buf.iterator, &topic.handled_motor_failure_mask, sizeof(topic.handled_motor_failure_mask));
 	buf.iterator += sizeof(topic.handled_motor_failure_mask);
 	buf.offset += sizeof(topic.handled_motor_failure_mask);
+	static_assert(sizeof(topic.motor_stop_mask) == 2, "size mismatch");
+	memcpy(buf.iterator, &topic.motor_stop_mask, sizeof(topic.motor_stop_mask));
+	buf.iterator += sizeof(topic.motor_stop_mask);
+	buf.offset += sizeof(topic.motor_stop_mask);
 	return true;
 }
 
@@ -121,5 +125,9 @@ static inline bool ucdr_deserialize_control_allocator_status(ucdrBuffer& buf, co
 	memcpy(&topic.handled_motor_failure_mask, buf.iterator, sizeof(topic.handled_motor_failure_mask));
 	buf.iterator += sizeof(topic.handled_motor_failure_mask);
 	buf.offset += sizeof(topic.handled_motor_failure_mask);
+	static_assert(sizeof(topic.motor_stop_mask) == 2, "size mismatch");
+	memcpy(&topic.motor_stop_mask, buf.iterator, sizeof(topic.motor_stop_mask));
+	buf.iterator += sizeof(topic.motor_stop_mask);
+	buf.offset += sizeof(topic.motor_stop_mask);
 	return true;
 }

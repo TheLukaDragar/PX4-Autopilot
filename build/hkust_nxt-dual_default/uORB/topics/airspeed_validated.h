@@ -42,12 +42,12 @@
 
 #ifndef __cplusplus
 #define AIRSPEED_VALIDATED_MESSAGE_VERSION 1
-#define AIRSPEED_VALIDATED_DISABLED -1
-#define AIRSPEED_VALIDATED_GROUND_MINUS_WIND 0
-#define AIRSPEED_VALIDATED_SENSOR_1 1
-#define AIRSPEED_VALIDATED_SENSOR_2 2
-#define AIRSPEED_VALIDATED_SENSOR_3 3
-#define AIRSPEED_VALIDATED_SYNTHETIC 4
+#define AIRSPEED_VALIDATED_SOURCE_DISABLED -1
+#define AIRSPEED_VALIDATED_SOURCE_GROUND_MINUS_WIND 0
+#define AIRSPEED_VALIDATED_SOURCE_SENSOR_1 1
+#define AIRSPEED_VALIDATED_SOURCE_SENSOR_2 2
+#define AIRSPEED_VALIDATED_SOURCE_SENSOR_3 3
+#define AIRSPEED_VALIDATED_SOURCE_SYNTHETIC 4
 
 #endif
 
@@ -72,12 +72,12 @@ struct airspeed_validated_s {
 
 #ifdef __cplusplus
 	static constexpr uint32_t MESSAGE_VERSION = 1;
-	static constexpr int8_t DISABLED = -1;
-	static constexpr int8_t GROUND_MINUS_WIND = 0;
-	static constexpr int8_t SENSOR_1 = 1;
-	static constexpr int8_t SENSOR_2 = 2;
-	static constexpr int8_t SENSOR_3 = 3;
-	static constexpr int8_t SYNTHETIC = 4;
+	static constexpr int8_t SOURCE_DISABLED = -1;
+	static constexpr int8_t SOURCE_GROUND_MINUS_WIND = 0;
+	static constexpr int8_t SOURCE_SENSOR_1 = 1;
+	static constexpr int8_t SOURCE_SENSOR_2 = 2;
+	static constexpr int8_t SOURCE_SENSOR_3 = 3;
+	static constexpr int8_t SOURCE_SYNTHETIC = 4;
 
 #endif
 };

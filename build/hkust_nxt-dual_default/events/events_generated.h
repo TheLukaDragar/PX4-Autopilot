@@ -377,6 +377,7 @@ enum class navigation_mode_t : uint8_t {
 	external6 = 21, ///< External 6
 	external7 = 22, ///< External 7
 	external8 = 23, ///< External 8
+	altitude_cruise = 24, ///< Altitude Cruise
 	unknown = 255, ///< [Unknown]
 	auto_mission = 3, ///< Mission
 	auto_loiter = 4, ///< Hold

@@ -3250,8 +3250,10 @@ void Ekf::checkHeightSensorRefFallback()
 		    || ((fallback_list[i] == HeightSensor::GNSS) && _control_status.flags.gps_hgt)
 		    || ((fallback_list[i] == HeightSensor::RANGE) && _control_status.flags.rng_hgt)
 		    || ((fallback_list[i] == HeightSensor::EV) && _control_status.flags.ev_hgt)) {
-			ECL_INFO("fallback to secondary height reference");
+
 			_height_sensor_ref = fallback_list[i];
+
+			ECL_WARN("fallback to secondary height reference %d", (int)_height_sensor_ref);
 			break;
 		}
 	}
@@ -3875,7 +3877,7 @@ void Ekf::resetHorizontalPositionToLastKnown()
 
 #include <mathlib/mathlib.h>
 
-bool Ekf::fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H_YAW)
+bool Ekf::fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H_YAW, bool reset)
 {
 	// check if the innovation variance calculation is badly conditioned
 	if (aid_src_status.innovation_variance >= aid_src_status.observation_variance) {
@@ -3904,6 +3906,11 @@ bool Ekf::fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H
 		}
 
 		Kfusion(row) *= heading_innov_var_inv;
+	}
+
+	if (reset && fabsf(H_YAW(State::quat_nominal.idx + 2)) > FLT_EPSILON) {
+		// Reset the yaw estimate by forcing the measurement into the state
+		Kfusion(State::quat_nominal.idx + 2) = 1.f / H_YAW(State::quat_nominal.idx + 2);
 	}
 
 	// set the heading unhealthy if the test fails
@@ -3948,12 +3955,12 @@ bool Ekf::fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H
 	return true;
 }
 
-void Ekf::computeYawInnovVarAndH(float variance, float &innovation_variance, VectorState &H_YAW) const
+void Ekf::computeYawInnovVarAndH(float observation_variance, float &innovation_variance, VectorState &H_YAW) const
 {
-	sym::ComputeYawInnovVarAndH(_state.vector(), P, variance, &innovation_variance, &H_YAW);
+	sym::ComputeYawInnovVarAndH(_state.vector(), P, observation_variance, &innovation_variance, &H_YAW);
 }
 
-void Ekf::resetQuatStateYaw(float yaw, float yaw_variance)
+void Ekf::resetQuatStateYaw(const float yaw, const float yaw_variance)
 {
 	// save a copy of the quaternion state for later use in calculating the amount of reset change
 	const Quatf quat_before_reset = _state.quat_nominal;
@@ -3967,12 +3974,17 @@ void Ekf::resetQuatStateYaw(float yaw, float yaw_variance)
 	// update the rotation matrix using the new yaw value
 	_R_to_earth = updateYawInRotMat(yaw, Dcmf(_state.quat_nominal));
 
-	// calculate the amount that the quaternion has changed by
-	const Quatf quat_after_reset(_R_to_earth);
-	const Quatf q_error((quat_after_reset * quat_before_reset.inversed()).normalized());
-
 	// update quaternion states
-	_state.quat_nominal = quat_after_reset;
+	_state.quat_nominal = Quatf(_R_to_earth);
+
+	_time_last_heading_fuse = _time_delayed_us;
+
+	propagateQuatReset(quat_before_reset);
+}
+
+void Ekf::propagateQuatReset(const Quatf &quat_before_reset)
+{
+	const Quatf q_error((_state.quat_nominal * quat_before_reset.inversed()).normalized());
 
 	// add the reset amount to the output observer buffered data
 	_output_predictor.resetQuaternion(q_error);
@@ -3998,8 +4010,25 @@ void Ekf::resetQuatStateYaw(float yaw, float yaw_variance)
 	}
 
 	_state_reset_status.reset_count.quat++;
+}
 
-	_time_last_heading_fuse = _time_delayed_us;
+void Ekf::resetYawByFusion(const float yaw, const float yaw_variance)
+{
+	const Quatf quat_before_reset = _state.quat_nominal;
+
+	estimator_aid_source1d_s aid_src_status{};
+	aid_src_status.observation = yaw;
+	aid_src_status.observation_variance = yaw_variance;
+	aid_src_status.innovation = wrap_pi(getEulerYaw(_state.quat_nominal) - yaw);
+
+	VectorState H_YAW;
+
+	computeYawInnovVarAndH(aid_src_status.observation_variance, aid_src_status.innovation_variance, H_YAW);
+
+	const bool reset_yaw = true;
+	fuseYaw(aid_src_status, H_YAW, reset_yaw);
+
+	propagateQuatReset(quat_before_reset);
 }
 #include "imu_down_sampler/imu_down_sampler.hpp"
 
@@ -7527,14 +7556,6 @@ bool Ekf::resetYawToEKFGSF()
 		return false;
 	}
 
-	// don't allow reset if there's just been a yaw reset
-	const bool yaw_alignment_changed = (_control_status_prev.flags.yaw_align != _control_status.flags.yaw_align);
-	const bool quat_reset = (_state_reset_status.reset_count.quat != _state_reset_count_prev.quat);
-
-	if (yaw_alignment_changed || quat_reset) {
-		return false;
-	}
-
 	ECL_INFO("yaw estimator reset heading %.3f -> %.3f rad",
 		 (double)getEulerYaw(_R_to_earth), (double)_yawEstimator.getYaw());
 
@@ -7878,6 +7899,8 @@ void Ekf::controlGravityFusion(const imuSample &imu)
 			      0.25f);                                                      // innovation gate
 
 	// update the states and covariance using sequential fusion
+	bool fused[3] {};
+
 	for (uint8_t index = 0; index <= 2; index++) {
 		// Calculate Kalman gains and observation jacobians
 		if (index == 0) {
@@ -7905,12 +7928,18 @@ void Ekf::controlGravityFusion(const imuSample &imu)
 		const bool accel_clipping = imu.delta_vel_clipping[0] || imu.delta_vel_clipping[1] || imu.delta_vel_clipping[2];
 
 		if (_control_status.flags.gravity_vector && !_aid_src_gravity.innovation_rejected && !accel_clipping) {
-			measurementUpdate(K, H, _aid_src_gravity.observation_variance[index], _aid_src_gravity.innovation[index]);
+			fused[index] = measurementUpdate(K, H,
+							 _aid_src_gravity.observation_variance[index], _aid_src_gravity.innovation[index]);
 		}
 	}
 
-	_aid_src_gravity.fused = true;
-	_aid_src_gravity.time_last_fuse = imu.time_us;
+	if (fused[0] && fused[1] && fused[2]) {
+		_aid_src_gravity.fused = true;
+		_aid_src_gravity.time_last_fuse = imu.time_us;
+
+	} else {
+		_aid_src_gravity.fused = false;
+	}
 }
 /****************************************************************************
  *
@@ -8095,7 +8124,8 @@ void Ekf::controlMagFusion(const imuSample &imu_sample)
 							       && !_control_status.flags.mag_fault
 							       && !_control_status.flags.mag_field_disturbed
 							       && !_control_status.flags.ev_yaw
-							       && !_control_status.flags.gnss_yaw;
+							       && !_control_status.flags.gnss_yaw
+							       && (!_control_status.flags.yaw_manual || _control_status.flags.mag_aligned_in_flight);
 
 			_control_status.flags.mag_3D = common_conditions_passing
 						       && (_params.ekf2_mag_type == MagFuseType::AUTO)
@@ -8124,7 +8154,8 @@ void Ekf::controlMagFusion(const imuSample &imu_sample)
 
 			if (continuing_conditions_passing && _control_status.flags.yaw_align) {
 
-				if ((checkHaglYawResetReq() && (_control_status.flags.mag_hdg || _control_status.flags.mag_3D))
+				if ((checkHaglYawResetReq() && (_control_status.flags.mag_hdg || _control_status.flags.mag_3D
+								|| _control_status.flags.yaw_manual))
 				    || (wmm_updated && no_ne_aiding_or_not_moving)) {
 					ECL_INFO("reset to %s", AID_SRC_NAME);
 					const bool reset_heading = _control_status.flags.mag_hdg || _control_status.flags.mag_3D;
@@ -8362,7 +8393,7 @@ void Ekf::resetMagStates(const Vector3f &mag, bool reset_heading)
 	}
 
 	// record the start time for the magnetic field alignment
-	if (_control_status.flags.in_air && reset_heading) {
+	if (_control_status.flags.in_air && (reset_heading || _control_status.flags.yaw_manual)) {
 		_control_status.flags.mag_aligned_in_flight = true;
 		_flt_mag_align_start_time = _time_delayed_us;
 	}
@@ -8506,8 +8537,6 @@ void Ekf::resetMagHeading(const Vector3f &mag)
 
 	// update quaternion states and corresponding covarainces
 	resetQuatStateYaw(yaw_new, yaw_new_variance);
-
-	_time_last_heading_fuse = _time_delayed_us;
 
 	_mag_heading_innov_lpf.reset(0.f);
 	_control_status.flags.mag_heading_consistent = true;
@@ -8911,11 +8940,13 @@ void Ekf::controlOpticalFlowFusion(const imuSample &imu_delayed)
 
 		if (_flow_counter == 0) {
 			_flow_vel_body_lpf.reset(_flow_vel_body);
+			_flow_rate_compensated_lpf.reset(_flow_rate_compensated);
 			_flow_counter = 1;
 
 		} else {
 
 			_flow_vel_body_lpf.update(_flow_vel_body);
+			_flow_rate_compensated_lpf.update(_flow_rate_compensated);
 			_flow_counter++;
 		}
 
@@ -9026,8 +9057,23 @@ void Ekf::resetTerrainToFlow()
 {
 	ECL_INFO("reset hagl to flow");
 
-	// TODO: use the flow data
-	const float new_terrain = -_gpos.altitude() + _params.ekf2_min_rng;
+	float new_terrain = -_gpos.altitude() + _params.ekf2_min_rng;
+
+	if (isOtherSourceOfHorizontalAidingThan(_control_status.flags.opt_flow)) {
+		// ||vel_NE|| = ||( R * flow_body * range).xy()||
+		// range = ||vel_NE|| / ||P * R * flow_body||
+		constexpr float kProjXY[2][3] = {{1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}};
+		const matrix::Matrix<float, 2, 3> proj(kProjXY);
+
+		const Vector3f flow_body(-_flow_rate_compensated_lpf.getState()(1), _flow_rate_compensated_lpf.getState()(0), 0.f);
+		const float denom = Vector2f(proj * _R_to_earth * flow_body).norm();
+
+		if (denom > 1e-6f) {
+			const float range = _state.vel.xy().norm() / denom;
+			new_terrain = -_gpos.altitude() + max(range, _params.ekf2_min_rng);
+		}
+	}
+
 	const float delta_terrain = new_terrain - _state.terrain;
 	_state.terrain = new_terrain;
 	P.uncorrelateCovarianceSetVariance<State::terrain.dof>(State::terrain.idx, 100.f);
@@ -9431,6 +9477,7 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 			// If we are supposed to be using range finder data but have bad range measurements
 			// and are on the ground, then synthesise a measurement at the expected on ground value
 			if (!_control_status.flags.in_air
+			    && _control_status.flags.vehicle_at_rest
 			    && _range_sensor.isRegularlySendingData()
 			    && _range_sensor.isDataReady()) {
 
@@ -9449,20 +9496,42 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 
 	if (rng_data_ready && _range_sensor.getSampleAddress()) {
 
-		updateRangeHagl(aid_src);
+		const float measurement = math::max(_range_sensor.getDistBottom(), _params.ekf2_min_rng);
+		const float measurement_variance = getRngVar();
+
+		float innovation_variance;
+		sym::ComputeHaglInnovVar(P, measurement_variance, &innovation_variance);
+
+		const float innov_gate = math::max(_params.ekf2_rng_gate, 1.f);
+		updateAidSourceStatus(aid_src,
+				      _range_sensor.getSampleAddress()->time_us, // sample timestamp
+				      measurement,                               // observation
+				      measurement_variance,                      // observation variance
+				      getHagl() - measurement,                   // innovation
+				      innovation_variance,                       // innovation variance
+				      innov_gate);                               // innovation gate
+
 		const bool measurement_valid = PX4_ISFINITE(aid_src.observation) && PX4_ISFINITE(aid_src.observation_variance);
+
+		// z special case if there is bad vertical acceleration data, then don't reject measurement,
+		// but limit innovation to prevent spikes that could destabilise the filter
+		if (_fault_status.flags.bad_acc_vertical && aid_src.innovation_rejected
+		    && measurement_valid && _range_sensor.isDataHealthy()
+		   ) {
+			const float innov_limit = innov_gate * sqrtf(aid_src.innovation_variance);
+			aid_src.innovation = math::constrain(aid_src.innovation, -innov_limit, innov_limit);
+			aid_src.innovation_rejected = false;
+		}
 
 		const bool continuing_conditions_passing = ((_params.ekf2_rng_ctrl == static_cast<int32_t>(RngCtrl::ENABLED))
 				|| (_params.ekf2_rng_ctrl == static_cast<int32_t>(RngCtrl::CONDITIONAL)))
 				&& _control_status.flags.tilt_align
-				&& measurement_valid
-				&& _range_sensor.isDataHealthy()
-				&& _rng_consistency_check.isKinematicallyConsistent();
+				&& measurement_valid;
 
 		const bool starting_conditions_passing = continuing_conditions_passing
 				&& isNewestSampleRecent(_time_last_range_buffer_push, 2 * estimator::sensor::RNG_MAX_INTERVAL)
-				&& _range_sensor.isRegularlySendingData();
-
+				&& _range_sensor.isRegularlySendingData()
+				&& _range_sensor.isDataHealthy();
 
 		const bool do_conditional_range_aid = (_control_status.flags.rng_terrain || _control_status.flags.rng_hgt)
 						      && (_params.ekf2_rng_ctrl == static_cast<int32_t>(RngCtrl::CONDITIONAL))
@@ -9477,7 +9546,7 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 				stopRngHgtFusion();
 			}
 
-		} else {
+		} else if (starting_conditions_passing) {
 			if (_params.ekf2_hgt_ref == static_cast<int32_t>(HeightSensor::RANGE)) {
 				if (do_conditional_range_aid) {
 					// Range finder is used while hovering to stabilize the height estimate. Don't reset but use it as height reference.
@@ -9514,6 +9583,7 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 					_control_status.flags.rng_hgt = true;
 
 					if (!_control_status.flags.opt_flow_terrain && aid_src.innovation_rejected) {
+						ECL_INFO("starting %s height fusion, resetting terrain", HGT_SRC_NAME);
 						resetTerrainToRng(aid_src);
 						resetAidSourceStatusZeroInnovation(aid_src);
 					}
@@ -9524,11 +9594,26 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 		if (_control_status.flags.rng_hgt || _control_status.flags.rng_terrain) {
 			if (continuing_conditions_passing) {
 
-				fuseHaglRng(aid_src, _control_status.flags.rng_hgt, _control_status.flags.rng_terrain);
+				if (do_conditional_range_aid) {
+					_height_sensor_ref = HeightSensor::RANGE;
+
+				} else if (_height_sensor_ref == HeightSensor::RANGE) {
+					_height_sensor_ref = HeightSensor::UNKNOWN;
+				}
+
+				if (_range_sensor.isDataHealthy()
+				    && _control_status.flags.rng_kin_consistent
+				   ) {
+					fuseHaglRng(aid_src, _control_status.flags.rng_hgt, _control_status.flags.rng_terrain);
+				}
 
 				const bool is_fusion_failing = isTimedOut(aid_src.time_last_fuse, _params.hgt_fusion_timeout_max);
 
-				if (isHeightResetRequired() && _control_status.flags.rng_hgt && (_height_sensor_ref == HeightSensor::RANGE)) {
+				if (isHeightResetRequired()
+				    && _control_status.flags.rng_hgt
+				    && (_height_sensor_ref == HeightSensor::RANGE)
+				    && starting_conditions_passing
+				   ) {
 					// All height sources are failing
 					ECL_WARN("%s height fusion reset required, all height sources failing", HGT_SRC_NAME);
 
@@ -9550,7 +9635,7 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 						stopRngHgtFusion();
 						stopRngTerrFusion();
 
-					} else {
+					} else if (starting_conditions_passing) {
 						resetTerrainToRng(aid_src);
 						resetAidSourceStatusZeroInnovation(aid_src);
 					}
@@ -9587,32 +9672,6 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 		ECL_WARN("stopping %s fusion, no data", HGT_SRC_NAME);
 		stopRngHgtFusion();
 		stopRngTerrFusion();
-	}
-}
-
-void Ekf::updateRangeHagl(estimator_aid_source1d_s &aid_src)
-{
-	const float measurement = math::max(_range_sensor.getDistBottom(), _params.ekf2_min_rng);
-	const float measurement_variance = getRngVar();
-
-	float innovation_variance;
-	sym::ComputeHaglInnovVar(P, measurement_variance, &innovation_variance);
-
-	const float innov_gate = math::max(_params.ekf2_rng_gate, 1.f);
-	updateAidSourceStatus(aid_src,
-			      _range_sensor.getSampleAddress()->time_us, // sample timestamp
-			      measurement,                               // observation
-			      measurement_variance,                      // observation variance
-			      getHagl() - measurement,                   // innovation
-			      innovation_variance,                       // innovation variance
-			      innov_gate);                               // innovation gate
-
-	// z special case if there is bad vertical acceleration data, then don't reject measurement,
-	// but limit innovation to prevent spikes that could destabilise the filter
-	if (_fault_status.flags.bad_acc_vertical && aid_src.innovation_rejected) {
-		const float innov_limit = innov_gate * sqrtf(aid_src.innovation_variance);
-		aid_src.innovation = math::constrain(aid_src.innovation, -innov_limit, innov_limit);
-		aid_src.innovation_rejected = false;
 	}
 }
 
@@ -9843,7 +9902,7 @@ void SensorRangeFinder::updateValidity(uint64_t current_time_us)
 {
 	updateDtDataLpf(current_time_us);
 
-	if (_is_faulty || isSampleOutOfDate(current_time_us) || !isDataContinuous()) {
+	if (isSampleOutOfDate(current_time_us) || !isDataContinuous()) {
 		_is_sample_valid = false;
 		_is_regularly_sending_data = false;
 		return;
@@ -10899,6 +10958,24 @@ void EKF2::Run()
 #else
 				command_ack.result = vehicle_command_ack_s::VEHICLE_CMD_RESULT_UNSUPPORTED;
 #endif // CONFIG_EKF2_WIND
+				command_ack.timestamp = hrt_absolute_time();
+				_vehicle_command_ack_pub.publish(command_ack);
+			}
+
+			if (vehicle_command.command == vehicle_command_s::VEHICLE_CMD_EXTERNAL_ATTITUDE_ESTIMATE) {
+				if (PX4_ISFINITE(vehicle_command.param3)) {
+					const float heading = wrap_pi(math::radians(vehicle_command.param3));
+					static constexpr float kDefaultHeadingAccuracyDeg = 20.f;
+					const float heading_accuracy = math::radians(PX4_ISFINITE(vehicle_command.param7)
+								       ? vehicle_command.param7
+								       : kDefaultHeadingAccuracyDeg);
+					_ekf.resetHeadingToExternalObservation(heading, heading_accuracy);
+					command_ack.result = vehicle_command_ack_s::VEHICLE_CMD_RESULT_ACCEPTED;
+
+				} else {
+					command_ack.result = vehicle_command_ack_s::VEHICLE_CMD_RESULT_UNSUPPORTED;
+				}
+
 				command_ack.timestamp = hrt_absolute_time();
 				_vehicle_command_ack_pub.publish(command_ack);
 			}
@@ -12257,6 +12334,8 @@ void EKF2::PublishStatusFlags(const hrt_abstime &timestamp)
 		status_flags.cs_constant_pos        = _ekf.control_status_flags().constant_pos;
 		status_flags.cs_baro_fault	    = _ekf.control_status_flags().baro_fault;
 		status_flags.cs_gnss_vel            = _ekf.control_status_flags().gnss_vel;
+		status_flags.cs_gnss_fault          = _ekf.control_status_flags().gnss_fault;
+		status_flags.cs_yaw_manual          = _ekf.control_status_flags().yaw_manual;
 
 		status_flags.fault_status_changes     = _filter_fault_status_changes;
 		status_flags.fs_bad_mag_x             = _ekf.fault_status_flags().bad_mag_x;
@@ -12387,10 +12466,10 @@ void EKF2::UpdateAirspeedSample(ekf2_timestamps_s &ekf2_timestamps)
 		if (_airspeed_validated_sub.update(&airspeed_validated)) {
 
 			if (PX4_ISFINITE(airspeed_validated.true_airspeed_m_s)
-			    && (airspeed_validated.airspeed_source > airspeed_validated_s::GROUND_MINUS_WIND)
+			    && (airspeed_validated.airspeed_source > airspeed_validated_s::SOURCE_GROUND_MINUS_WIND)
 			   ) {
 
-				_ekf.setSyntheticAirspeed(airspeed_validated.airspeed_source == airspeed_validated_s::SYNTHETIC);
+				_ekf.setSyntheticAirspeed(airspeed_validated.airspeed_source == airspeed_validated_s::SOURCE_SYNTHETIC);
 
 				float cas2tas = 1.f;
 
@@ -12769,7 +12848,7 @@ void EKF2::UpdateGpsSample(ekf2_timestamps_s &ekf2_timestamps)
 			.yaw = vehicle_gps_position.heading, //TODO: move to different message
 			.yaw_acc = vehicle_gps_position.heading_accuracy,
 			.yaw_offset = vehicle_gps_position.heading_offset,
-			.spoofed = vehicle_gps_position.spoofing_state == sensor_gps_s::SPOOFING_STATE_MULTIPLE,
+			.spoofed = vehicle_gps_position.spoofing_state == sensor_gps_s::SPOOFING_STATE_DETECTED,
 		};
 
 		_ekf.setGpsData(gnss_sample);

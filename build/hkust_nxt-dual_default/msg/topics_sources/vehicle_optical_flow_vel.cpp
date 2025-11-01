@@ -47,7 +47,7 @@
 
 static_assert(static_cast<orb_id_size_t>(ORB_ID::estimator_optical_flow_vel) == 80, "ORB_ID index mismatch");
 ORB_DEFINE(estimator_optical_flow_vel, struct vehicle_optical_flow_vel_s, 100, 1794347135u, static_cast<orb_id_size_t>(ORB_ID::estimator_optical_flow_vel), 1);
-static_assert(static_cast<orb_id_size_t>(ORB_ID::vehicle_optical_flow_vel) == 284, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::vehicle_optical_flow_vel) == 285, "ORB_ID index mismatch");
 ORB_DEFINE(vehicle_optical_flow_vel, struct vehicle_optical_flow_vel_s, 100, 1794347135u, static_cast<orb_id_size_t>(ORB_ID::vehicle_optical_flow_vel), 1);
 
 

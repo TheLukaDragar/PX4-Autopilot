@@ -45,7 +45,7 @@
 #include <lib/mathlib/mathlib.h>
 
 
-static_assert(static_cast<orb_id_size_t>(ORB_ID::ulog_stream_ack) == 256, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::ulog_stream_ack) == 257, "ORB_ID index mismatch");
 ORB_DEFINE(ulog_stream_ack, struct ulog_stream_ack_s, 10, 3131320455u, static_cast<orb_id_size_t>(ORB_ID::ulog_stream_ack), 1);
 
 

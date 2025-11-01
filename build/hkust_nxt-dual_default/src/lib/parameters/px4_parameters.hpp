@@ -526,7 +526,6 @@ enum class params : uint16_t {
 	COM_OBL_RC_ACT,
 	COM_OF_LOSS_T,
 	COM_PARACHUTE,
-	COM_POSCTL_NAVL,
 	COM_POS_FS_EPH,
 	COM_POS_LOW_ACT,
 	COM_POS_LOW_EPH,
@@ -956,6 +955,7 @@ enum class params : uint16_t {
 	LTEST_SENS_ROT,
 	LTEST_VEL_UNC_IN,
 	MAN_ARM_GESTURE,
+	MAN_DEADZONE,
 	MAN_KILL_GEST_T,
 	MAV_0_CONFIG,
 	MAV_0_FLOW_CTRL,
@@ -1077,7 +1077,6 @@ enum class params : uint16_t {
 	MPC_ACC_HOR_MAX,
 	MPC_ACC_UP_MAX,
 	MPC_ALT_MODE,
-	MPC_HOLD_DZ,
 	MPC_HOLD_MAX_XY,
 	MPC_HOLD_MAX_Z,
 	MPC_JERK_AUTO,
@@ -1113,7 +1112,6 @@ enum class params : uint16_t {
 	MPC_VEL_NF_FRQ,
 	MPC_XY_CRUISE,
 	MPC_XY_ERR_MAX,
-	MPC_XY_MAN_EXPO,
 	MPC_XY_P,
 	MPC_XY_TRAJ_P,
 	MPC_XY_VEL_ALL,
@@ -1123,9 +1121,7 @@ enum class params : uint16_t {
 	MPC_XY_VEL_P_ACC,
 	MPC_YAWRAUTO_ACC,
 	MPC_YAWRAUTO_MAX,
-	MPC_YAW_EXPO,
 	MPC_YAW_MODE,
-	MPC_Z_MAN_EXPO,
 	MPC_Z_P,
 	MPC_Z_VEL_ALL,
 	MPC_Z_VEL_D_ACC,
@@ -1389,12 +1385,9 @@ enum class params : uint16_t {
 	RWTO_ROT_AIRSPD,
 	RWTO_ROT_TIME,
 	RWTO_TKOFF,
-	SDLOG_ALGORITHM,
 	SDLOG_BACKEND,
 	SDLOG_BOOT_BAT,
 	SDLOG_DIRS_MAX,
-	SDLOG_EXCH_KEY,
-	SDLOG_KEY,
 	SDLOG_MISSION,
 	SDLOG_MODE,
 	SDLOG_PROFILE,
@@ -1407,8 +1400,6 @@ enum class params : uint16_t {
 	SENS_BOARD_X_OFF,
 	SENS_BOARD_Y_OFF,
 	SENS_BOARD_Z_OFF,
-	SENS_CM8JL65_CFG,
-	SENS_CM8JL65_R_0,
 	SENS_DPRES_ANSC,
 	SENS_DPRES_OFF,
 	SENS_DPRES_REV,
@@ -1428,7 +1419,6 @@ enum class params : uint16_t {
 	SENS_EN_SPL06,
 	SENS_EN_TF02PRO,
 	SENS_EN_THERMAL,
-	SENS_EN_TRANGER,
 	SENS_EN_VL53L0X,
 	SENS_EN_VL53L1X,
 	SENS_EXT_I2C_PRB,
@@ -4361,11 +4351,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "COM_POSCTL_NAVL",
-		.val = { .i = 0},
-	},
-
-	{
 		.name = "COM_POS_FS_EPH",
 		.val = { .f = 5. },
 	},
@@ -4942,7 +4927,7 @@ static constexpr param_info_s parameters[] = {
 
 	{
 		.name = "EKF2_MIN_RNG",
-		.val = { .f = 0.1 },
+		.val = { .f = 0.01 },
 	},
 
 	{
@@ -6511,6 +6496,11 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
+		.name = "MAN_DEADZONE",
+		.val = { .f = 0.1 },
+	},
+
+	{
 		.name = "MAN_KILL_GEST_T",
 		.val = { .f = -1. },
 	},
@@ -7116,11 +7106,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "MPC_HOLD_DZ",
-		.val = { .f = 0.1 },
-	},
-
-	{
 		.name = "MPC_HOLD_MAX_XY",
 		.val = { .f = 0.8 },
 	},
@@ -7296,11 +7281,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "MPC_XY_MAN_EXPO",
-		.val = { .f = 0.6 },
-	},
-
-	{
 		.name = "MPC_XY_P",
 		.val = { .f = 0.95 },
 	},
@@ -7346,18 +7326,8 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "MPC_YAW_EXPO",
-		.val = { .f = 0.6 },
-	},
-
-	{
 		.name = "MPC_YAW_MODE",
 		.val = { .i = 0},
-	},
-
-	{
-		.name = "MPC_Z_MAN_EXPO",
-		.val = { .f = 0.6 },
 	},
 
 	{
@@ -8676,11 +8646,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "SDLOG_ALGORITHM",
-		.val = { .i = 2},
-	},
-
-	{
 		.name = "SDLOG_BACKEND",
 		.val = { .i = 3},
 	},
@@ -8693,16 +8658,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "SDLOG_DIRS_MAX",
 		.val = { .i = 0},
-	},
-
-	{
-		.name = "SDLOG_EXCH_KEY",
-		.val = { .i = 1},
-	},
-
-	{
-		.name = "SDLOG_KEY",
-		.val = { .i = 2},
 	},
 
 	{
@@ -8763,16 +8718,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "SENS_BOARD_Z_OFF",
 		.val = { .f = 0.0 },
-	},
-
-	{
-		.name = "SENS_CM8JL65_CFG",
-		.val = { .i = 0},
-	},
-
-	{
-		.name = "SENS_CM8JL65_R_0",
-		.val = { .i = 25},
 	},
 
 	{
@@ -8868,11 +8813,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "SENS_EN_THERMAL",
 		.val = { .i = -1},
-	},
-
-	{
-		.name = "SENS_EN_TRANGER",
-		.val = { .i = 0},
 	},
 
 	{
@@ -11197,7 +11137,6 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_INT32,
-	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
@@ -11628,6 +11567,7 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
+	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
@@ -11748,7 +11688,6 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_INT32,
-	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
@@ -11793,10 +11732,7 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_INT32,
-	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
@@ -12068,9 +12004,6 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
-	PARAM_TYPE_INT32,
-	PARAM_TYPE_INT32,
-	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_INT32,
@@ -12078,11 +12011,8 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_INT32,
-	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,

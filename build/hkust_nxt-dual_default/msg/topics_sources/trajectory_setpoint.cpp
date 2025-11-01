@@ -45,7 +45,7 @@
 #include <lib/mathlib/mathlib.h>
 
 
-static_assert(static_cast<orb_id_size_t>(ORB_ID::trajectory_setpoint) == 249, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::trajectory_setpoint) == 250, "ORB_ID index mismatch");
 ORB_DEFINE(trajectory_setpoint, struct trajectory_setpoint_s, 64, 4128550110u, static_cast<orb_id_size_t>(ORB_ID::trajectory_setpoint), 1);
 
 

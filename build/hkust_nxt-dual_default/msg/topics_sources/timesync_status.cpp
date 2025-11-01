@@ -45,7 +45,7 @@
 #include <lib/mathlib/mathlib.h>
 
 
-static_assert(static_cast<orb_id_size_t>(ORB_ID::timesync_status) == 248, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::timesync_status) == 249, "ORB_ID index mismatch");
 ORB_DEFINE(timesync_status, struct timesync_status_s, 37, 3493470941u, static_cast<orb_id_size_t>(ORB_ID::timesync_status), 1);
 
 

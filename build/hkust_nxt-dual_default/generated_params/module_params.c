@@ -396,23 +396,6 @@ PARAM_DEFINE_FLOAT(BAT_EMERGEN_THR, 0.05);
 PARAM_DEFINE_FLOAT(BAT_AVRG_CURRENT, 15);
 
 /**
- * Distance Sensor Rotation
- *
- * Distance Sensor Rotation as MAV_SENSOR_ORIENTATION enum
- * 
- *
- * @group Sensors
- * @value 25 ROTATION_DOWNWARD_FACING
- * @value 24 ROTATION_UPWARD_FACING
- * @value 4 ROTATION_BACKWARD_FACING
- * @value 0 ROTATION_FORWARD_FACING
- * @value 6 ROTATION_LEFT_FACING
- * @value 2 ROTATION_RIGHT_FACING
- * @reboot_required True
- */
-PARAM_DEFINE_INT32(SENS_CM8JL65_R_0, 25);
-
-/**
  * Hardware Model
  *
  * Models differ in range and FoV.
@@ -2034,6 +2017,7 @@ PARAM_DEFINE_INT32(COM_MODE7_HASH, 0);
  * @value 8 Stabilized
  * @value 12 Follow Me
  * @value 13 Precision Land
+ * @value 16 Altitude Cruise
  * @value 100 External Mode 1
  * @value 101 External Mode 2
  * @value 102 External Mode 3
@@ -2068,6 +2052,7 @@ PARAM_DEFINE_INT32(COM_FLTMODE1, -1);
  * @value 8 Stabilized
  * @value 12 Follow Me
  * @value 13 Precision Land
+ * @value 16 Altitude Cruise
  * @value 100 External Mode 1
  * @value 101 External Mode 2
  * @value 102 External Mode 3
@@ -2102,6 +2087,7 @@ PARAM_DEFINE_INT32(COM_FLTMODE2, -1);
  * @value 8 Stabilized
  * @value 12 Follow Me
  * @value 13 Precision Land
+ * @value 16 Altitude Cruise
  * @value 100 External Mode 1
  * @value 101 External Mode 2
  * @value 102 External Mode 3
@@ -2136,6 +2122,7 @@ PARAM_DEFINE_INT32(COM_FLTMODE3, -1);
  * @value 8 Stabilized
  * @value 12 Follow Me
  * @value 13 Precision Land
+ * @value 16 Altitude Cruise
  * @value 100 External Mode 1
  * @value 101 External Mode 2
  * @value 102 External Mode 3
@@ -2170,6 +2157,7 @@ PARAM_DEFINE_INT32(COM_FLTMODE4, -1);
  * @value 8 Stabilized
  * @value 12 Follow Me
  * @value 13 Precision Land
+ * @value 16 Altitude Cruise
  * @value 100 External Mode 1
  * @value 101 External Mode 2
  * @value 102 External Mode 3
@@ -2204,6 +2192,7 @@ PARAM_DEFINE_INT32(COM_FLTMODE5, -1);
  * @value 8 Stabilized
  * @value 12 Follow Me
  * @value 13 Precision Land
+ * @value 16 Altitude Cruise
  * @value 100 External Mode 1
  * @value 101 External Mode 2
  * @value 102 External Mode 3
@@ -7396,7 +7385,7 @@ PARAM_DEFINE_FLOAT(EKF2_TERR_GRAD, 0.5);
  * @min 0.01
  * @unit m
  */
-PARAM_DEFINE_FLOAT(EKF2_MIN_RNG, 0.1);
+PARAM_DEFINE_FLOAT(EKF2_MIN_RNG, 0.01);
 
 /**
  * Process noise spectral density for wind velocity prediction
@@ -7410,6 +7399,120 @@ PARAM_DEFINE_FLOAT(EKF2_MIN_RNG, 0.1);
  * @unit m/s^2/sqrt(Hz)
  */
 PARAM_DEFINE_FLOAT(EKF2_WIND_NSD, 0.05);
+
+/**
+ * UTC offset (unit: min)
+ *
+ * the difference in hours and minutes from Coordinated Universal Time (UTC) for a your place and date. for example, In case of South Korea(UTC+09:00), UTC offset is 540 min (9*60) refer to https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+ *
+ * @group SD Logging
+ * @min -1000
+ * @max 1000
+ * @unit min
+ */
+PARAM_DEFINE_INT32(SDLOG_UTC_OFFSET, 0);
+
+/**
+ * Logging Mode
+ *
+ * Determines when to start and stop logging. By default, logging is started when arming the system, and stopped when disarming. Note: The logging start/end points that can be configured here only apply to SD logging. The mavlink backend is started/stopped independently of these points.
+ *
+ * @group SD Logging
+ * @value 0 when armed until disarm (default)
+ * @value 1 from boot until disarm
+ * @value 2 from boot until shutdown
+ * @value 3 while manual input AUX1 >30%
+ * @value 4 from 1st armed until shutdown
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(SDLOG_MODE, 0);
+
+/**
+ * Logging Backend (integer bitmask)
+ *
+ * If no logging is set the logger will not be started. Set bits true to enable: 0: SD card logging 1: Mavlink logging
+ *
+ * @group SD Logging
+ * @bit 0 SD card logging
+ * @bit 1 Mavlink logging
+ * @min 0
+ * @max 3
+ * @min 0
+ * @max 3
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(SDLOG_BACKEND, 3);
+
+/**
+ * Battery-only Logging
+ *
+ * When enabled, logging will not start from boot if battery power is not detected (e.g. powered via USB on a test bench). This prevents extraneous flight logs from being created during bench testing. Note that this only applies to log-from-boot modes. This has no effect on arm-based modes.
+ *
+ * @group SD Logging
+ * @boolean
+ */
+PARAM_DEFINE_INT32(SDLOG_BOOT_BAT, 0);
+
+/**
+ * Mission Log
+ *
+ * If enabled, a small additional "mission" log file will be written to the SD card. The log contains just those messages that are useful for tasks like generating flight statistics and geotagging. The different modes can be used to further reduce the logged data (and thus the log file size). For example, choose geotagging mode to only log data required for geotagging. Note that the normal/full log is still created, and contains all the data in the mission log (and more).
+ *
+ * @group SD Logging
+ * @value 0 Disabled
+ * @value 1 All mission messages
+ * @value 2 Geotagging messages
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(SDLOG_MISSION, 0);
+
+/**
+ * Logging topic profile (integer bitmask)
+ *
+ * This integer bitmask controls the set and rates of logged topics. The default allows for general log analysis while keeping the log file size reasonably small. Enabling multiple sets leads to higher bandwidth requirements and larger log files. Set bits true to enable: 0 : Default set (used for general log analysis) 1 : Full rate estimator (EKF2) replay topics 2 : Topics for thermal calibration (high rate raw IMU and Baro sensor data) 3 : Topics for system identification (high rate actuator control and IMU data) 4 : Full rates for analysis of fast maneuvers (RC, attitude, rates and actuators) 5 : Debugging topics (debug_*.msg topics, for custom code) 6 : Topics for sensor comparison (low rate raw IMU, Baro and magnetometer data) 7 : Topics for computer vision and collision prevention 8 : Raw FIFO high-rate IMU (Gyro) 9 : Raw FIFO high-rate IMU (Accel) 10: Logging of mavlink tunnel message (useful for payload communication debugging)
+ *
+ * @group SD Logging
+ * @bit 0 Default set (general log analysis)
+ * @bit 1 Estimator replay (EKF2)
+ * @bit 2 Thermal calibration
+ * @bit 3 System identification
+ * @bit 4 High rate
+ * @bit 5 Debug
+ * @bit 6 Sensor comparison
+ * @bit 7 Computer Vision and Avoidance
+ * @bit 8 Raw FIFO high-rate IMU (Gyro)
+ * @bit 9 Raw FIFO high-rate IMU (Accel)
+ * @bit 10 Mavlink tunnel message logging
+ * @bit 11 High rate sensors
+ * @min 0
+ * @max 4095
+ * @min 0
+ * @max 4095
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(SDLOG_PROFILE, 1);
+
+/**
+ * Maximum number of log directories to keep
+ *
+ * If there are more log directories than this value, the system will delete the oldest directories during startup. In addition, the system will delete old logs if there is not enough free space left. The minimum amount is 300 MB. If this is set to 0, old directories will only be removed if the free space falls below the minimum. Note: this does not apply to mission log files.
+ *
+ * @group SD Logging
+ * @min 0
+ * @max 1000
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(SDLOG_DIRS_MAX, 0);
+
+/**
+ * Log UUID
+ *
+ * If set to 1, add an ID to the log, which uniquely identifies the vehicle
+ *
+ * @group SD Logging
+ * @boolean
+ */
+PARAM_DEFINE_INT32(SDLOG_UUID, 1);
 
 /**
  * MAVLink Mode for instance 0
