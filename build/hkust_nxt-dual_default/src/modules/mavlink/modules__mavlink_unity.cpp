@@ -3710,6 +3710,7 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("GIMBAL_MANAGER_STATUS", 0.5f);
 		configure_stream_local("GLOBAL_POSITION", 5.0f);
 		configure_stream_local("GLOBAL_POSITION_INT", 5.0f);
+		configure_stream_local("GNSS_INTEGRITY", 1.0f);
 		configure_stream_local("GPS2_RAW", 1.0f);
 		configure_stream_local("GPS_GLOBAL_ORIGIN", 1.0f);
 		configure_stream_local("GPS_RAW_INT", 5.0f);
@@ -3782,6 +3783,7 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("GIMBAL_DEVICE_SET_ATTITUDE", 5.0f);
 		configure_stream_local("GIMBAL_MANAGER_STATUS", 0.5f);
 		configure_stream_local("GLOBAL_POSITION_INT", 50.0f);
+		configure_stream_local("GNSS_INTEGRITY", 1.0f);
 		configure_stream_local("GPS2_RAW", unlimited_rate);
 		configure_stream_local("GPS_GLOBAL_ORIGIN", 1.0f);
 		configure_stream_local("GPS_RAW_INT", unlimited_rate);
@@ -3942,6 +3944,7 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("ESTIMATOR_STATUS", 5.0f);
 		configure_stream_local("EXTENDED_SYS_STATE", 2.0f);
 		configure_stream_local("GLOBAL_POSITION_INT", 10.0f);
+		configure_stream_local("GNSS_INTEGRITY", 1.0f);
 		configure_stream_local("GPS2_RAW", unlimited_rate);
 		configure_stream_local("GPS_GLOBAL_ORIGIN", 1.0f);
 		configure_stream_local("GPS_RAW_INT", unlimited_rate);
@@ -4044,6 +4047,7 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("GLOBAL_POSITION", 10.0f);
 		configure_stream_local("GLOBAL_POSITION_INT", 10.0f);
 		configure_stream_local("GPS_GLOBAL_ORIGIN", 1.0f);
+		configure_stream_local("GNSS_INTEGRITY", 1.0f);
 		configure_stream_local("GPS2_RAW", unlimited_rate);
 		configure_stream_local("GPS_RAW_INT", unlimited_rate);
 		configure_stream_local("HOME_POSITION", 0.5f);
@@ -4085,18 +4089,18 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("TIMESYNC", 10.0f);
 		configure_stream_local("CAMERA_TRIGGER", 2.0f);
 		configure_stream_local("LOCAL_POSITION_NED", 1.0f);
-		configure_stream_local("ATTITUDE", 1.0f);
+		configure_stream_local("ATTITUDE_QUATERNION", 2.0f);
 		configure_stream_local("ALTITUDE", 1.0f);
-		configure_stream_local("DISTANCE_SENSOR", 2.0f);
+		configure_stream_local("DISTANCE_SENSOR", 1.0f);
 		configure_stream_local("MOUNT_ORIENTATION", 2.0f);
 		configure_stream_local("OBSTACLE_DISTANCE", 2.0f);
 		configure_stream_local("GIMBAL_DEVICE_ATTITUDE_STATUS", 1.0f);
 		configure_stream_local("GIMBAL_MANAGER_STATUS", 0.5f);
 		configure_stream_local("GIMBAL_DEVICE_SET_ATTITUDE", 2.0f);
-		configure_stream_local("ESC_INFO", 1.0f);
-		configure_stream_local("ESC_STATUS", 2.0f);
+		configure_stream_local("ESC_INFO", 0.2f);
+		configure_stream_local("ESC_STATUS", 0.5f);
 
-		configure_stream_local("ADSB_VEHICLE", 2.0f);
+		configure_stream_local("ADSB_VEHICLE", 1.0f);
 		configure_stream_local("ATTITUDE_TARGET", 0.5f);
 		configure_stream_local("AVAILABLE_MODES", 0.3f);
 		configure_stream_local("BATTERY_STATUS", 0.5f);
@@ -4104,25 +4108,30 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("CURRENT_MODE", 0.5f);
 		configure_stream_local("ESTIMATOR_STATUS", 1.0f);
 		configure_stream_local("EXTENDED_SYS_STATE", 0.5f);
-		configure_stream_local("GLOBAL_POSITION_INT", 1.0f);
+		configure_stream_local("GLOBAL_POSITION_INT", 2.0f);
+		configure_stream_local("GLOBAL_POSITION", 2.0f);
 		configure_stream_local("GPS_GLOBAL_ORIGIN", 1.0f);
 		configure_stream_local("GPS2_RAW", 2.0f);
 		configure_stream_local("GPS_RAW_INT", 2.0f);
 		configure_stream_local("HOME_POSITION", 0.5f);
-		configure_stream_local("NAV_CONTROLLER_OUTPUT", 1.5f);
-		configure_stream_local("OPTICAL_FLOW_RAD", 1.0f);
-		configure_stream_local("ORBIT_EXECUTION_STATUS", 2.0f);
+		configure_stream_local("NAV_CONTROLLER_OUTPUT", 0.1f);
+		configure_stream_local("OPTICAL_FLOW_RAD", 0.1f);
+		configure_stream_local("ORBIT_EXECUTION_STATUS", 1.0f);
 		configure_stream_local("PING", 0.1f);
-		configure_stream_local("POSITION_TARGET_GLOBAL_INT", 1.0f);
-		configure_stream_local("POSITION_TARGET_LOCAL_NED", 1.0f);
+		configure_stream_local("POSITION_TARGET_GLOBAL_INT", 0.5f);
+		configure_stream_local("POSITION_TARGET_LOCAL_NED", 0.5f);
+		configure_stream_local("RAW_RPM", 1.0f);
 		configure_stream_local("RC_CHANNELS", 5.0f);
-		configure_stream_local("SERVO_OUTPUT_RAW_0", 1.0f);
+		configure_stream_local("SERVO_OUTPUT_RAW_0", 0.1f);
 		configure_stream_local("SYS_STATUS", 0.5f);
 		configure_stream_local("SYSTEM_TIME", 2.0f);
 		configure_stream_local("TIME_ESTIMATE_TO_TARGET", 0.5f);
-		configure_stream_local("VFR_HUD", 1.0f);
+		configure_stream_local("VFR_HUD", 1.5f);
 		configure_stream_local("VIBRATION", 0.1f);
 		configure_stream_local("WIND_COV", 0.1f);
+#if defined(MAVLINK_MSG_ID_FIGURE_EIGHT_EXECUTION_STATUS)
+		configure_stream_local("FIGURE_EIGHT_EXECUTION_STATUS", 0.5f);
+#endif // MAVLINK_MSG_ID_FIGURE_EIGHT_EXECUTION_STATUS
 		break;
 
 	case MAVLINK_MODE_UAVIONIX:
@@ -5841,6 +5850,9 @@ extern "C" __EXPORT int mavlink_main(int argc, char *argv[])
 #include "streams/GLOBAL_POSITION.hpp"
 #endif //MAVLINK_MSG_ID_GLOBAL_POSITION
 #include "streams/GLOBAL_POSITION_INT.hpp"
+#if defined(MAVLINK_MSG_ID_GNSS_INTEGRITY)
+#include "streams/GNSS_INTEGRITY.hpp"
+#endif
 #include "streams/GPS_GLOBAL_ORIGIN.hpp"
 #include "streams/GPS_RAW_INT.hpp"
 #include "streams/GPS_RTCM_DATA.hpp"
@@ -6269,6 +6281,9 @@ static const StreamListItem streams_list[] = {
 #if defined(UAVIONIX_ADSB_OUT_DYNAMIC_HPP)
 	create_stream_list_item<MavlinkStreamUavionixADSBOutDynamic>(),
 #endif // UAVIONIX_ADSB_OUT_DYNAMIC_HPP
+#if defined(GNSS_INTEGRITY_HPP)
+	create_stream_list_item<MavlinkStreamGNSSIntegrity>(),
+#endif // GNSS_INTEGRITY_HPP
 #if defined(AVAILABLE_MODES_HPP)
 	create_stream_list_item<MavlinkStreamAvailableModes>(),
 #endif // AVAILABLE_MODES_HPP
@@ -8357,6 +8372,7 @@ MavlinkParametersManager::handle_message(const mavlink_message_t *msg)
 #if defined(CONFIG_MAVLINK_UAVCAN_PARAMETERS)
 
 			if (req_list.target_system == mavlink_system.sysid && req_list.target_component < 127 &&
+			    !(req_list.target_component >= MAV_COMP_ID_CAMERA && req_list.target_component <= MAV_COMP_ID_CAMERA6) &&
 			    (req_list.target_component != mavlink_system.compid || req_list.target_component == MAV_COMP_ID_ALL)) {
 				// publish list request to UAVCAN driver via uORB.
 				uavcan_parameter_request_s req{};
@@ -8416,6 +8432,7 @@ MavlinkParametersManager::handle_message(const mavlink_message_t *msg)
 #if defined(CONFIG_MAVLINK_UAVCAN_PARAMETERS)
 
 			if (set.target_system == mavlink_system.sysid && set.target_component < 127 &&
+			    !(set.target_component >= MAV_COMP_ID_CAMERA && set.target_component <= MAV_COMP_ID_CAMERA6) &&
 			    (set.target_component != mavlink_system.compid || set.target_component == MAV_COMP_ID_ALL)) {
 				// publish set request to UAVCAN driver via uORB.
 				uavcan_parameter_request_s req{};
@@ -8494,6 +8511,7 @@ MavlinkParametersManager::handle_message(const mavlink_message_t *msg)
 #if defined(CONFIG_MAVLINK_UAVCAN_PARAMETERS)
 
 			if (req_read.target_system == mavlink_system.sysid && req_read.target_component < 127 &&
+			    !(req_read.target_component >= MAV_COMP_ID_CAMERA && req_read.target_component <= MAV_COMP_ID_CAMERA6) &&
 			    (req_read.target_component != mavlink_system.compid || req_read.target_component == MAV_COMP_ID_ALL)) {
 				// publish set request to UAVCAN driver via uORB.
 				uavcan_parameter_request_s req{};

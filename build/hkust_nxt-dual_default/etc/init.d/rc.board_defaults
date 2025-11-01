@@ -44,6 +44,11 @@ param set-default CBRK_GPSFAIL 240024
 param set-default MPC_ALT_MODE 0
 param set-default EKF2_GPS_CTRL 0
 param set-default EKF2_HGT_REF 0
-param set-default EKF2_OF_CTRL 0
 param set-default NAV_RCL_ACT 3
 param set-default COM_RCL_EXCEPT 0
+param set-default CP_DIST 1.0          # Enable collision prevention with 2m safety distance
+param set-default CP_GO_NO_DATA 0      # Don't move without sensor data (safer)
+param set-default MPC_POS_MODE 4       # Acceleration-based position mode (REQUIRED for collision prevention)
+param set-default COM_OBS_AVOID 1     # Enable obstacle avoidance PROBABLY LEGACY BUT MAVLINK NEEDS IT
+param set-default CP_DELAY 0.4         # Sensor delay compensation
+param set-default CP_GUIDE_ANG 30      # Guidance angle for obstacle avoidance

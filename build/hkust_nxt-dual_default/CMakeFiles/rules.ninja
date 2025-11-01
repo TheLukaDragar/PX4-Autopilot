@@ -829,6 +829,25 @@ rule CXX_STATIC_LIBRARY_LINKER__SlewRate_MinSizeRel
 #############################################
 # Rule for compiling CXX files.
 
+rule CXX_COMPILER__Sticks_unscanned_MinSizeRel
+  depfile = $DEP_FILE
+  deps = gcc
+  command = /opt/homebrew/bin/ccache ${LAUNCHER}${CODE_CHECK}/opt/homebrew/bin/arm-none-eabi-g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
+
+
+#############################################
+# Rule for linking CXX static library.
+
+rule CXX_STATIC_LIBRARY_LINKER__Sticks_MinSizeRel
+  command = $PRE_LINK && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E rm -f $TARGET_FILE && /opt/homebrew/bin/arm-none-eabi-gcc-ar qc $TARGET_FILE $LINK_FLAGS $in && /opt/homebrew/bin/arm-none-eabi-gcc-ranlib $TARGET_FILE && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E touch $TARGET_FILE && $POST_BUILD
+  description = Linking CXX static library $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
+# Rule for compiling CXX files.
+
 rule CXX_COMPILER__StickYaw_unscanned_MinSizeRel
   depfile = $DEP_FILE
   deps = gcc
@@ -1828,25 +1847,6 @@ rule CXX_STATIC_LIBRARY_LINKER__drivers__differential_pressure__sdp3x_MinSizeRel
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__drivers__cm8jl65_unscanned_MinSizeRel
-  depfile = $DEP_FILE
-  deps = gcc
-  command = /opt/homebrew/bin/ccache ${LAUNCHER}${CODE_CHECK}/opt/homebrew/bin/arm-none-eabi-g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for linking CXX static library.
-
-rule CXX_STATIC_LIBRARY_LINKER__drivers__cm8jl65_MinSizeRel
-  command = $PRE_LINK && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E rm -f $TARGET_FILE && /opt/homebrew/bin/arm-none-eabi-gcc-ar qc $TARGET_FILE $LINK_FLAGS $in && /opt/homebrew/bin/arm-none-eabi-gcc-ranlib $TARGET_FILE && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E touch $TARGET_FILE && $POST_BUILD
-  description = Linking CXX static library $TARGET_FILE
-  restat = $RESTAT
-
-
-#############################################
-# Rule for compiling CXX files.
-
 rule CXX_COMPILER__drivers__distance_sensor__lightware_laser_i2c_unscanned_MinSizeRel
   depfile = $DEP_FILE
   deps = gcc
@@ -1896,25 +1896,6 @@ rule CXX_COMPILER__drivers__ll40ls_unscanned_MinSizeRel
 # Rule for linking CXX static library.
 
 rule CXX_STATIC_LIBRARY_LINKER__drivers__ll40ls_MinSizeRel
-  command = $PRE_LINK && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E rm -f $TARGET_FILE && /opt/homebrew/bin/arm-none-eabi-gcc-ar qc $TARGET_FILE $LINK_FLAGS $in && /opt/homebrew/bin/arm-none-eabi-gcc-ranlib $TARGET_FILE && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E touch $TARGET_FILE && $POST_BUILD
-  description = Linking CXX static library $TARGET_FILE
-  restat = $RESTAT
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__drivers__distance_sensor__teraranger_unscanned_MinSizeRel
-  depfile = $DEP_FILE
-  deps = gcc
-  command = /opt/homebrew/bin/ccache ${LAUNCHER}${CODE_CHECK}/opt/homebrew/bin/arm-none-eabi-g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for linking CXX static library.
-
-rule CXX_STATIC_LIBRARY_LINKER__drivers__distance_sensor__teraranger_MinSizeRel
   command = $PRE_LINK && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E rm -f $TARGET_FILE && /opt/homebrew/bin/arm-none-eabi-gcc-ar qc $TARGET_FILE $LINK_FLAGS $in && /opt/homebrew/bin/arm-none-eabi-gcc-ranlib $TARGET_FILE && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E touch $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -3378,6 +3359,25 @@ rule CXX_COMPILER__FlightTaskTransition_unscanned_MinSizeRel
 # Rule for linking CXX static library.
 
 rule CXX_STATIC_LIBRARY_LINKER__FlightTaskTransition_MinSizeRel
+  command = $PRE_LINK && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E rm -f $TARGET_FILE && /opt/homebrew/bin/arm-none-eabi-gcc-ar qc $TARGET_FILE $LINK_FLAGS $in && /opt/homebrew/bin/arm-none-eabi-gcc-ranlib $TARGET_FILE && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E touch $TARGET_FILE && $POST_BUILD
+  description = Linking CXX static library $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER__FlightTaskAltitudeCruise_unscanned_MinSizeRel
+  depfile = $DEP_FILE
+  deps = gcc
+  command = /opt/homebrew/bin/ccache ${LAUNCHER}${CODE_CHECK}/opt/homebrew/bin/arm-none-eabi-g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
+
+
+#############################################
+# Rule for linking CXX static library.
+
+rule CXX_STATIC_LIBRARY_LINKER__FlightTaskAltitudeCruise_MinSizeRel
   command = $PRE_LINK && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E rm -f $TARGET_FILE && /opt/homebrew/bin/arm-none-eabi-gcc-ar qc $TARGET_FILE $LINK_FLAGS $in && /opt/homebrew/bin/arm-none-eabi-gcc-ranlib $TARGET_FILE && /Users/carbs/miniforge3/envs/ai/lib/python3.11/site-packages/cmake/data/bin/cmake -E touch $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT

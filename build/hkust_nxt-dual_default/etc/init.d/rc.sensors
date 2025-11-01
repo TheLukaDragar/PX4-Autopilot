@@ -159,5 +159,6 @@ qmc5883l -X -q start
 qmc5883p -X -q start
 rm3100 -X -q start
 bmm350 -X -q start
+iis2mdc -X -q start
 ak09916 -X -q start
 fi

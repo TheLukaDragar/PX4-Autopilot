@@ -761,6 +761,10 @@
               "description": "External 8",
               "name": "external8"
             },
+            "24": {
+              "description": "Altitude Cruise",
+              "name": "altitude_cruise"
+            },
             "255": {
               "description": "[Unknown]",
               "name": "unknown"

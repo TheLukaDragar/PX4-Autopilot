@@ -42,7 +42,7 @@
 
 #ifndef __cplusplus
 #define BATTERY_STATUS_MESSAGE_VERSION 1
-#define BATTERY_STATUS_MAX_INSTANCES 4
+#define BATTERY_STATUS_MAX_INSTANCES 3
 #define BATTERY_STATUS_SOURCE_POWER_MODULE 0
 #define BATTERY_STATUS_SOURCE_EXTERNAL 1
 #define BATTERY_STATUS_SOURCE_ESCS 2
@@ -117,7 +117,7 @@ struct battery_status_s {
 
 #ifdef __cplusplus
 	static constexpr uint32_t MESSAGE_VERSION = 1;
-	static constexpr uint8_t MAX_INSTANCES = 4;
+	static constexpr uint8_t MAX_INSTANCES = 3;
 	static constexpr uint8_t SOURCE_POWER_MODULE = 0;
 	static constexpr uint8_t SOURCE_EXTERNAL = 1;
 	static constexpr uint8_t SOURCE_ESCS = 2;

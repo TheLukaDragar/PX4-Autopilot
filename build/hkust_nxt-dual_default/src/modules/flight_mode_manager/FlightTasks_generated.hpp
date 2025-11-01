@@ -52,6 +52,7 @@
 #include "FlightTaskManualAltitudeSmoothVel.hpp"
 #include "FlightTaskManualPosition.hpp"
 #include "FlightTaskTransition.hpp"
+#include "FlightTaskAltitudeCruise.hpp"
 #include "FlightTaskAutoFollowTarget.hpp"
 #include "FlightTaskOrbit.hpp"
 
@@ -66,6 +67,7 @@ enum class FlightTaskIndex : int {
     ManualAltitudeSmoothVel,
     ManualPosition,
     Transition,
+    AltitudeCruise,
     AutoFollowTarget,
     Orbit,
 
@@ -85,6 +87,7 @@ union TaskUnion {
     FlightTaskManualAltitudeSmoothVel ManualAltitudeSmoothVel;
     FlightTaskManualPosition ManualPosition;
     FlightTaskTransition Transition;
+    FlightTaskAltitudeCruise AltitudeCruise;
     FlightTaskAutoFollowTarget AutoFollowTarget;
     FlightTaskOrbit Orbit;
 };

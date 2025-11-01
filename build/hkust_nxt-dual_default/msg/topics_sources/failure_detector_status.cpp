@@ -46,7 +46,7 @@
 
 
 static_assert(static_cast<orb_id_size_t>(ORB_ID::failure_detector_status) == 92, "ORB_ID index mismatch");
-ORB_DEFINE(failure_detector_status, struct failure_detector_status_s, 22, 1453093247u, static_cast<orb_id_size_t>(ORB_ID::failure_detector_status), 1);
+ORB_DEFINE(failure_detector_status, struct failure_detector_status_s, 24, 3586818439u, static_cast<orb_id_size_t>(ORB_ID::failure_detector_status), 1);
 
 
 void print_message(const orb_metadata *meta, const failure_detector_status_s& message)

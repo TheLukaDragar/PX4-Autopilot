@@ -43,7 +43,7 @@
 
 static inline constexpr int ucdr_topic_size_sensor_gps()
 {
-	return 159;
+	return 163;
 }
 
 static inline bool ucdr_serialize_sensor_gps(const void* data, ucdrBuffer& buf, int64_t time_offset = 0)
@@ -133,8 +133,12 @@ static inline bool ucdr_serialize_sensor_gps(const void* data, ucdrBuffer& buf, 
 	memcpy(buf.iterator, &topic.spoofing_state, sizeof(topic.spoofing_state));
 	buf.iterator += sizeof(topic.spoofing_state);
 	buf.offset += sizeof(topic.spoofing_state);
-	buf.iterator += 3; // padding
-	buf.offset += 3; // padding
+	static_assert(sizeof(topic.authentication_state) == 1, "size mismatch");
+	memcpy(buf.iterator, &topic.authentication_state, sizeof(topic.authentication_state));
+	buf.iterator += sizeof(topic.authentication_state);
+	buf.offset += sizeof(topic.authentication_state);
+	buf.iterator += 2; // padding
+	buf.offset += 2; // padding
 	static_assert(sizeof(topic.vel_m_s) == 4, "size mismatch");
 	memcpy(buf.iterator, &topic.vel_m_s, sizeof(topic.vel_m_s));
 	buf.iterator += sizeof(topic.vel_m_s);
@@ -175,6 +179,10 @@ static inline bool ucdr_serialize_sensor_gps(const void* data, ucdrBuffer& buf, 
 	buf.offset += sizeof(topic.satellites_used);
 	buf.iterator += 3; // padding
 	buf.offset += 3; // padding
+	static_assert(sizeof(topic.system_error) == 4, "size mismatch");
+	memcpy(buf.iterator, &topic.system_error, sizeof(topic.system_error));
+	buf.iterator += sizeof(topic.system_error);
+	buf.offset += sizeof(topic.system_error);
 	static_assert(sizeof(topic.heading) == 4, "size mismatch");
 	memcpy(buf.iterator, &topic.heading, sizeof(topic.heading));
 	buf.iterator += sizeof(topic.heading);
@@ -294,8 +302,12 @@ static inline bool ucdr_deserialize_sensor_gps(ucdrBuffer& buf, sensor_gps_s& to
 	memcpy(&topic.spoofing_state, buf.iterator, sizeof(topic.spoofing_state));
 	buf.iterator += sizeof(topic.spoofing_state);
 	buf.offset += sizeof(topic.spoofing_state);
-	buf.iterator += 3; // padding
-	buf.offset += 3; // padding
+	static_assert(sizeof(topic.authentication_state) == 1, "size mismatch");
+	memcpy(&topic.authentication_state, buf.iterator, sizeof(topic.authentication_state));
+	buf.iterator += sizeof(topic.authentication_state);
+	buf.offset += sizeof(topic.authentication_state);
+	buf.iterator += 2; // padding
+	buf.offset += 2; // padding
 	static_assert(sizeof(topic.vel_m_s) == 4, "size mismatch");
 	memcpy(&topic.vel_m_s, buf.iterator, sizeof(topic.vel_m_s));
 	buf.iterator += sizeof(topic.vel_m_s);
@@ -336,6 +348,10 @@ static inline bool ucdr_deserialize_sensor_gps(ucdrBuffer& buf, sensor_gps_s& to
 	buf.offset += sizeof(topic.satellites_used);
 	buf.iterator += 3; // padding
 	buf.offset += 3; // padding
+	static_assert(sizeof(topic.system_error) == 4, "size mismatch");
+	memcpy(&topic.system_error, buf.iterator, sizeof(topic.system_error));
+	buf.iterator += sizeof(topic.system_error);
+	buf.offset += sizeof(topic.system_error);
 	static_assert(sizeof(topic.heading) == 4, "size mismatch");
 	memcpy(&topic.heading, buf.iterator, sizeof(topic.heading));
 	buf.iterator += sizeof(topic.heading);

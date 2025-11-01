@@ -268,13 +268,16 @@ EKF2_SYMFORCE_GEN:BOOL=OFF
 EXTERNAL_MODULES_LOCATION:STRING=
 
 //Dependencies for the target
+FlightTaskAltitudeCruise_LIB_DEPENDS:STATIC=general;FlightTaskManualAltitudeSmoothVel;
+
+//Dependencies for the target
 FlightTaskAutoFollowTarget_LIB_DEPENDS:STATIC=general;FlightTaskAuto;general;follow_target_estimator;
 
 //Dependencies for the target
-FlightTaskAuto_LIB_DEPENDS:STATIC=general;FlightTask;general;FlightTaskUtility;general;StickYaw;general;WeatherVane;
+FlightTaskAuto_LIB_DEPENDS:STATIC=general;FlightTask;general;FlightTaskUtility;general;Sticks;general;StickYaw;general;WeatherVane;
 
 //Dependencies for the target
-FlightTaskDescend_LIB_DEPENDS:STATIC=general;FlightTask;general;FlightTaskUtility;general;StickYaw;
+FlightTaskDescend_LIB_DEPENDS:STATIC=general;FlightTask;general;FlightTaskUtility;general;Sticks;general;StickYaw;
 
 //Dependencies for the target
 FlightTaskFailsafe_LIB_DEPENDS:STATIC=general;FlightTask;
@@ -289,7 +292,7 @@ FlightTaskManualAcceleration_LIB_DEPENDS:STATIC=general;FlightTaskManualAltitude
 FlightTaskManualAltitudeSmoothVel_LIB_DEPENDS:STATIC=general;FlightTaskManualAltitude;general;FlightTaskUtility;
 
 //Dependencies for the target
-FlightTaskManualAltitude_LIB_DEPENDS:STATIC=general;FlightTask;general;FlightTaskUtility;general;StickYaw;
+FlightTaskManualAltitude_LIB_DEPENDS:STATIC=general;FlightTask;general;FlightTaskUtility;general;Sticks;general;StickYaw;
 
 //Dependencies for the target
 FlightTaskManualPosition_LIB_DEPENDS:STATIC=general;CollisionPrevention;general;WeatherVane;general;FlightTaskManualAltitude;
@@ -301,7 +304,7 @@ FlightTaskOrbit_LIB_DEPENDS:STATIC=general;FlightTaskManualAltitudeSmoothVel;gen
 FlightTaskTransition_LIB_DEPENDS:STATIC=general;FlightTask;general;FlightTaskUtility;
 
 //Dependencies for the target
-FlightTaskUtility_LIB_DEPENDS:STATIC=general;FlightTask;general;hysteresis;general;SlewRate;general;motion_planning;general;mathlib;
+FlightTaskUtility_LIB_DEPENDS:STATIC=general;FlightTask;general;hysteresis;general;SlewRate;general;Sticks;general;motion_planning;general;mathlib;
 
 //Git command line client
 GIT_EXECUTABLE:FILEPATH=/opt/homebrew/bin/git
@@ -704,7 +707,7 @@ modules__events_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;genera
 modules__fake_gps_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;general;perf;general;px4_layer;general;uORB;general;px4_work_queue;
 
 //Dependencies for the target
-modules__flight_mode_manager_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;general;perf;general;px4_layer;general;uORB;general;px4_work_queue;general;WeatherVane;general;FlightTaskAuto;general;FlightTaskDescend;general;FlightTaskFailsafe;general;FlightTaskManualAcceleration;general;FlightTaskManualAccelerationSlow;general;FlightTaskManualAltitude;general;FlightTaskManualAltitudeSmoothVel;general;FlightTaskManualPosition;general;FlightTaskTransition;general;FlightTaskAutoFollowTarget;general;FlightTaskOrbit;
+modules__flight_mode_manager_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;general;perf;general;px4_layer;general;uORB;general;px4_work_queue;general;WeatherVane;general;FlightTaskAuto;general;FlightTaskDescend;general;FlightTaskFailsafe;general;FlightTaskManualAcceleration;general;FlightTaskManualAccelerationSlow;general;FlightTaskManualAltitude;general;FlightTaskManualAltitudeSmoothVel;general;FlightTaskManualPosition;general;FlightTaskTransition;general;FlightTaskAltitudeCruise;general;FlightTaskAutoFollowTarget;general;FlightTaskOrbit;
 
 //Dependencies for the target
 modules__fw_att_control_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;general;perf;general;px4_layer;general;uORB;general;px4_work_queue;
@@ -713,7 +716,7 @@ modules__fw_att_control_LIB_DEPENDS:STATIC=general;px4_platform;general;systemli
 modules__fw_lateral_longitudinal_control_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;general;perf;general;px4_layer;general;uORB;general;npfg;general;tecs;
 
 //Dependencies for the target
-modules__fw_mode_manager_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;general;perf;general;px4_layer;general;uORB;general;launchdetection;general;npfg;general;runway_takeoff;general;SlewRate;general;tecs;general;motion_planning;general;performance_model;
+modules__fw_mode_manager_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;general;perf;general;px4_layer;general;uORB;general;launchdetection;general;npfg;general;runway_takeoff;general;SlewRate;general;tecs;general;motion_planning;general;performance_model;general;Sticks;
 
 //Dependencies for the target
 modules__fw_rate_control_LIB_DEPENDS:STATIC=general;px4_platform;general;systemlib;general;perf;general;px4_layer;general;uORB;general;px4_work_queue;general;RateControl;general;SlewRate;
@@ -1454,7 +1457,7 @@ CONFIG_DRIVERS_DIFFERENTIAL_PRESSURE_MS5525DSO:INTERNAL=y
 //BOARD DEFCONFIG: CONFIG_DRIVERS_DIFFERENTIAL_PRESSURE_SDP3X
 CONFIG_DRIVERS_DIFFERENTIAL_PRESSURE_SDP3X:INTERNAL=y
 //BOARD DEFCONFIG: CONFIG_DRIVERS_DISTANCE_SENSOR_CM8JL65
-CONFIG_DRIVERS_DISTANCE_SENSOR_CM8JL65:INTERNAL=y
+CONFIG_DRIVERS_DISTANCE_SENSOR_CM8JL65:INTERNAL=
 //BOARD DEFCONFIG: CONFIG_DRIVERS_DISTANCE_SENSOR_LIGHTWARE_LASER_I2C
 CONFIG_DRIVERS_DISTANCE_SENSOR_LIGHTWARE_LASER_I2C:INTERNAL=y
 //BOARD DEFCONFIG: CONFIG_DRIVERS_DISTANCE_SENSOR_LIGHTWARE_LASER_SERIAL
@@ -1462,7 +1465,7 @@ CONFIG_DRIVERS_DISTANCE_SENSOR_LIGHTWARE_LASER_SERIAL:INTERNAL=y
 //BOARD DEFCONFIG: CONFIG_DRIVERS_DISTANCE_SENSOR_LL40LS
 CONFIG_DRIVERS_DISTANCE_SENSOR_LL40LS:INTERNAL=y
 //BOARD DEFCONFIG: CONFIG_DRIVERS_DISTANCE_SENSOR_TERARANGER
-CONFIG_DRIVERS_DISTANCE_SENSOR_TERARANGER:INTERNAL=y
+CONFIG_DRIVERS_DISTANCE_SENSOR_TERARANGER:INTERNAL=
 //BOARD DEFCONFIG: CONFIG_DRIVERS_DISTANCE_SENSOR_TF02PRO
 CONFIG_DRIVERS_DISTANCE_SENSOR_TF02PRO:INTERNAL=y
 //BOARD DEFCONFIG: CONFIG_DRIVERS_DISTANCE_SENSOR_TFMINI

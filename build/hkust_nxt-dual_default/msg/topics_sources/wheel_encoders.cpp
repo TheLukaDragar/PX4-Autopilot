@@ -45,7 +45,7 @@
 #include <lib/mathlib/mathlib.h>
 
 
-static_assert(static_cast<orb_id_size_t>(ORB_ID::wheel_encoders) == 297, "ORB_ID index mismatch");
+static_assert(static_cast<orb_id_size_t>(ORB_ID::wheel_encoders) == 298, "ORB_ID index mismatch");
 ORB_DEFINE(wheel_encoders, struct wheel_encoders_s, 24, 2294962207u, static_cast<orb_id_size_t>(ORB_ID::wheel_encoders), 1);
 
 

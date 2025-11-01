@@ -53,6 +53,7 @@ struct failure_detector_status_s {
 	uint64_t timestamp;
 	float imbalanced_prop_metric;
 	uint16_t motor_failure_mask;
+	uint16_t motor_stop_mask;
 	bool fd_roll;
 	bool fd_pitch;
 	bool fd_alt;
@@ -61,7 +62,6 @@ struct failure_detector_status_s {
 	bool fd_battery;
 	bool fd_imbalanced_prop;
 	bool fd_motor;
-	uint8_t _padding0[2]; // required for logger
 
 
 #ifdef __cplusplus

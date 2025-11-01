@@ -2,200 +2,6 @@
   <version>3</version>
   <parameter_version_major>1</parameter_version_major>
   <parameter_version_minor>15</parameter_version_minor>
-  <group name="UAVCAN Motor Parameters" no_code_generation="true">
-    <parameter name="ctl_bw" default="75" type="INT32">
-      <short_desc>Speed controller bandwidth</short_desc>
-      <long_desc>Speed controller bandwidth, in Hz. Higher values result in faster speed and current rise times, but may result in overshoot and higher current consumption. For fixed-wing aircraft, this value should be less than 50 Hz; for multirotors, values up to 100 Hz may provide improvements in responsiveness.</long_desc>
-      <min>10</min>
-      <max>250</max>
-      <unit>Hz</unit>
-    </parameter>
-    <parameter name="ctl_dir" default="1" type="INT32">
-      <short_desc>Reverse direction</short_desc>
-      <long_desc>Motor spin direction as detected during initial enumeration. Use 0 or 1 to reverse direction.</long_desc>
-      <min>0</min>
-      <max>1</max>
-    </parameter>
-    <parameter name="ctl_gain" default="1" type="FLOAT">
-      <short_desc>Speed (RPM) controller gain</short_desc>
-      <long_desc>Speed (RPM) controller gain. Determines controller
-            aggressiveness; units are amp-seconds per radian. Systems with
-            higher rotational inertia (large props) will need gain increased;
-            systems with low rotational inertia (small props) may need gain
-            decreased. Higher values result in faster response, but may result
-            in oscillation and excessive overshoot. Lower values result in a
-            slower, smoother response.</long_desc>
-      <min>0.00</min>
-      <max>1.00</max>
-      <unit>C/rad</unit>
-      <decimal>3</decimal>
-    </parameter>
-    <parameter name="ctl_hz_idle" default="3.5" type="FLOAT">
-      <short_desc>Idle speed (e Hz)</short_desc>
-      <long_desc>Idle speed (e Hz)</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-      <unit>Hz</unit>
-      <decimal>3</decimal>
-    </parameter>
-    <parameter name="ctl_start_rate" default="25" type="INT32">
-      <short_desc>Spin-up rate (e Hz/s)</short_desc>
-      <long_desc>Spin-up rate (e Hz/s)</long_desc>
-      <min>5</min>
-      <max>1000</max>
-      <unit>1/s^2</unit>
-    </parameter>
-    <parameter name="esc_index" default="0" type="INT32">
-      <short_desc>Index of this ESC in throttle command messages.</short_desc>
-      <long_desc>Index of this ESC in throttle command messages.</long_desc>
-      <min>0</min>
-      <max>15</max>
-    </parameter>
-    <parameter name="id_ext_status" default="20034" type="INT32">
-      <short_desc>Extended status ID</short_desc>
-      <long_desc>Extended status ID</long_desc>
-      <min>1</min>
-      <max>1000000</max>
-    </parameter>
-    <parameter name="int_ext_status" default="50000" type="INT32">
-      <short_desc>Extended status interval (µs)</short_desc>
-      <long_desc>Extended status interval (µs)</long_desc>
-      <min>0</min>
-      <max>1000000</max>
-      <unit>us</unit>
-    </parameter>
-    <parameter name="int_status" default="50000" type="INT32">
-      <short_desc>ESC status interval (µs)</short_desc>
-      <long_desc>ESC status interval (µs)</long_desc>
-      <max>1000000</max>
-      <unit>us</unit>
-    </parameter>
-    <parameter name="mot_i_max" default="12" type="FLOAT">
-      <short_desc>Motor current limit in amps</short_desc>
-      <long_desc>Motor current limit in amps. This determines the maximum
-            current controller setpoint, as well as the maximum allowable
-            current setpoint slew rate. This value should generally be set to
-            the continuous current rating listed in the motor’s specification
-            sheet, or set equal to the motor’s specified continuous power
-            divided by the motor voltage limit.</long_desc>
-      <min>1</min>
-      <max>80</max>
-      <unit>A</unit>
-      <decimal>3</decimal>
-    </parameter>
-    <parameter name="mot_kv" default="2300" type="INT32">
-      <short_desc>Motor Kv in RPM per volt</short_desc>
-      <long_desc>Motor Kv in RPM per volt. This can be taken from the motor’s
-            specification sheet; accuracy will help control performance but
-            some deviation from the specified value is acceptable.</long_desc>
-      <min>0</min>
-      <max>4000</max>
-      <unit>rpm/V</unit>
-    </parameter>
-    <parameter name="mot_ls" default="0.0" type="FLOAT">
-      <short_desc>READ ONLY: Motor inductance in henries.</short_desc>
-      <long_desc>READ ONLY: Motor inductance in henries. This is measured on start-up.</long_desc>
-      <unit>H</unit>
-      <decimal>3</decimal>
-    </parameter>
-    <parameter name="mot_num_poles" default="14" type="INT32">
-      <short_desc>Number of motor poles.</short_desc>
-      <long_desc>Number of motor poles. Used to convert mechanical speeds to
-            electrical speeds. This number should be taken from the motor’s
-            specification sheet.</long_desc>
-      <min>2</min>
-      <max>40</max>
-    </parameter>
-    <parameter name="mot_rs" default="0.0" type="FLOAT">
-      <short_desc>READ ONLY: Motor resistance in ohms</short_desc>
-      <long_desc>READ ONLY: Motor resistance in ohms. This is measured on start-up. When
-            tuning a new motor, check that this value is approximately equal
-            to the value shown in the motor’s specification sheet.</long_desc>
-      <unit>Ohm</unit>
-      <decimal>3</decimal>
-    </parameter>
-    <parameter name="mot_v_accel" default="0.5" type="FLOAT">
-      <short_desc>Acceleration limit (V)</short_desc>
-      <long_desc>Acceleration limit (V)</long_desc>
-      <min>0.01</min>
-      <max>1.00</max>
-      <unit>V</unit>
-      <decimal>3</decimal>
-    </parameter>
-    <parameter name="mot_v_max" default="14.8" type="FLOAT">
-      <short_desc>Motor voltage limit in volts</short_desc>
-      <long_desc>Motor voltage limit in volts. The current controller’s
-            commanded voltage will never exceed this value. Note that this may
-            safely be above the nominal voltage of the motor; to determine the
-            actual motor voltage limit, divide the motor’s rated power by the
-            motor current limit.</long_desc>
-      <min>0</min>
-      <unit>V</unit>
-      <decimal>3</decimal>
-    </parameter>
-  </group>
-  <group name="UAVCAN GNSS" no_code_generation="true">
-    <parameter name="gnss.dyn_model" default="2" type="INT32">
-      <short_desc>GNSS dynamic model</short_desc>
-      <long_desc>Dynamic model used in the GNSS positioning engine. 0 –
-        Automotive, 1 – Sea, 2 – Airborne.
-      </long_desc>
-      <min>0</min>
-      <max>2</max>
-      <values>
-        <value code="0">Automotive</value>
-        <value code="1">Sea</value>
-        <value code="2">Airborne</value>
-      </values>
-    </parameter>
-    <parameter name="gnss.old_fix_msg" default="1" type="INT32">
-      <short_desc>Broadcast old GNSS fix message</short_desc>
-      <long_desc>Broadcast the old (deprecated) GNSS fix message
-        uavcan.equipment.gnss.Fix alongside the new alternative
-        uavcan.equipment.gnss.Fix2. It is recommended to
-        disable this feature to reduce the CAN bus traffic.
-      </long_desc>
-      <min>0</min>
-      <max>1</max>
-      <values>
-        <value code="0">Fix2</value>
-        <value code="1">Fix and Fix2</value>
-      </values>
-    </parameter>
-    <parameter name="gnss.warn_dimens" default="0" type="INT32">
-      <short_desc>device health warning</short_desc>
-      <long_desc>Set the device health to Warning if the dimensionality of
-              the GNSS solution is less than this value. 3 for the full (3D)
-              solution, 2 for planar (2D) solution, 1 for time-only solution,
-              0 disables the feature.
-      </long_desc>
-      <min>0</min>
-      <max>3</max>
-      <values>
-        <value code="0">disables the feature</value>
-        <value code="1">time-only solution</value>
-        <value code="2">planar (2D) solution</value>
-        <value code="3">full (3D) solution</value>
-      </values>
-    </parameter>
-    <parameter name="gnss.warn_sats" default="0" type="INT32">
-      <short_desc />
-      <long_desc>Set the device health to Warning if the number of satellites
-        used in the GNSS solution is below this threshold. Zero
-        disables the feature
-      </long_desc>
-    </parameter>
-    <parameter name="uavcan.pubp-pres" default="0" type="INT32">
-      <short_desc />
-      <long_desc>Set the device health to Warning if the number of satellites
-        used in the GNSS solution is below this threshold. Zero
-        disables the feature
-      </long_desc>
-      <min>0</min>
-      <max>1000000</max>
-      <unit>us</unit>
-    </parameter>
-  </group>
   <group name="ADSB">
     <parameter name="ADSB_CALLSIGN_1" default="0" type="INT32">
       <short_desc>First 4 characters of CALLSIGN</short_desc>
@@ -2190,6 +1996,7 @@ selected flight mode will be applied.</long_desc>
         <value code="11">Land</value>
         <value code="12">Follow Me</value>
         <value code="13">Precision Land</value>
+        <value code="16">Altitude Cruise</value>
         <value code="100">External Mode 1</value>
         <value code="101">External Mode 2</value>
         <value code="102">External Mode 3</value>
@@ -2220,6 +2027,7 @@ selected flight mode will be applied.</long_desc>
         <value code="11">Land</value>
         <value code="12">Follow Me</value>
         <value code="13">Precision Land</value>
+        <value code="16">Altitude Cruise</value>
         <value code="100">External Mode 1</value>
         <value code="101">External Mode 2</value>
         <value code="102">External Mode 3</value>
@@ -2250,6 +2058,7 @@ selected flight mode will be applied.</long_desc>
         <value code="11">Land</value>
         <value code="12">Follow Me</value>
         <value code="13">Precision Land</value>
+        <value code="16">Altitude Cruise</value>
         <value code="100">External Mode 1</value>
         <value code="101">External Mode 2</value>
         <value code="102">External Mode 3</value>
@@ -2280,6 +2089,7 @@ selected flight mode will be applied.</long_desc>
         <value code="11">Land</value>
         <value code="12">Follow Me</value>
         <value code="13">Precision Land</value>
+        <value code="16">Altitude Cruise</value>
         <value code="100">External Mode 1</value>
         <value code="101">External Mode 2</value>
         <value code="102">External Mode 3</value>
@@ -2310,6 +2120,7 @@ selected flight mode will be applied.</long_desc>
         <value code="11">Land</value>
         <value code="12">Follow Me</value>
         <value code="13">Precision Land</value>
+        <value code="16">Altitude Cruise</value>
         <value code="100">External Mode 1</value>
         <value code="101">External Mode 2</value>
         <value code="102">External Mode 3</value>
@@ -2340,6 +2151,7 @@ selected flight mode will be applied.</long_desc>
         <value code="11">Land</value>
         <value code="12">Follow Me</value>
         <value code="13">Precision Land</value>
+        <value code="16">Altitude Cruise</value>
         <value code="100">External Mode 1</value>
         <value code="101">External Mode 2</value>
         <value code="102">External Mode 3</value>
@@ -2549,14 +2361,6 @@ set by COM_OF_LOSS_T in seconds.</long_desc>
     <parameter name="COM_PARACHUTE" default="0" type="INT32" boolean="true">
       <short_desc>Expect and require a healthy MAVLink parachute system</short_desc>
     </parameter>
-    <parameter name="COM_POSCTL_NAVL" default="0" type="INT32">
-      <short_desc>Position mode navigation loss response</short_desc>
-      <long_desc>This sets the flight mode that will be used if navigation accuracy is no longer adequate for position control in manual Position mode.</long_desc>
-      <values>
-        <value code="0">Altitude mode</value>
-        <value code="1">Land mode (descend)</value>
-      </values>
-    </parameter>
     <parameter name="COM_POS_FS_EPH" default="5." type="FLOAT">
       <short_desc>Horizontal position error threshold for hovering systems</short_desc>
       <long_desc>This is the horizontal position error (EPH) threshold that will trigger a failsafe.
@@ -2636,12 +2440,13 @@ A negative value disables the check.</long_desc>
       <long_desc>Specify modes where manual control loss is ignored and no failsafe is triggered.
 External modes requiring stick input will still failsafe.</long_desc>
       <min>0</min>
-      <max>15</max>
+      <max>31</max>
       <bitmask>
         <bit index="0">Mission</bit>
         <bit index="1">Hold</bit>
         <bit index="2">Offboard</bit>
         <bit index="3">External Mode</bit>
+        <bit index="4">Altitude Cruise</bit>
       </bitmask>
     </parameter>
     <parameter name="COM_RC_ARM_HYST" default="1000" type="INT32">
@@ -3518,7 +3323,7 @@ Typical motors for 5 inch props have 14 poles.</long_desc>
       <unit>1/s</unit>
       <decimal>2</decimal>
     </parameter>
-    <parameter name="EKF2_MIN_RNG" default="0.1" type="FLOAT">
+    <parameter name="EKF2_MIN_RNG" default="0.01" type="FLOAT">
       <short_desc>Expected range finder reading when on ground</short_desc>
       <long_desc>If the vehicle is on ground, is not moving as determined by the motion test and the range finder is returning invalid or no data, then an assumed range value of EKF2_MIN_RNG will be used by the terrain estimator so that a terrain height estimate is available at the start of flight in situations where the range finder may be inside its minimum measurements distance when on ground.</long_desc>
       <min>0.01</min>
@@ -8575,6 +8380,17 @@ Decrease to make the estimator more robust to noise</long_desc>
       <long_desc>This determines if moving the left stick to the lower right
 arms and to the lower left disarms the vehicle.</long_desc>
     </parameter>
+    <parameter name="MAN_DEADZONE" default="0.1" type="FLOAT">
+      <short_desc>Deadzone for sticks (only specific use cases)</short_desc>
+      <long_desc>Range around stick center ignored to prevent
+vehicle drift from stick hardware inaccuracy.
+Does not apply to any precise constant input like
+throttle and attitude or rate piloting.</long_desc>
+      <min>0</min>
+      <max>1</max>
+      <decimal>2</decimal>
+      <increment>0.01</increment>
+    </parameter>
     <parameter name="MAN_KILL_GEST_T" default="-1." type="FLOAT">
       <short_desc>Trigger time for kill stick gesture</short_desc>
       <long_desc>The timeout for holding the left stick to the lower left
@@ -9234,14 +9050,6 @@ The speed threshold is MPC_HOLD_MAX_XY</long_desc>
         <value code="2">Terrain hold</value>
       </values>
     </parameter>
-    <parameter name="MPC_HOLD_DZ" default="0.1" type="FLOAT">
-      <short_desc>Deadzone for sticks in manual piloted modes</short_desc>
-      <long_desc>Does not apply to manual throttle and direct attitude piloting by stick.</long_desc>
-      <min>0</min>
-      <max>1</max>
-      <decimal>2</decimal>
-      <increment>0.01</increment>
-    </parameter>
     <parameter name="MPC_HOLD_MAX_XY" default="0.8" type="FLOAT">
       <short_desc>Maximum horizontal velocity for which position hold is enabled (use 0 to disable check)</short_desc>
       <long_desc>Only used with MPC_POS_MODE Direct velocity or MPC_ALT_MODE 2</long_desc>
@@ -9358,7 +9166,7 @@ Airmode is used to keep torque authority with zero thrust (see MC_AIRMODE).</lon
       <increment>0.01</increment>
     </parameter>
     <parameter name="MPC_MAN_TILT_MAX" default="35." type="FLOAT">
-      <short_desc>Maximal tilt angle in Stabilized or Altitude mode</short_desc>
+      <short_desc>Maximal tilt angle in Stabilized, Altitude and Altitude Cruise mode</short_desc>
       <min>1</min>
       <max>70</max>
       <unit>deg</unit>
@@ -9586,17 +9394,6 @@ capabilities of the vehicle.</long_desc>
       <decimal>1</decimal>
       <increment>1</increment>
     </parameter>
-    <parameter name="MPC_XY_MAN_EXPO" default="0.6" type="FLOAT">
-      <short_desc>Manual position control stick exponential curve sensitivity</short_desc>
-      <long_desc>The higher the value the less sensitivity the stick has around zero
-while still reaching the maximum value with full stick deflection.
-0 Purely linear input curve
-1 Purely cubic input curve</long_desc>
-      <min>0</min>
-      <max>1</max>
-      <decimal>2</decimal>
-      <increment>0.01</increment>
-    </parameter>
     <parameter name="MPC_XY_P" default="0.95" type="FLOAT">
       <short_desc>Proportional gain for horizontal position error</short_desc>
       <long_desc>Defined as corrective velocity in m/s per m position error</long_desc>
@@ -9656,28 +9453,6 @@ Any higher value is truncated.</long_desc>
       <max>5</max>
       <decimal>2</decimal>
       <increment>0.1</increment>
-    </parameter>
-    <parameter name="MPC_YAW_EXPO" default="0.6" type="FLOAT">
-      <short_desc>Manual control stick yaw rotation exponential curve</short_desc>
-      <long_desc>The higher the value the less sensitivity the stick has around zero
-while still reaching the maximum value with full stick deflection.
-0 Purely linear input curve
-1 Purely cubic input curve</long_desc>
-      <min>0</min>
-      <max>1</max>
-      <decimal>2</decimal>
-      <increment>0.01</increment>
-    </parameter>
-    <parameter name="MPC_Z_MAN_EXPO" default="0.6" type="FLOAT">
-      <short_desc>Manual control stick vertical exponential curve</short_desc>
-      <long_desc>The higher the value the less sensitivity the stick has around zero
-while still reaching the maximum value with full stick deflection.
-0 Purely linear input curve
-1 Purely cubic input curve</long_desc>
-      <min>0</min>
-      <max>1</max>
-      <decimal>2</decimal>
-      <increment>0.01</increment>
     </parameter>
     <parameter name="MPC_Z_P" default="1." type="FLOAT">
       <short_desc>Proportional gain for vertical position error</short_desc>
@@ -12258,23 +12033,12 @@ If set &lt;= 0.0, defaults to 0.9 * takeoff airspeed (see FW_TKO_AIRSPD)</long_d
     </parameter>
   </group>
   <group name="SD Logging">
-    <parameter name="SDLOG_ALGORITHM" default="2" type="INT32">
-      <short_desc>Logfile Encryption algorithm</short_desc>
-      <long_desc>Selects the algorithm used for logfile encryption</long_desc>
-      <values>
-        <value code="0">Disabled</value>
-        <value code="2">XChaCha20</value>
-      </values>
-    </parameter>
     <parameter name="SDLOG_BACKEND" default="3" type="INT32">
       <short_desc>Logging Backend (integer bitmask)</short_desc>
-      <long_desc>If no logging is set the logger will not be started.
-Set bits true to enable:
-0: SD card logging
-1: Mavlink logging</long_desc>
+      <long_desc>If no logging is set the logger will not be started. Set bits true to enable: 0: SD card logging 1: Mavlink logging</long_desc>
       <min>0</min>
       <max>3</max>
-      <reboot_required>true</reboot_required>
+      <reboot_required>True</reboot_required>
       <bitmask>
         <bit index="0">SD card logging</bit>
         <bit index="1">Mavlink logging</bit>
@@ -12282,55 +12046,19 @@ Set bits true to enable:
     </parameter>
     <parameter name="SDLOG_BOOT_BAT" default="0" type="INT32" boolean="true">
       <short_desc>Battery-only Logging</short_desc>
-      <long_desc>When enabled, logging will not start from boot if battery power is not detected
-(e.g. powered via USB on a test bench). This prevents extraneous flight logs from
-being created during bench testing.
-Note that this only applies to log-from-boot modes. This has no effect on arm-based
-modes.</long_desc>
+      <long_desc>When enabled, logging will not start from boot if battery power is not detected (e.g. powered via USB on a test bench). This prevents extraneous flight logs from being created during bench testing. Note that this only applies to log-from-boot modes. This has no effect on arm-based modes.</long_desc>
     </parameter>
     <parameter name="SDLOG_DIRS_MAX" default="0" type="INT32">
       <short_desc>Maximum number of log directories to keep</short_desc>
-      <long_desc>If there are more log directories than this value,
-the system will delete the oldest directories during startup.
-In addition, the system will delete old logs if there is not enough free space left.
-The minimum amount is 300 MB.
-If this is set to 0, old directories will only be removed if the free space falls below
-the minimum.
-Note: this does not apply to mission log files.</long_desc>
+      <long_desc>If there are more log directories than this value, the system will delete the oldest directories during startup. In addition, the system will delete old logs if there is not enough free space left. The minimum amount is 300 MB. If this is set to 0, old directories will only be removed if the free space falls below the minimum. Note: this does not apply to mission log files.</long_desc>
       <min>0</min>
       <max>1000</max>
-      <reboot_required>true</reboot_required>
-    </parameter>
-    <parameter name="SDLOG_EXCH_KEY" default="1" type="INT32">
-      <short_desc>Logfile Encryption key exchange key</short_desc>
-      <long_desc>If the logfile is encrypted using a symmetric key algorithm,
-the used encryption key is generated at logging start and stored
-on the sdcard RSA2048 encrypted using this key.</long_desc>
-      <min>0</min>
-      <max>255</max>
-    </parameter>
-    <parameter name="SDLOG_KEY" default="2" type="INT32">
-      <short_desc>Logfile Encryption key index</short_desc>
-      <long_desc>Selects the key in keystore, used for encrypting the log. When using
-a symmetric encryption algorithm, the key is generated at logging start
-and kept stored in this index. For symmetric algorithms, the key is
-volatile and valid only for the duration of logging. The key is stored
-in encrypted format on the sdcard alongside the logfile, using an RSA2048
-key defined by the SDLOG_EXCHANGE_KEY</long_desc>
-      <min>0</min>
-      <max>255</max>
+      <reboot_required>True</reboot_required>
     </parameter>
     <parameter name="SDLOG_MISSION" default="0" type="INT32">
       <short_desc>Mission Log</short_desc>
-      <long_desc>If enabled, a small additional "mission" log file will be written to the SD card.
-The log contains just those messages that are useful for tasks like
-generating flight statistics and geotagging.
-The different modes can be used to further reduce the logged data
-(and thus the log file size). For example, choose geotagging mode to
-only log data required for geotagging.
-Note that the normal/full log is still created, and contains all
-the data in the mission log (and more).</long_desc>
-      <reboot_required>true</reboot_required>
+      <long_desc>If enabled, a small additional "mission" log file will be written to the SD card. The log contains just those messages that are useful for tasks like generating flight statistics and geotagging. The different modes can be used to further reduce the logged data (and thus the log file size). For example, choose geotagging mode to only log data required for geotagging. Note that the normal/full log is still created, and contains all the data in the mission log (and more).</long_desc>
+      <reboot_required>True</reboot_required>
       <values>
         <value code="0">Disabled</value>
         <value code="1">All mission messages</value>
@@ -12339,12 +12067,8 @@ the data in the mission log (and more).</long_desc>
     </parameter>
     <parameter name="SDLOG_MODE" default="0" type="INT32">
       <short_desc>Logging Mode</short_desc>
-      <long_desc>Determines when to start and stop logging. By default, logging is started
-when arming the system, and stopped when disarming.
-Note: The logging start/end points that can be configured here only apply to
-SD logging. The mavlink backend is started/stopped independently
-of these points.</long_desc>
-      <reboot_required>true</reboot_required>
+      <long_desc>Determines when to start and stop logging. By default, logging is started when arming the system, and stopped when disarming. Note: The logging start/end points that can be configured here only apply to SD logging. The mavlink backend is started/stopped independently of these points.</long_desc>
+      <reboot_required>True</reboot_required>
       <values>
         <value code="0">when armed until disarm (default)</value>
         <value code="1">from boot until disarm</value>
@@ -12355,26 +12079,10 @@ of these points.</long_desc>
     </parameter>
     <parameter name="SDLOG_PROFILE" default="1" type="INT32">
       <short_desc>Logging topic profile (integer bitmask)</short_desc>
-      <long_desc>This integer bitmask controls the set and rates of logged topics.
-The default allows for general log analysis while keeping the
-log file size reasonably small.
-Enabling multiple sets leads to higher bandwidth requirements and larger log
-files.
-Set bits true to enable:
-0 : Default set (used for general log analysis)
-1 : Full rate estimator (EKF2) replay topics
-2 : Topics for thermal calibration (high rate raw IMU and Baro sensor data)
-3 : Topics for system identification (high rate actuator control and IMU data)
-4 : Full rates for analysis of fast maneuvers (RC, attitude, rates and actuators)
-5 : Debugging topics (debug_*.msg topics, for custom code)
-6 : Topics for sensor comparison (low rate raw IMU, Baro and magnetometer data)
-7 : Topics for computer vision and collision prevention
-8 : Raw FIFO high-rate IMU (Gyro)
-9 : Raw FIFO high-rate IMU (Accel)
-10: Logging of mavlink tunnel message (useful for payload communication debugging)</long_desc>
+      <long_desc>This integer bitmask controls the set and rates of logged topics. The default allows for general log analysis while keeping the log file size reasonably small. Enabling multiple sets leads to higher bandwidth requirements and larger log files. Set bits true to enable: 0 : Default set (used for general log analysis) 1 : Full rate estimator (EKF2) replay topics 2 : Topics for thermal calibration (high rate raw IMU and Baro sensor data) 3 : Topics for system identification (high rate actuator control and IMU data) 4 : Full rates for analysis of fast maneuvers (RC, attitude, rates and actuators) 5 : Debugging topics (debug_*.msg topics, for custom code) 6 : Topics for sensor comparison (low rate raw IMU, Baro and magnetometer data) 7 : Topics for computer vision and collision prevention 8 : Raw FIFO high-rate IMU (Gyro) 9 : Raw FIFO high-rate IMU (Accel) 10: Logging of mavlink tunnel message (useful for payload communication debugging)</long_desc>
       <min>0</min>
       <max>4095</max>
-      <reboot_required>true</reboot_required>
+      <reboot_required>True</reboot_required>
       <bitmask>
         <bit index="0">Default set (general log analysis)</bit>
         <bit index="1">Estimator replay (EKF2)</bit>
@@ -12392,11 +12100,7 @@ Set bits true to enable:
     </parameter>
     <parameter name="SDLOG_UTC_OFFSET" default="0" type="INT32">
       <short_desc>UTC offset (unit: min)</short_desc>
-      <long_desc>the difference in hours and minutes from Coordinated
-Universal Time (UTC) for a your place and date.
-for example, In case of South Korea(UTC+09:00),
-UTC offset is 540 min (9*60)
-refer to https://en.wikipedia.org/wiki/List_of_UTC_time_offsets</long_desc>
+      <long_desc>the difference in hours and minutes from Coordinated Universal Time (UTC) for a your place and date. for example, In case of South Korea(UTC+09:00), UTC offset is 540 min (9*60) refer to https://en.wikipedia.org/wiki/List_of_UTC_time_offsets</long_desc>
       <min>-1000</min>
       <max>1000</max>
       <unit>min</unit>
@@ -14257,34 +13961,6 @@ Has to be set manually (not set by any calibration).</long_desc>
       <unit>deg</unit>
       <decimal>1</decimal>
     </parameter>
-    <parameter name="SENS_CM8JL65_CFG" default="0" type="INT32">
-      <short_desc>Serial Configuration for Lanbao PSK-CM8JL65-CC5</short_desc>
-      <long_desc>Configure on which serial port to run Lanbao PSK-CM8JL65-CC5.</long_desc>
-      <reboot_required>true</reboot_required>
-      <values>
-        <value code="0">Disabled</value>
-        <value code="101">TELEM 1</value>
-        <value code="102">TELEM 2</value>
-        <value code="103">TELEM 3</value>
-        <value code="104">TELEM/SERIAL 4</value>
-        <value code="201">GPS 1</value>
-        <value code="202">GPS 2</value>
-        <value code="300">Radio Controller</value>
-      </values>
-    </parameter>
-    <parameter name="SENS_CM8JL65_R_0" default="25" type="INT32">
-      <short_desc>Distance Sensor Rotation</short_desc>
-      <long_desc>Distance Sensor Rotation as MAV_SENSOR_ORIENTATION enum</long_desc>
-      <reboot_required>True</reboot_required>
-      <values>
-        <value code="0">ROTATION_FORWARD_FACING</value>
-        <value code="2">ROTATION_RIGHT_FACING</value>
-        <value code="4">ROTATION_BACKWARD_FACING</value>
-        <value code="6">ROTATION_LEFT_FACING</value>
-        <value code="24">ROTATION_UPWARD_FACING</value>
-        <value code="25">ROTATION_DOWNWARD_FACING</value>
-      </values>
-    </parameter>
     <parameter name="SENS_EN_BATT" default="0" type="INT32" boolean="true">
       <short_desc>SMBUS Smart battery driver BQ40Z50 and BQ40Z80</short_desc>
       <reboot_required>true</reboot_required>
@@ -14349,7 +14025,7 @@ Has to be set manually (not set by any calibration).</long_desc>
     <parameter name="SENS_EN_SF1XX" default="0" type="INT32">
       <short_desc>Lightware SF1xx/SF20/LW20 laser rangefinder (i2c)</short_desc>
       <min>0</min>
-      <max>6</max>
+      <max>7</max>
       <reboot_required>true</reboot_required>
       <values>
         <value code="0">Disabled</value>
@@ -14380,20 +14056,6 @@ Has to be set manually (not set by any calibration).</long_desc>
         <value code="-1">Thermal control unavailable</value>
         <value code="0">Thermal control off</value>
         <value code="1">Thermal control enabled</value>
-      </values>
-    </parameter>
-    <parameter name="SENS_EN_TRANGER" default="0" type="INT32">
-      <short_desc>TeraRanger Rangefinder (i2c)</short_desc>
-      <min>0</min>
-      <max>3</max>
-      <reboot_required>true</reboot_required>
-      <values>
-        <value code="0">Disabled</value>
-        <value code="1">Autodetect</value>
-        <value code="2">TROne</value>
-        <value code="3">TREvo60m</value>
-        <value code="4">TREvo600Hz</value>
-        <value code="5">TREvo3m</value>
       </values>
     </parameter>
     <parameter name="SENS_EN_VL53L0X" default="0" type="INT32" boolean="true">

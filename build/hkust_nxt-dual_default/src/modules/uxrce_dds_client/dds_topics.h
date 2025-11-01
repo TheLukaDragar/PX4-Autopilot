@@ -24,24 +24,18 @@
 #include <uORB/topics/collision_constraints.h>
 #include <uORB/ucdr/config_overrides.h>
 #include <uORB/topics/config_overrides.h>
+#include <uORB/ucdr/cpuload.h>
+#include <uORB/topics/cpuload.h>
 #include <uORB/ucdr/distance_sensor.h>
 #include <uORB/topics/distance_sensor.h>
 #include <uORB/ucdr/estimator_status_flags.h>
 #include <uORB/topics/estimator_status_flags.h>
 #include <uORB/ucdr/failsafe_flags.h>
 #include <uORB/topics/failsafe_flags.h>
-#include <uORB/ucdr/fixed_wing_lateral_setpoint.h>
-#include <uORB/topics/fixed_wing_lateral_setpoint.h>
-#include <uORB/ucdr/fixed_wing_longitudinal_setpoint.h>
-#include <uORB/topics/fixed_wing_longitudinal_setpoint.h>
 #include <uORB/ucdr/goto_setpoint.h>
 #include <uORB/topics/goto_setpoint.h>
 #include <uORB/ucdr/home_position.h>
 #include <uORB/topics/home_position.h>
-#include <uORB/ucdr/lateral_control_configuration.h>
-#include <uORB/topics/lateral_control_configuration.h>
-#include <uORB/ucdr/longitudinal_control_configuration.h>
-#include <uORB/topics/longitudinal_control_configuration.h>
 #include <uORB/ucdr/manual_control_setpoint.h>
 #include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/ucdr/message_format_request.h>
@@ -62,22 +56,14 @@
 #include <uORB/topics/register_ext_component_reply.h>
 #include <uORB/ucdr/register_ext_component_request.h>
 #include <uORB/topics/register_ext_component_request.h>
-#include <uORB/ucdr/rover_attitude_setpoint.h>
-#include <uORB/topics/rover_attitude_setpoint.h>
-#include <uORB/ucdr/rover_position_setpoint.h>
-#include <uORB/topics/rover_position_setpoint.h>
-#include <uORB/ucdr/rover_rate_setpoint.h>
-#include <uORB/topics/rover_rate_setpoint.h>
-#include <uORB/ucdr/rover_speed_setpoint.h>
-#include <uORB/topics/rover_speed_setpoint.h>
-#include <uORB/ucdr/rover_steering_setpoint.h>
-#include <uORB/topics/rover_steering_setpoint.h>
-#include <uORB/ucdr/rover_throttle_setpoint.h>
-#include <uORB/topics/rover_throttle_setpoint.h>
+#include <uORB/ucdr/sensor_accel.h>
+#include <uORB/topics/sensor_accel.h>
 #include <uORB/ucdr/sensor_combined.h>
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/ucdr/sensor_gps.h>
 #include <uORB/topics/sensor_gps.h>
+#include <uORB/ucdr/sensor_gyro.h>
+#include <uORB/topics/sensor_gyro.h>
 #include <uORB/ucdr/sensor_optical_flow.h>
 #include <uORB/topics/sensor_optical_flow.h>
 #include <uORB/ucdr/telemetry_status.h>
@@ -96,6 +82,8 @@
 #include <uORB/topics/vehicle_command.h>
 #include <uORB/ucdr/vehicle_command_ack.h>
 #include <uORB/topics/vehicle_command_ack.h>
+#include <uORB/ucdr/vehicle_constraints.h>
+#include <uORB/topics/vehicle_constraints.h>
 #include <uORB/ucdr/vehicle_control_mode.h>
 #include <uORB/topics/vehicle_control_mode.h>
 #include <uORB/ucdr/vehicle_global_position.h>
@@ -114,8 +102,6 @@
 #include <uORB/topics/vehicle_thrust_setpoint.h>
 #include <uORB/ucdr/vehicle_torque_setpoint.h>
 #include <uORB/topics/vehicle_torque_setpoint.h>
-#include <uORB/ucdr/vtol_vehicle_status.h>
-#include <uORB/topics/vtol_vehicle_status.h>
 #include <uORB/ucdr/wind.h>
 #include <uORB/topics/wind.h>
 
@@ -135,6 +121,8 @@ static_assert(sizeof(manual_control_setpoint_s) <= max_topic_size, "topic too la
 static_assert(sizeof(message_format_response_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(position_setpoint_triplet_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(sensor_combined_s) <= max_topic_size, "topic too large, increase max_topic_size");
+static_assert(sizeof(sensor_accel_s) <= max_topic_size, "topic too large, increase max_topic_size");
+static_assert(sizeof(sensor_gyro_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(timesync_status_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_land_detected_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_attitude_s) <= max_topic_size, "topic too large, increase max_topic_size");
@@ -146,9 +134,12 @@ static_assert(sizeof(vehicle_local_position_s) <= max_topic_size, "topic too lar
 static_assert(sizeof(vehicle_odometry_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_status_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(airspeed_validated_s) <= max_topic_size, "topic too large, increase max_topic_size");
-static_assert(sizeof(vtol_vehicle_status_s) <= max_topic_size, "topic too large, increase max_topic_size");
+static_assert(sizeof(cpuload_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(home_position_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(wind_s) <= max_topic_size, "topic too large, increase max_topic_size");
+static_assert(sizeof(obstacle_distance_s) <= max_topic_size, "topic too large, increase max_topic_size");
+static_assert(sizeof(vehicle_constraints_s) <= max_topic_size, "topic too large, increase max_topic_size");
+static_assert(sizeof(distance_sensor_s) <= max_topic_size, "topic too large, increase max_topic_size");
 
 
 
@@ -182,7 +173,7 @@ struct SendSubscription {
 
 // Subscribers for messages to send
 struct SendTopicsSubs {
-	SendSubscription send_subscriptions[25] = {
+	SendSubscription send_subscriptions[30] = {
 			{ ORB_ID(register_ext_component_reply),
 			  uxr_object_id(0, UXR_INVALID_ID),
 			  "px4_msgs::msg::dds_::RegisterExtComponentReply_",
@@ -280,7 +271,25 @@ struct SendTopicsSubs {
 			  get_message_version<sensor_combined_s>(),
 			  ucdr_topic_size_sensor_combined(),
 			  &ucdr_serialize_sensor_combined,
-			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			},
+			{ ORB_ID(sensor_accel),
+			  uxr_object_id(0, UXR_INVALID_ID),
+			  "px4_msgs::msg::dds_::SensorAccel_",
+			  "/fmu/out/sensor_accel",
+			  get_message_version<sensor_accel_s>(),
+			  ucdr_topic_size_sensor_accel(),
+			  &ucdr_serialize_sensor_accel,
+			  static_cast<uint64_t>((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			},
+			{ ORB_ID(sensor_gyro),
+			  uxr_object_id(0, UXR_INVALID_ID),
+			  "px4_msgs::msg::dds_::SensorGyro_",
+			  "/fmu/out/sensor_gyro",
+			  get_message_version<sensor_gyro_s>(),
+			  ucdr_topic_size_sensor_gyro(),
+			  &ucdr_serialize_sensor_gyro,
+			  static_cast<uint64_t>((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
 			},
 			{ ORB_ID(timesync_status),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -307,7 +316,7 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_attitude_s>(),
 			  ucdr_topic_size_vehicle_attitude(),
 			  &ucdr_serialize_vehicle_attitude,
-			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
 			},
 			{ ORB_ID(vehicle_control_mode),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -381,14 +390,14 @@ struct SendTopicsSubs {
 			  &ucdr_serialize_airspeed_validated,
 			  static_cast<uint64_t>((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
 			},
-			{ ORB_ID(vtol_vehicle_status),
+			{ ORB_ID(cpuload),
 			  uxr_object_id(0, UXR_INVALID_ID),
-			  "px4_msgs::msg::dds_::VtolVehicleStatus_",
-			  "/fmu/out/vtol_vehicle_status",
-			  get_message_version<vtol_vehicle_status_s>(),
-			  ucdr_topic_size_vtol_vehicle_status(),
-			  &ucdr_serialize_vtol_vehicle_status,
-			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  "px4_msgs::msg::dds_::Cpuload_",
+			  "/fmu/out/cpuload",
+			  get_message_version<cpuload_s>(),
+			  ucdr_topic_size_cpuload(),
+			  &ucdr_serialize_cpuload,
+			  static_cast<uint64_t>((1.0 > 0) ? (1e3 / 1.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
 			},
 			{ ORB_ID(home_position),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -408,9 +417,36 @@ struct SendTopicsSubs {
 			  &ucdr_serialize_wind,
 			  static_cast<uint64_t>((1.0 > 0) ? (1e3 / 1.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
 			},
+			{ ORB_ID(obstacle_distance_fused),
+			  uxr_object_id(0, UXR_INVALID_ID),
+			  "px4_msgs::msg::dds_::ObstacleDistance_",
+			  "/fmu/out/obstacle_distance_fused",
+			  get_message_version<obstacle_distance_s>(),
+			  ucdr_topic_size_obstacle_distance(),
+			  &ucdr_serialize_obstacle_distance,
+			  static_cast<uint64_t>((10.0 > 0) ? (1e3 / 10.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			},
+			{ ORB_ID(vehicle_constraints),
+			  uxr_object_id(0, UXR_INVALID_ID),
+			  "px4_msgs::msg::dds_::VehicleConstraints_",
+			  "/fmu/out/vehicle_constraints",
+			  get_message_version<vehicle_constraints_s>(),
+			  ucdr_topic_size_vehicle_constraints(),
+			  &ucdr_serialize_vehicle_constraints,
+			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			},
+			{ ORB_ID(distance_sensor),
+			  uxr_object_id(0, UXR_INVALID_ID),
+			  "px4_msgs::msg::dds_::DistanceSensor_",
+			  "/fmu/out/distance_sensor",
+			  get_message_version<distance_sensor_s>(),
+			  ucdr_topic_size_distance_sensor(),
+			  &ucdr_serialize_distance_sensor,
+			  static_cast<uint64_t>((10.0 > 0) ? (1e3 / 10.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			},
 	};
 
-	px4_pollfd_struct_t fds[25] {};
+	px4_pollfd_struct_t fds[30] {};
 
 	uint32_t num_payload_sent{};
 
@@ -481,6 +517,7 @@ void SendTopicsSubs::update(uxrSession *session, uxrStreamId reliable_out_stream
 
 // Publishers for received messages
 struct RcvTopicsPubs {
+	uORB::Publication<vehicle_constraints_s> vehicle_constraints_pub{ORB_ID(vehicle_constraints)};
 	uORB::Publication<register_ext_component_request_s> register_ext_component_request_pub{ORB_ID(register_ext_component_request)};
 	uORB::Publication<unregister_ext_component_s> unregister_ext_component_pub{ORB_ID(unregister_ext_component)};
 	uORB::Publication<config_overrides_s> config_overrides_request_pub{ORB_ID(config_overrides_request)};
@@ -508,16 +545,6 @@ struct RcvTopicsPubs {
 	uORB::Publication<actuator_motors_s> actuator_motors_pub{ORB_ID(actuator_motors)};
 	uORB::Publication<actuator_servos_s> actuator_servos_pub{ORB_ID(actuator_servos)};
 	uORB::Publication<vehicle_global_position_s> aux_global_position_pub{ORB_ID(aux_global_position)};
-	uORB::Publication<fixed_wing_longitudinal_setpoint_s> fixed_wing_longitudinal_setpoint_pub{ORB_ID(fixed_wing_longitudinal_setpoint)};
-	uORB::Publication<fixed_wing_lateral_setpoint_s> fixed_wing_lateral_setpoint_pub{ORB_ID(fixed_wing_lateral_setpoint)};
-	uORB::Publication<longitudinal_control_configuration_s> longitudinal_control_configuration_pub{ORB_ID(longitudinal_control_configuration)};
-	uORB::Publication<lateral_control_configuration_s> lateral_control_configuration_pub{ORB_ID(lateral_control_configuration)};
-	uORB::Publication<rover_position_setpoint_s> rover_position_setpoint_pub{ORB_ID(rover_position_setpoint)};
-	uORB::Publication<rover_speed_setpoint_s> rover_speed_setpoint_pub{ORB_ID(rover_speed_setpoint)};
-	uORB::Publication<rover_attitude_setpoint_s> rover_attitude_setpoint_pub{ORB_ID(rover_attitude_setpoint)};
-	uORB::Publication<rover_rate_setpoint_s> rover_rate_setpoint_pub{ORB_ID(rover_rate_setpoint)};
-	uORB::Publication<rover_throttle_setpoint_s> rover_throttle_setpoint_pub{ORB_ID(rover_throttle_setpoint)};
-	uORB::Publication<rover_steering_setpoint_s> rover_steering_setpoint_pub{ORB_ID(rover_steering_setpoint)};
 
 
 	uint32_t num_payload_received{};
@@ -534,6 +561,16 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 
 	switch (object_id.id) {
 	case 0+ (65535U / 32U) + 1: {
+			vehicle_constraints_s data;
+
+			if (ucdr_deserialize_vehicle_constraints(*ub, data, time_offset_us)) {
+				//print_message(ORB_ID(vehicle_constraints), data);
+				pubs->vehicle_constraints_pub.publish(data);
+			}
+		}
+		break;
+
+	case 1+ (65535U / 32U) + 1: {
 			register_ext_component_request_s data;
 
 			if (ucdr_deserialize_register_ext_component_request(*ub, data, time_offset_us)) {
@@ -543,7 +580,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 1+ (65535U / 32U) + 1: {
+	case 2+ (65535U / 32U) + 1: {
 			unregister_ext_component_s data;
 
 			if (ucdr_deserialize_unregister_ext_component(*ub, data, time_offset_us)) {
@@ -553,7 +590,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 2+ (65535U / 32U) + 1: {
+	case 3+ (65535U / 32U) + 1: {
 			config_overrides_s data;
 
 			if (ucdr_deserialize_config_overrides(*ub, data, time_offset_us)) {
@@ -563,7 +600,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 3+ (65535U / 32U) + 1: {
+	case 4+ (65535U / 32U) + 1: {
 			arming_check_reply_s data;
 
 			if (ucdr_deserialize_arming_check_reply(*ub, data, time_offset_us)) {
@@ -573,7 +610,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 4+ (65535U / 32U) + 1: {
+	case 5+ (65535U / 32U) + 1: {
 			message_format_request_s data;
 
 			if (ucdr_deserialize_message_format_request(*ub, data, time_offset_us)) {
@@ -583,7 +620,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 5+ (65535U / 32U) + 1: {
+	case 6+ (65535U / 32U) + 1: {
 			mode_completed_s data;
 
 			if (ucdr_deserialize_mode_completed(*ub, data, time_offset_us)) {
@@ -593,7 +630,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 6+ (65535U / 32U) + 1: {
+	case 7+ (65535U / 32U) + 1: {
 			vehicle_control_mode_s data;
 
 			if (ucdr_deserialize_vehicle_control_mode(*ub, data, time_offset_us)) {
@@ -603,7 +640,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 7+ (65535U / 32U) + 1: {
+	case 8+ (65535U / 32U) + 1: {
 			distance_sensor_s data;
 
 			if (ucdr_deserialize_distance_sensor(*ub, data, time_offset_us)) {
@@ -613,7 +650,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 8+ (65535U / 32U) + 1: {
+	case 9+ (65535U / 32U) + 1: {
 			manual_control_setpoint_s data;
 
 			if (ucdr_deserialize_manual_control_setpoint(*ub, data, time_offset_us)) {
@@ -623,7 +660,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 9+ (65535U / 32U) + 1: {
+	case 10+ (65535U / 32U) + 1: {
 			offboard_control_mode_s data;
 
 			if (ucdr_deserialize_offboard_control_mode(*ub, data, time_offset_us)) {
@@ -633,7 +670,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 10+ (65535U / 32U) + 1: {
+	case 11+ (65535U / 32U) + 1: {
 			onboard_computer_status_s data;
 
 			if (ucdr_deserialize_onboard_computer_status(*ub, data, time_offset_us)) {
@@ -643,7 +680,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 11+ (65535U / 32U) + 1: {
+	case 12+ (65535U / 32U) + 1: {
 			obstacle_distance_s data;
 
 			if (ucdr_deserialize_obstacle_distance(*ub, data, time_offset_us)) {
@@ -653,7 +690,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 12+ (65535U / 32U) + 1: {
+	case 13+ (65535U / 32U) + 1: {
 			sensor_optical_flow_s data;
 
 			if (ucdr_deserialize_sensor_optical_flow(*ub, data, time_offset_us)) {
@@ -663,7 +700,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 13+ (65535U / 32U) + 1: {
+	case 14+ (65535U / 32U) + 1: {
 			goto_setpoint_s data;
 
 			if (ucdr_deserialize_goto_setpoint(*ub, data, time_offset_us)) {
@@ -673,7 +710,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 14+ (65535U / 32U) + 1: {
+	case 15+ (65535U / 32U) + 1: {
 			telemetry_status_s data;
 
 			if (ucdr_deserialize_telemetry_status(*ub, data, time_offset_us)) {
@@ -683,7 +720,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 15+ (65535U / 32U) + 1: {
+	case 16+ (65535U / 32U) + 1: {
 			trajectory_setpoint_s data;
 
 			if (ucdr_deserialize_trajectory_setpoint(*ub, data, time_offset_us)) {
@@ -693,7 +730,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 16+ (65535U / 32U) + 1: {
+	case 17+ (65535U / 32U) + 1: {
 			vehicle_attitude_setpoint_s data;
 
 			if (ucdr_deserialize_vehicle_attitude_setpoint(*ub, data, time_offset_us)) {
@@ -703,7 +740,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 17+ (65535U / 32U) + 1: {
+	case 18+ (65535U / 32U) + 1: {
 			vehicle_odometry_s data;
 
 			if (ucdr_deserialize_vehicle_odometry(*ub, data, time_offset_us)) {
@@ -713,7 +750,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 18+ (65535U / 32U) + 1: {
+	case 19+ (65535U / 32U) + 1: {
 			vehicle_rates_setpoint_s data;
 
 			if (ucdr_deserialize_vehicle_rates_setpoint(*ub, data, time_offset_us)) {
@@ -723,7 +760,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 19+ (65535U / 32U) + 1: {
+	case 20+ (65535U / 32U) + 1: {
 			vehicle_odometry_s data;
 
 			if (ucdr_deserialize_vehicle_odometry(*ub, data, time_offset_us)) {
@@ -733,7 +770,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 20+ (65535U / 32U) + 1: {
+	case 21+ (65535U / 32U) + 1: {
 			vehicle_command_s data;
 
 			if (ucdr_deserialize_vehicle_command(*ub, data, time_offset_us)) {
@@ -743,7 +780,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 21+ (65535U / 32U) + 1: {
+	case 22+ (65535U / 32U) + 1: {
 			vehicle_command_s data;
 
 			if (ucdr_deserialize_vehicle_command(*ub, data, time_offset_us)) {
@@ -753,7 +790,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 22+ (65535U / 32U) + 1: {
+	case 23+ (65535U / 32U) + 1: {
 			vehicle_thrust_setpoint_s data;
 
 			if (ucdr_deserialize_vehicle_thrust_setpoint(*ub, data, time_offset_us)) {
@@ -763,7 +800,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 23+ (65535U / 32U) + 1: {
+	case 24+ (65535U / 32U) + 1: {
 			vehicle_torque_setpoint_s data;
 
 			if (ucdr_deserialize_vehicle_torque_setpoint(*ub, data, time_offset_us)) {
@@ -773,7 +810,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 24+ (65535U / 32U) + 1: {
+	case 25+ (65535U / 32U) + 1: {
 			actuator_motors_s data;
 
 			if (ucdr_deserialize_actuator_motors(*ub, data, time_offset_us)) {
@@ -783,7 +820,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 25+ (65535U / 32U) + 1: {
+	case 26+ (65535U / 32U) + 1: {
 			actuator_servos_s data;
 
 			if (ucdr_deserialize_actuator_servos(*ub, data, time_offset_us)) {
@@ -793,112 +830,12 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		}
 		break;
 
-	case 26+ (65535U / 32U) + 1: {
+	case 27+ (65535U / 32U) + 1: {
 			vehicle_global_position_s data;
 
 			if (ucdr_deserialize_vehicle_global_position(*ub, data, time_offset_us)) {
 				//print_message(ORB_ID(vehicle_global_position), data);
 				pubs->aux_global_position_pub.publish(data);
-			}
-		}
-		break;
-
-	case 27+ (65535U / 32U) + 1: {
-			fixed_wing_longitudinal_setpoint_s data;
-
-			if (ucdr_deserialize_fixed_wing_longitudinal_setpoint(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(fixed_wing_longitudinal_setpoint), data);
-				pubs->fixed_wing_longitudinal_setpoint_pub.publish(data);
-			}
-		}
-		break;
-
-	case 28+ (65535U / 32U) + 1: {
-			fixed_wing_lateral_setpoint_s data;
-
-			if (ucdr_deserialize_fixed_wing_lateral_setpoint(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(fixed_wing_lateral_setpoint), data);
-				pubs->fixed_wing_lateral_setpoint_pub.publish(data);
-			}
-		}
-		break;
-
-	case 29+ (65535U / 32U) + 1: {
-			longitudinal_control_configuration_s data;
-
-			if (ucdr_deserialize_longitudinal_control_configuration(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(longitudinal_control_configuration), data);
-				pubs->longitudinal_control_configuration_pub.publish(data);
-			}
-		}
-		break;
-
-	case 30+ (65535U / 32U) + 1: {
-			lateral_control_configuration_s data;
-
-			if (ucdr_deserialize_lateral_control_configuration(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(lateral_control_configuration), data);
-				pubs->lateral_control_configuration_pub.publish(data);
-			}
-		}
-		break;
-
-	case 31+ (65535U / 32U) + 1: {
-			rover_position_setpoint_s data;
-
-			if (ucdr_deserialize_rover_position_setpoint(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(rover_position_setpoint), data);
-				pubs->rover_position_setpoint_pub.publish(data);
-			}
-		}
-		break;
-
-	case 32+ (65535U / 32U) + 1: {
-			rover_speed_setpoint_s data;
-
-			if (ucdr_deserialize_rover_speed_setpoint(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(rover_speed_setpoint), data);
-				pubs->rover_speed_setpoint_pub.publish(data);
-			}
-		}
-		break;
-
-	case 33+ (65535U / 32U) + 1: {
-			rover_attitude_setpoint_s data;
-
-			if (ucdr_deserialize_rover_attitude_setpoint(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(rover_attitude_setpoint), data);
-				pubs->rover_attitude_setpoint_pub.publish(data);
-			}
-		}
-		break;
-
-	case 34+ (65535U / 32U) + 1: {
-			rover_rate_setpoint_s data;
-
-			if (ucdr_deserialize_rover_rate_setpoint(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(rover_rate_setpoint), data);
-				pubs->rover_rate_setpoint_pub.publish(data);
-			}
-		}
-		break;
-
-	case 35+ (65535U / 32U) + 1: {
-			rover_throttle_setpoint_s data;
-
-			if (ucdr_deserialize_rover_throttle_setpoint(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(rover_throttle_setpoint), data);
-				pubs->rover_throttle_setpoint_pub.publish(data);
-			}
-		}
-		break;
-
-	case 36+ (65535U / 32U) + 1: {
-			rover_steering_setpoint_s data;
-
-			if (ucdr_deserialize_rover_steering_setpoint(*ub, data, time_offset_us)) {
-				//print_message(ORB_ID(rover_steering_setpoint), data);
-				pubs->rover_steering_setpoint_pub.publish(data);
 			}
 		}
 		break;
@@ -913,189 +850,144 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 bool RcvTopicsPubs::init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace)
 {
 	{
+			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_constraints)) * 2; // use a bit larger queue size than internal
+			uint32_t message_version = get_message_version<vehicle_constraints_s>();
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 0, client_namespace, "/fmu/in/vehicle_constraints", message_version, "px4_msgs::msg::dds_::VehicleConstraints_", queue_depth);
+	}
+	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(register_ext_component_request)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<register_ext_component_request_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 0, client_namespace, "/fmu/in/register_ext_component_request", message_version, "px4_msgs::msg::dds_::RegisterExtComponentRequest_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 1, client_namespace, "/fmu/in/register_ext_component_request", message_version, "px4_msgs::msg::dds_::RegisterExtComponentRequest_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(unregister_ext_component)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<unregister_ext_component_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 1, client_namespace, "/fmu/in/unregister_ext_component", message_version, "px4_msgs::msg::dds_::UnregisterExtComponent_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 2, client_namespace, "/fmu/in/unregister_ext_component", message_version, "px4_msgs::msg::dds_::UnregisterExtComponent_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(config_overrides)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<config_overrides_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 2, client_namespace, "/fmu/in/config_overrides_request", message_version, "px4_msgs::msg::dds_::ConfigOverrides_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 3, client_namespace, "/fmu/in/config_overrides_request", message_version, "px4_msgs::msg::dds_::ConfigOverrides_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(arming_check_reply)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<arming_check_reply_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 3, client_namespace, "/fmu/in/arming_check_reply", message_version, "px4_msgs::msg::dds_::ArmingCheckReply_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 4, client_namespace, "/fmu/in/arming_check_reply", message_version, "px4_msgs::msg::dds_::ArmingCheckReply_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(message_format_request)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<message_format_request_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 4, client_namespace, "/fmu/in/message_format_request", message_version, "px4_msgs::msg::dds_::MessageFormatRequest_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 5, client_namespace, "/fmu/in/message_format_request", message_version, "px4_msgs::msg::dds_::MessageFormatRequest_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(mode_completed)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<mode_completed_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 5, client_namespace, "/fmu/in/mode_completed", message_version, "px4_msgs::msg::dds_::ModeCompleted_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 6, client_namespace, "/fmu/in/mode_completed", message_version, "px4_msgs::msg::dds_::ModeCompleted_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_control_mode)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_control_mode_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 6, client_namespace, "/fmu/in/config_control_setpoints", message_version, "px4_msgs::msg::dds_::VehicleControlMode_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 7, client_namespace, "/fmu/in/config_control_setpoints", message_version, "px4_msgs::msg::dds_::VehicleControlMode_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(distance_sensor)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<distance_sensor_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 7, client_namespace, "/fmu/in/distance_sensor", message_version, "px4_msgs::msg::dds_::DistanceSensor_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 8, client_namespace, "/fmu/in/distance_sensor", message_version, "px4_msgs::msg::dds_::DistanceSensor_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(manual_control_setpoint)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<manual_control_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 8, client_namespace, "/fmu/in/manual_control_input", message_version, "px4_msgs::msg::dds_::ManualControlSetpoint_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 9, client_namespace, "/fmu/in/manual_control_input", message_version, "px4_msgs::msg::dds_::ManualControlSetpoint_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(offboard_control_mode)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<offboard_control_mode_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 9, client_namespace, "/fmu/in/offboard_control_mode", message_version, "px4_msgs::msg::dds_::OffboardControlMode_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 10, client_namespace, "/fmu/in/offboard_control_mode", message_version, "px4_msgs::msg::dds_::OffboardControlMode_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(onboard_computer_status)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<onboard_computer_status_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 10, client_namespace, "/fmu/in/onboard_computer_status", message_version, "px4_msgs::msg::dds_::OnboardComputerStatus_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 11, client_namespace, "/fmu/in/onboard_computer_status", message_version, "px4_msgs::msg::dds_::OnboardComputerStatus_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(obstacle_distance)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<obstacle_distance_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 11, client_namespace, "/fmu/in/obstacle_distance", message_version, "px4_msgs::msg::dds_::ObstacleDistance_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 12, client_namespace, "/fmu/in/obstacle_distance", message_version, "px4_msgs::msg::dds_::ObstacleDistance_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(sensor_optical_flow)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<sensor_optical_flow_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 12, client_namespace, "/fmu/in/sensor_optical_flow", message_version, "px4_msgs::msg::dds_::SensorOpticalFlow_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 13, client_namespace, "/fmu/in/sensor_optical_flow", message_version, "px4_msgs::msg::dds_::SensorOpticalFlow_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(goto_setpoint)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<goto_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 13, client_namespace, "/fmu/in/goto_setpoint", message_version, "px4_msgs::msg::dds_::GotoSetpoint_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 14, client_namespace, "/fmu/in/goto_setpoint", message_version, "px4_msgs::msg::dds_::GotoSetpoint_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(telemetry_status)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<telemetry_status_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 14, client_namespace, "/fmu/in/telemetry_status", message_version, "px4_msgs::msg::dds_::TelemetryStatus_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 15, client_namespace, "/fmu/in/telemetry_status", message_version, "px4_msgs::msg::dds_::TelemetryStatus_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(trajectory_setpoint)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<trajectory_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 15, client_namespace, "/fmu/in/trajectory_setpoint", message_version, "px4_msgs::msg::dds_::TrajectorySetpoint_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 16, client_namespace, "/fmu/in/trajectory_setpoint", message_version, "px4_msgs::msg::dds_::TrajectorySetpoint_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_attitude_setpoint)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_attitude_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 16, client_namespace, "/fmu/in/vehicle_attitude_setpoint", message_version, "px4_msgs::msg::dds_::VehicleAttitudeSetpoint_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 17, client_namespace, "/fmu/in/vehicle_attitude_setpoint", message_version, "px4_msgs::msg::dds_::VehicleAttitudeSetpoint_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_odometry)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_odometry_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 17, client_namespace, "/fmu/in/vehicle_mocap_odometry", message_version, "px4_msgs::msg::dds_::VehicleOdometry_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 18, client_namespace, "/fmu/in/vehicle_mocap_odometry", message_version, "px4_msgs::msg::dds_::VehicleOdometry_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_rates_setpoint)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_rates_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 18, client_namespace, "/fmu/in/vehicle_rates_setpoint", message_version, "px4_msgs::msg::dds_::VehicleRatesSetpoint_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 19, client_namespace, "/fmu/in/vehicle_rates_setpoint", message_version, "px4_msgs::msg::dds_::VehicleRatesSetpoint_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_odometry)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_odometry_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 19, client_namespace, "/fmu/in/vehicle_visual_odometry", message_version, "px4_msgs::msg::dds_::VehicleOdometry_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 20, client_namespace, "/fmu/in/vehicle_visual_odometry", message_version, "px4_msgs::msg::dds_::VehicleOdometry_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_command)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_command_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 20, client_namespace, "/fmu/in/vehicle_command", message_version, "px4_msgs::msg::dds_::VehicleCommand_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 21, client_namespace, "/fmu/in/vehicle_command", message_version, "px4_msgs::msg::dds_::VehicleCommand_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_command)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_command_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 21, client_namespace, "/fmu/in/vehicle_command_mode_executor", message_version, "px4_msgs::msg::dds_::VehicleCommand_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 22, client_namespace, "/fmu/in/vehicle_command_mode_executor", message_version, "px4_msgs::msg::dds_::VehicleCommand_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_thrust_setpoint)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_thrust_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 22, client_namespace, "/fmu/in/vehicle_thrust_setpoint", message_version, "px4_msgs::msg::dds_::VehicleThrustSetpoint_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 23, client_namespace, "/fmu/in/vehicle_thrust_setpoint", message_version, "px4_msgs::msg::dds_::VehicleThrustSetpoint_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_torque_setpoint)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_torque_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 23, client_namespace, "/fmu/in/vehicle_torque_setpoint", message_version, "px4_msgs::msg::dds_::VehicleTorqueSetpoint_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 24, client_namespace, "/fmu/in/vehicle_torque_setpoint", message_version, "px4_msgs::msg::dds_::VehicleTorqueSetpoint_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(actuator_motors)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<actuator_motors_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 24, client_namespace, "/fmu/in/actuator_motors", message_version, "px4_msgs::msg::dds_::ActuatorMotors_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 25, client_namespace, "/fmu/in/actuator_motors", message_version, "px4_msgs::msg::dds_::ActuatorMotors_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(actuator_servos)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<actuator_servos_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 25, client_namespace, "/fmu/in/actuator_servos", message_version, "px4_msgs::msg::dds_::ActuatorServos_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 26, client_namespace, "/fmu/in/actuator_servos", message_version, "px4_msgs::msg::dds_::ActuatorServos_", queue_depth);
 	}
 	{
 			uint16_t queue_depth = orb_get_queue_size(ORB_ID(vehicle_global_position)) * 2; // use a bit larger queue size than internal
 			uint32_t message_version = get_message_version<vehicle_global_position_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 26, client_namespace, "/fmu/in/aux_global_position", message_version, "px4_msgs::msg::dds_::VehicleGlobalPosition_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(fixed_wing_longitudinal_setpoint)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<fixed_wing_longitudinal_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 27, client_namespace, "/fmu/in/fixed_wing_longitudinal_setpoint", message_version, "px4_msgs::msg::dds_::FixedWingLongitudinalSetpoint_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(fixed_wing_lateral_setpoint)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<fixed_wing_lateral_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 28, client_namespace, "/fmu/in/fixed_wing_lateral_setpoint", message_version, "px4_msgs::msg::dds_::FixedWingLateralSetpoint_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(longitudinal_control_configuration)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<longitudinal_control_configuration_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 29, client_namespace, "/fmu/in/longitudinal_control_configuration", message_version, "px4_msgs::msg::dds_::LongitudinalControlConfiguration_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(lateral_control_configuration)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<lateral_control_configuration_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 30, client_namespace, "/fmu/in/lateral_control_configuration", message_version, "px4_msgs::msg::dds_::LateralControlConfiguration_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(rover_position_setpoint)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<rover_position_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 31, client_namespace, "/fmu/in/rover_position_setpoint", message_version, "px4_msgs::msg::dds_::RoverPositionSetpoint_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(rover_speed_setpoint)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<rover_speed_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 32, client_namespace, "/fmu/in/rover_speed_setpoint", message_version, "px4_msgs::msg::dds_::RoverSpeedSetpoint_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(rover_attitude_setpoint)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<rover_attitude_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 33, client_namespace, "/fmu/in/rover_attitude_setpoint", message_version, "px4_msgs::msg::dds_::RoverAttitudeSetpoint_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(rover_rate_setpoint)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<rover_rate_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 34, client_namespace, "/fmu/in/rover_rate_setpoint", message_version, "px4_msgs::msg::dds_::RoverRateSetpoint_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(rover_throttle_setpoint)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<rover_throttle_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 35, client_namespace, "/fmu/in/rover_throttle_setpoint", message_version, "px4_msgs::msg::dds_::RoverThrottleSetpoint_", queue_depth);
-	}
-	{
-			uint16_t queue_depth = orb_get_queue_size(ORB_ID(rover_steering_setpoint)) * 2; // use a bit larger queue size than internal
-			uint32_t message_version = get_message_version<rover_steering_setpoint_s>();
-			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 36, client_namespace, "/fmu/in/rover_steering_setpoint", message_version, "px4_msgs::msg::dds_::RoverSteeringSetpoint_", queue_depth);
+			create_data_reader(session, reliable_out_stream_id, best_effort_in_stream_id, participant_id, 27, client_namespace, "/fmu/in/aux_global_position", message_version, "px4_msgs::msg::dds_::VehicleGlobalPosition_", queue_depth);
 	}
 
 	uxr_set_topic_callback(session, on_topic_update, this);

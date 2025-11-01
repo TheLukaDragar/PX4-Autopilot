@@ -1,10 +1,4 @@
 set PRT_F ${R}etc/init.d/rc.serial_port
-set PRT SENS_CM8JL65_CFG
-. $PRT_F
-if [ $SERIAL_DEV != none ]; then
-echo "Starting Lanbao PSK-CM8JL65-CC5 on $SERIAL_DEV"
-cm8jl65 start -d ${SERIAL_DEV} -R p:SENS_CM8JL65_R_0
-fi
 set PRT SENS_SF0X_CFG
 . $PRT_F
 if [ $SERIAL_DEV != none ]; then

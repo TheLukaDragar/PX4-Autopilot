@@ -59,10 +59,11 @@ struct control_allocator_status_s {
 	float unallocated_torque[3];
 	float unallocated_thrust[3];
 	uint16_t handled_motor_failure_mask;
+	uint16_t motor_stop_mask;
 	bool torque_setpoint_achieved;
 	bool thrust_setpoint_achieved;
 	int8_t actuator_saturation[16];
-	uint8_t _padding0[4]; // required for logger
+	uint8_t _padding0[2]; // required for logger
 
 
 #ifdef __cplusplus

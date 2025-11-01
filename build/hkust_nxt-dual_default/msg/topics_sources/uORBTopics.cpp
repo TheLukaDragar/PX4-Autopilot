@@ -209,6 +209,7 @@
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/sensor_correction.h>
 #include <uORB/topics/sensor_gnss_relative.h>
+#include <uORB/topics/sensor_gnss_status.h>
 #include <uORB/topics/sensor_gps.h>
 #include <uORB/topics/sensor_gyro.h>
 #include <uORB/topics/sensor_gyro_fft.h>
@@ -498,6 +499,7 @@ const constexpr struct orb_metadata *const uorb_topics_list[ORB_TOPICS_COUNT] = 
 	ORB_ID(sensor_combined), 
 	ORB_ID(sensor_correction), 
 	ORB_ID(sensor_gnss_relative), 
+	ORB_ID(sensor_gnss_status), 
 	ORB_ID(sensor_gps), 
 	ORB_ID(sensor_gyro), 
 	ORB_ID(sensor_gyro_fft), 
