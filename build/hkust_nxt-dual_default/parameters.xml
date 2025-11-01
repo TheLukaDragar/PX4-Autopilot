@@ -1087,17 +1087,7 @@ are doing, and in a safe environment.
 Any motion of the remote stick will abort the signal
 injection and reset this parameter
 Best is to perform the identification in position or
-hold mode.
-Increase the amplitude of the injected signal using
-FW_AT_SYSID_AMP for more signal/noise ratio</long_desc>
-    </parameter>
-    <parameter name="FW_AT_SYSID_AMP" default="1.0" type="FLOAT">
-      <short_desc>Amplitude of the injected signal</short_desc>
-      <long_desc>This parameter scales the signal sent to the
-rate controller during system identification.</long_desc>
-      <min>0.1</min>
-      <max>6.0</max>
-      <decimal>1</decimal>
+hold mode.</long_desc>
     </parameter>
     <parameter name="FW_AT_SYSID_F0" default="1." type="FLOAT">
       <short_desc>Start frequency of the injected signal</short_desc>
@@ -1107,7 +1097,7 @@ rate controller during system identification.</long_desc>
       <unit>Hz</unit>
       <decimal>1</decimal>
     </parameter>
-    <parameter name="FW_AT_SYSID_F1" default="20." type="FLOAT">
+    <parameter name="FW_AT_SYSID_F1" default="10." type="FLOAT">
       <short_desc>End frequency of the injected signal</short_desc>
       <long_desc>Can be set lower or higher than the start frequency</long_desc>
       <min>0.1</min>
@@ -1123,7 +1113,7 @@ rate controller during system identification.</long_desc>
       <unit>s</unit>
       <decimal>0</decimal>
     </parameter>
-    <parameter name="FW_AT_SYSID_TYPE" default="0" type="INT32">
+    <parameter name="FW_AT_SYSID_TYPE" default="1" type="INT32">
       <short_desc>Input signal type</short_desc>
       <long_desc>Type of signal used during system identification to excite the system.</long_desc>
       <values>
@@ -2457,24 +2447,31 @@ External modes requiring stick input will still failsafe.</long_desc>
       <unit>ms</unit>
     </parameter>
     <parameter name="COM_RC_IN_MODE" default="3" type="INT32">
-      <short_desc>RC control input mode</short_desc>
-      <long_desc>A value of 0 enables RC transmitter control (only). A valid RC transmitter calibration is required.
-A value of 1 allows joystick control only. RC input handling and the associated checks are disabled.
-A value of 2 allows either RC Transmitter or Joystick input. The first valid input is used, will fallback to other sources if the input stream becomes invalid.
-A value of 3 allows either input from RC or joystick. The first available source is selected and used until reboot.
-A value of 4 ignores any stick input.
-A value of 5 allows either RC Transmitter or Joystick input. But RC has priority and whenever avaiable is immedietely used.
-A value of 6 allows either RC Transmitter or Joystick input. But Joystick has priority and whenever avaiable is immedietely used.</long_desc>
+      <short_desc>Manual control input source configuration</short_desc>
+      <long_desc>Selects stick input selection behavior:
+either a traditional remote control receiver (RC) or a MAVLink joystick (MANUAL_CONTROL message)
+Priority sources are immediately switched to whenever they get valid.
+0 RC only. Requires valid RC calibration.
+1 MAVLink only. RC and related checks are disabled.
+2 Switches only if current source becomes invalid.
+3 Locks to the first valid source until reboot.
+4 Ignores all sources.
+5 RC priority, then MAVLink (lower instance before higher)
+6 MAVLink priority (lower instance before higher), then RC
+7 RC priority, then MAVLink (higher instance before lower)
+8 MAVLink priority (higher instance before lower), then RC</long_desc>
       <min>0</min>
-      <max>4</max>
+      <max>8</max>
       <values>
-        <value code="0">RC Transmitter only</value>
-        <value code="1">Joystick only</value>
-        <value code="2">RC and Joystick with fallback</value>
-        <value code="3">RC or Joystick keep first</value>
-        <value code="4">Stick input disabled</value>
-        <value code="5">RC priority, Joystick fallback</value>
-        <value code="6">Joystick priority, RC fallback</value>
+        <value code="0">RC only</value>
+        <value code="1">MAVLink only</value>
+        <value code="2">RC or MAVLink with fallback</value>
+        <value code="3">RC or MAVLink keep first</value>
+        <value code="4">Disable manual control</value>
+        <value code="5">Prio: RC &gt; MAVL 1 &gt; MAVL 2</value>
+        <value code="6">Prio: MAVL 1 &gt; MAVL 2 &gt; RC</value>
+        <value code="7">Prio: RC &gt; MAVL 2 &gt; MAVL 1</value>
+        <value code="8">Prio: MAVL 2 &gt; MAVL 1 &gt; RC</value>
       </values>
     </parameter>
     <parameter name="COM_RC_LOSS_T" default="0.5" type="FLOAT">
@@ -8260,12 +8257,11 @@ stream parameters continuously.</long_desc>
       <long_desc>The mavlink heartbeat message will not be forwarded if this parameter is set to 'disabled'.
 The main reason for disabling heartbeats to be forwarded is because they confuse dronekit.</long_desc>
     </parameter>
-    <parameter name="MAV_PROTO_VER" default="0" type="INT32">
+    <parameter name="MAV_PROTO_VER" default="2" type="INT32">
       <short_desc>MAVLink protocol version</short_desc>
       <values>
-        <value code="0">Default to 1, switch to 2 if GCS sends version 2</value>
-        <value code="1">Always use version 1</value>
-        <value code="2">Always use version 2</value>
+        <value code="1">Version 1 with auto-upgrade to v2 if detected</value>
+        <value code="2">Version 2</value>
       </values>
     </parameter>
     <parameter name="MAV_RADIO_TOUT" default="5" type="INT32">
@@ -8291,6 +8287,25 @@ factory defaults. Only applies if this mavlink instance is going through a SiK r
       <min>1</min>
       <max>250</max>
       <reboot_required>true</reboot_required>
+    </parameter>
+    <parameter name="MAV_S_FORWARD" default="0" type="INT32" boolean="true">
+      <short_desc>Enable MAVLink forwarding on TELEM2</short_desc>
+      <long_desc>TELEM2 on Skynode only.</long_desc>
+      <reboot_required>True</reboot_required>
+    </parameter>
+    <parameter name="MAV_S_MODE" default="11" type="INT32">
+      <short_desc>MAVLink Mode for SOM to FMU communication channel</short_desc>
+      <long_desc>The MAVLink Mode defines the set of streamed messages (for example the
+vehicle's attitude) and their sending rates.</long_desc>
+      <reboot_required>True</reboot_required>
+      <values>
+        <value code="0">Normal</value>
+        <value code="2">Onboard</value>
+        <value code="5">Config</value>
+        <value code="7">Minimal</value>
+        <value code="11">Onboard Low Bandwidth</value>
+        <value code="13">Low Bandwidth</value>
+      </values>
     </parameter>
     <parameter name="MAV_TYPE" default="0" type="INT32">
       <short_desc>MAVLink airframe type</short_desc>
@@ -9124,11 +9139,14 @@ limit descending velocity to "MPC_LAND_CRWL" below this altitude.</long_desc>
       <unit>m/s</unit>
       <decimal>1</decimal>
     </parameter>
-    <parameter name="MPC_LAND_RADIUS" default="1000." type="FLOAT">
+    <parameter name="MPC_LAND_RADIUS" default="-1.0" type="FLOAT">
       <short_desc>User assisted landing radius</short_desc>
-      <long_desc>When nudging is enabled (see MPC_LAND_RC_HELP), this controls
-the maximum allowed horizontal displacement from the original landing point.</long_desc>
-      <min>0</min>
+      <long_desc>When nudging is enabled (see MPC_LAND_RC_HELP), this defines the maximum
+allowed horizontal displacement from the original landing point.
+- If inside of the radius, only allow nudging inputs that do not move the vehicle outside of it.
+- If outside of the radius, only allow nudging inputs that move the vehicle back towards it.
+Set it to -1 for infinite radius.</long_desc>
+      <min>-1</min>
       <unit>m</unit>
       <decimal>0</decimal>
       <increment>1</increment>
@@ -10026,12 +10044,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
     </parameter>
   </group>
   <group name="Radio Calibration">
-    <parameter name="RC10_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 10 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-    </parameter>
     <parameter name="RC10_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 10 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10062,12 +10074,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
       <unit>us</unit>
-    </parameter>
-    <parameter name="RC11_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 11 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
     </parameter>
     <parameter name="RC11_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 11 maximum</short_desc>
@@ -10100,12 +10106,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <max>2200.0</max>
       <unit>us</unit>
     </parameter>
-    <parameter name="RC12_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 12 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-    </parameter>
     <parameter name="RC12_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 12 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10136,12 +10136,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
       <unit>us</unit>
-    </parameter>
-    <parameter name="RC13_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 13 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
     </parameter>
     <parameter name="RC13_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 13 maximum</short_desc>
@@ -10174,12 +10168,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <max>2200.0</max>
       <unit>us</unit>
     </parameter>
-    <parameter name="RC14_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 14 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-    </parameter>
     <parameter name="RC14_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 14 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10210,12 +10198,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
       <unit>us</unit>
-    </parameter>
-    <parameter name="RC15_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 15 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
     </parameter>
     <parameter name="RC15_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 15 maximum</short_desc>
@@ -10248,12 +10230,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <max>2200.0</max>
       <unit>us</unit>
     </parameter>
-    <parameter name="RC16_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 16 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-    </parameter>
     <parameter name="RC16_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 16 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10284,12 +10260,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
       <unit>us</unit>
-    </parameter>
-    <parameter name="RC17_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 17 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
     </parameter>
     <parameter name="RC17_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 17 maximum</short_desc>
@@ -10322,12 +10292,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <max>2200.0</max>
       <unit>us</unit>
     </parameter>
-    <parameter name="RC18_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 18 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-    </parameter>
     <parameter name="RC18_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 18 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10357,13 +10321,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <long_desc>Mid point value</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
-      <unit>us</unit>
-    </parameter>
-    <parameter name="RC1_DZ" default="10.0" type="FLOAT">
-      <short_desc>RC channel 1 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
       <unit>us</unit>
     </parameter>
     <parameter name="RC1_MAX" default="2000.0" type="FLOAT">
@@ -10397,13 +10354,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <max>2200.0</max>
       <unit>us</unit>
     </parameter>
-    <parameter name="RC2_DZ" default="10.0" type="FLOAT">
-      <short_desc>RC channel 2 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-      <unit>us</unit>
-    </parameter>
     <parameter name="RC2_MAX" default="2000.0" type="FLOAT">
       <short_desc>RC channel 2 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10433,13 +10383,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <long_desc>Mid point value</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
-      <unit>us</unit>
-    </parameter>
-    <parameter name="RC3_DZ" default="10.0" type="FLOAT">
-      <short_desc>RC channel 3 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
       <unit>us</unit>
     </parameter>
     <parameter name="RC3_MAX" default="2000" type="FLOAT">
@@ -10473,13 +10416,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <max>2200.0</max>
       <unit>us</unit>
     </parameter>
-    <parameter name="RC4_DZ" default="10.0" type="FLOAT">
-      <short_desc>RC channel 4 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-      <unit>us</unit>
-    </parameter>
     <parameter name="RC4_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 4 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10510,12 +10446,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
       <unit>us</unit>
-    </parameter>
-    <parameter name="RC5_DZ" default="10.0" type="FLOAT">
-      <short_desc>RC channel 5 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
     </parameter>
     <parameter name="RC5_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 5 maximum</short_desc>
@@ -10548,12 +10478,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <max>2200.0</max>
       <unit>us</unit>
     </parameter>
-    <parameter name="RC6_DZ" default="10.0" type="FLOAT">
-      <short_desc>RC channel 6 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-    </parameter>
     <parameter name="RC6_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 6 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10584,12 +10508,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
       <unit>us</unit>
-    </parameter>
-    <parameter name="RC7_DZ" default="10.0" type="FLOAT">
-      <short_desc>RC channel 7 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
     </parameter>
     <parameter name="RC7_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 7 maximum</short_desc>
@@ -10622,12 +10540,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <max>2200.0</max>
       <unit>us</unit>
     </parameter>
-    <parameter name="RC8_DZ" default="10.0" type="FLOAT">
-      <short_desc>RC channel 8 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
-    </parameter>
     <parameter name="RC8_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 8 maximum</short_desc>
       <long_desc>Maximum value for this channel.</long_desc>
@@ -10658,12 +10570,6 @@ rel_signal is the relative motor control signal between 0 and 1.</long_desc>
       <min>800.0</min>
       <max>2200.0</max>
       <unit>us</unit>
-    </parameter>
-    <parameter name="RC9_DZ" default="0.0" type="FLOAT">
-      <short_desc>RC channel 9 dead zone</short_desc>
-      <long_desc>The +- range of this value around the trim value will be considered as zero.</long_desc>
-      <min>0.0</min>
-      <max>100.0</max>
     </parameter>
     <parameter name="RC9_MAX" default="2000" type="FLOAT">
       <short_desc>RC channel 9 maximum</short_desc>

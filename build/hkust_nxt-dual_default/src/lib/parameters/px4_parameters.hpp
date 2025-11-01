@@ -733,7 +733,6 @@ enum class params : uint16_t {
 	FW_AT_AXES,
 	FW_AT_MAN_AUX,
 	FW_AT_START,
-	FW_AT_SYSID_AMP,
 	FW_AT_SYSID_F0,
 	FW_AT_SYSID_F1,
 	FW_AT_SYSID_TIME,
@@ -986,6 +985,8 @@ enum class params : uint16_t {
 	MAV_RADIO_TOUT,
 	MAV_SIK_RADIO_ID,
 	MAV_SYS_ID,
+	MAV_S_FORWARD,
+	MAV_S_MODE,
 	MAV_TYPE,
 	MAV_USEHILGPS,
 	MBE_ENABLE,
@@ -1212,92 +1213,74 @@ enum class params : uint16_t {
 	PWM_MAIN_TIM0,
 	PWM_MAIN_TIM1,
 	PWM_MAIN_TIM2,
-	RC10_DZ,
 	RC10_MAX,
 	RC10_MIN,
 	RC10_REV,
 	RC10_TRIM,
-	RC11_DZ,
 	RC11_MAX,
 	RC11_MIN,
 	RC11_REV,
 	RC11_TRIM,
-	RC12_DZ,
 	RC12_MAX,
 	RC12_MIN,
 	RC12_REV,
 	RC12_TRIM,
-	RC13_DZ,
 	RC13_MAX,
 	RC13_MIN,
 	RC13_REV,
 	RC13_TRIM,
-	RC14_DZ,
 	RC14_MAX,
 	RC14_MIN,
 	RC14_REV,
 	RC14_TRIM,
-	RC15_DZ,
 	RC15_MAX,
 	RC15_MIN,
 	RC15_REV,
 	RC15_TRIM,
-	RC16_DZ,
 	RC16_MAX,
 	RC16_MIN,
 	RC16_REV,
 	RC16_TRIM,
-	RC17_DZ,
 	RC17_MAX,
 	RC17_MIN,
 	RC17_REV,
 	RC17_TRIM,
-	RC18_DZ,
 	RC18_MAX,
 	RC18_MIN,
 	RC18_REV,
 	RC18_TRIM,
-	RC1_DZ,
 	RC1_MAX,
 	RC1_MIN,
 	RC1_REV,
 	RC1_TRIM,
-	RC2_DZ,
 	RC2_MAX,
 	RC2_MIN,
 	RC2_REV,
 	RC2_TRIM,
-	RC3_DZ,
 	RC3_MAX,
 	RC3_MIN,
 	RC3_REV,
 	RC3_TRIM,
-	RC4_DZ,
 	RC4_MAX,
 	RC4_MIN,
 	RC4_REV,
 	RC4_TRIM,
-	RC5_DZ,
 	RC5_MAX,
 	RC5_MIN,
 	RC5_REV,
 	RC5_TRIM,
-	RC6_DZ,
 	RC6_MAX,
 	RC6_MIN,
 	RC6_REV,
 	RC6_TRIM,
-	RC7_DZ,
 	RC7_MAX,
 	RC7_MIN,
 	RC7_REV,
 	RC7_TRIM,
-	RC8_DZ,
 	RC8_MAX,
 	RC8_MIN,
 	RC8_REV,
 	RC8_TRIM,
-	RC9_DZ,
 	RC9_MAX,
 	RC9_MIN,
 	RC9_REV,
@@ -5386,18 +5369,13 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "FW_AT_SYSID_AMP",
-		.val = { .f = 1.0 },
-	},
-
-	{
 		.name = "FW_AT_SYSID_F0",
 		.val = { .f = 1. },
 	},
 
 	{
 		.name = "FW_AT_SYSID_F1",
-		.val = { .f = 20. },
+		.val = { .f = 10. },
 	},
 
 	{
@@ -5407,7 +5385,7 @@ static constexpr param_info_s parameters[] = {
 
 	{
 		.name = "FW_AT_SYSID_TYPE",
-		.val = { .i = 0},
+		.val = { .i = 1},
 	},
 
 	{
@@ -6632,7 +6610,7 @@ static constexpr param_info_s parameters[] = {
 
 	{
 		.name = "MAV_PROTO_VER",
-		.val = { .i = 0},
+		.val = { .i = 2},
 	},
 
 	{
@@ -6648,6 +6626,16 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "MAV_SYS_ID",
 		.val = { .i = 1},
+	},
+
+	{
+		.name = "MAV_S_FORWARD",
+		.val = { .i = 0},
+	},
+
+	{
+		.name = "MAV_S_MODE",
+		.val = { .i = 11},
 	},
 
 	{
@@ -7147,7 +7135,7 @@ static constexpr param_info_s parameters[] = {
 
 	{
 		.name = "MPC_LAND_RADIUS",
-		.val = { .f = 1000. },
+		.val = { .f = -1.0 },
 	},
 
 	{
@@ -7781,11 +7769,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC10_DZ",
-		.val = { .f = 0.0 },
-	},
-
-	{
 		.name = "RC10_MAX",
 		.val = { .f = 2000 },
 	},
@@ -7803,11 +7786,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC10_TRIM",
 		.val = { .f = 1500 },
-	},
-
-	{
-		.name = "RC11_DZ",
-		.val = { .f = 0.0 },
 	},
 
 	{
@@ -7831,11 +7809,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC12_DZ",
-		.val = { .f = 0.0 },
-	},
-
-	{
 		.name = "RC12_MAX",
 		.val = { .f = 2000 },
 	},
@@ -7853,11 +7826,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC12_TRIM",
 		.val = { .f = 1500 },
-	},
-
-	{
-		.name = "RC13_DZ",
-		.val = { .f = 0.0 },
 	},
 
 	{
@@ -7881,11 +7849,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC14_DZ",
-		.val = { .f = 0.0 },
-	},
-
-	{
 		.name = "RC14_MAX",
 		.val = { .f = 2000 },
 	},
@@ -7903,11 +7866,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC14_TRIM",
 		.val = { .f = 1500 },
-	},
-
-	{
-		.name = "RC15_DZ",
-		.val = { .f = 0.0 },
 	},
 
 	{
@@ -7931,11 +7889,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC16_DZ",
-		.val = { .f = 0.0 },
-	},
-
-	{
 		.name = "RC16_MAX",
 		.val = { .f = 2000 },
 	},
@@ -7953,11 +7906,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC16_TRIM",
 		.val = { .f = 1500 },
-	},
-
-	{
-		.name = "RC17_DZ",
-		.val = { .f = 0.0 },
 	},
 
 	{
@@ -7981,11 +7929,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC18_DZ",
-		.val = { .f = 0.0 },
-	},
-
-	{
 		.name = "RC18_MAX",
 		.val = { .f = 2000 },
 	},
@@ -8003,11 +7946,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC18_TRIM",
 		.val = { .f = 1500 },
-	},
-
-	{
-		.name = "RC1_DZ",
-		.val = { .f = 10.0 },
 	},
 
 	{
@@ -8031,11 +7969,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC2_DZ",
-		.val = { .f = 10.0 },
-	},
-
-	{
 		.name = "RC2_MAX",
 		.val = { .f = 2000.0 },
 	},
@@ -8053,11 +7986,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC2_TRIM",
 		.val = { .f = 1500.0 },
-	},
-
-	{
-		.name = "RC3_DZ",
-		.val = { .f = 10.0 },
 	},
 
 	{
@@ -8081,11 +8009,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC4_DZ",
-		.val = { .f = 10.0 },
-	},
-
-	{
 		.name = "RC4_MAX",
 		.val = { .f = 2000 },
 	},
@@ -8103,11 +8026,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC4_TRIM",
 		.val = { .f = 1500 },
-	},
-
-	{
-		.name = "RC5_DZ",
-		.val = { .f = 10.0 },
 	},
 
 	{
@@ -8131,11 +8049,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC6_DZ",
-		.val = { .f = 10.0 },
-	},
-
-	{
 		.name = "RC6_MAX",
 		.val = { .f = 2000 },
 	},
@@ -8153,11 +8066,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC6_TRIM",
 		.val = { .f = 1500 },
-	},
-
-	{
-		.name = "RC7_DZ",
-		.val = { .f = 10.0 },
 	},
 
 	{
@@ -8181,11 +8089,6 @@ static constexpr param_info_s parameters[] = {
 	},
 
 	{
-		.name = "RC8_DZ",
-		.val = { .f = 10.0 },
-	},
-
-	{
 		.name = "RC8_MAX",
 		.val = { .f = 2000 },
 	},
@@ -8203,11 +8106,6 @@ static constexpr param_info_s parameters[] = {
 	{
 		.name = "RC8_TRIM",
 		.val = { .f = 1500 },
-	},
-
-	{
-		.name = "RC9_DZ",
-		.val = { .f = 0.0 },
 	},
 
 	{
@@ -11347,7 +11245,6 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
@@ -11586,6 +11483,7 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
+	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
@@ -11600,6 +11498,7 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
+	PARAM_TYPE_INT32,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
@@ -11823,24 +11722,6 @@ static constexpr param_type_t parameters_type[] = {
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
 	PARAM_TYPE_INT32,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
-	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,
 	PARAM_TYPE_FLOAT,

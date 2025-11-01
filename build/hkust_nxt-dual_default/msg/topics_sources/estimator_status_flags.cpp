@@ -46,7 +46,7 @@
 
 
 static_assert(static_cast<orb_id_size_t>(ORB_ID::estimator_status_flags) == 85, "ORB_ID index mismatch");
-ORB_DEFINE(estimator_status_flags, struct estimator_status_flags_s, 96, 4176285537u, static_cast<orb_id_size_t>(ORB_ID::estimator_status_flags), 1);
+ORB_DEFINE(estimator_status_flags, struct estimator_status_flags_s, 97, 3697195724u, static_cast<orb_id_size_t>(ORB_ID::estimator_status_flags), 1);
 
 
 void print_message(const orb_metadata *meta, const estimator_status_flags_s& message)

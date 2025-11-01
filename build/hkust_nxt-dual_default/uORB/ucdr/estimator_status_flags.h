@@ -251,8 +251,10 @@ static inline bool ucdr_serialize_estimator_status_flags(const void* data, ucdrB
 	memcpy(buf.iterator, &topic.cs_yaw_manual, sizeof(topic.cs_yaw_manual));
 	buf.iterator += sizeof(topic.cs_yaw_manual);
 	buf.offset += sizeof(topic.cs_yaw_manual);
-	buf.iterator += 1; // padding
-	buf.offset += 1; // padding
+	static_assert(sizeof(topic.cs_gnss_hgt_fault) == 1, "size mismatch");
+	memcpy(buf.iterator, &topic.cs_gnss_hgt_fault, sizeof(topic.cs_gnss_hgt_fault));
+	buf.iterator += sizeof(topic.cs_gnss_hgt_fault);
+	buf.offset += sizeof(topic.cs_gnss_hgt_fault);
 	static_assert(sizeof(topic.fault_status_changes) == 4, "size mismatch");
 	memcpy(buf.iterator, &topic.fault_status_changes, sizeof(topic.fault_status_changes));
 	buf.iterator += sizeof(topic.fault_status_changes);
@@ -556,8 +558,10 @@ static inline bool ucdr_deserialize_estimator_status_flags(ucdrBuffer& buf, esti
 	memcpy(&topic.cs_yaw_manual, buf.iterator, sizeof(topic.cs_yaw_manual));
 	buf.iterator += sizeof(topic.cs_yaw_manual);
 	buf.offset += sizeof(topic.cs_yaw_manual);
-	buf.iterator += 1; // padding
-	buf.offset += 1; // padding
+	static_assert(sizeof(topic.cs_gnss_hgt_fault) == 1, "size mismatch");
+	memcpy(&topic.cs_gnss_hgt_fault, buf.iterator, sizeof(topic.cs_gnss_hgt_fault));
+	buf.iterator += sizeof(topic.cs_gnss_hgt_fault);
+	buf.offset += sizeof(topic.cs_gnss_hgt_fault);
 	static_assert(sizeof(topic.fault_status_changes) == 4, "size mismatch");
 	memcpy(&topic.fault_status_changes, buf.iterator, sizeof(topic.fault_status_changes));
 	buf.iterator += sizeof(topic.fault_status_changes);

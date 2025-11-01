@@ -156,21 +156,16 @@ namespace enums
  Reason for arming/disarming
 */
 enum class arm_disarm_reason_t : uint8_t {
-	transition_to_standby = 0, ///< Transition to standby
-	stick_gesture = 1, ///< Stick gesture
-	failure_detector = 10, ///< failure detector
-	shutdown = 11, ///< shutdown request
-	unit_test = 12, ///< unit tests
-	rc_button = 13, ///< RC (button)
+	stick_gesture = 1, ///< stick gesture
+	rc_button = 13, ///< RC button
 	failsafe = 14, ///< failsafe
 	rc_switch = 2, ///< RC switch
 	command_internal = 3, ///< internal command
 	command_external = 4, ///< external command
 	mission_start = 5, ///< mission start
-	auto_disarm_land = 6, ///< landing
-	auto_disarm_preflight = 7, ///< auto preflight disarming
+	landing = 6, ///< landing
+	preflight_inaction = 7, ///< preflight inaction
 	kill_switch = 8, ///< kill switch
-	lockdown = 9, ///< lockdown
 
 	_max = 14
 };

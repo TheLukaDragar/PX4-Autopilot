@@ -3980,6 +3980,10 @@ void Ekf::resetQuatStateYaw(const float yaw, const float yaw_variance)
 	_time_last_heading_fuse = _time_delayed_us;
 
 	propagateQuatReset(quat_before_reset);
+
+	// rotate horizontal velocity by the yaw change
+	const float yaw_diff = wrap_pi(yaw - getEulerYaw(quat_before_reset));
+	resetHorizontalVelocityToMatchYaw(yaw_diff);
 }
 
 void Ekf::propagateQuatReset(const Quatf &quat_before_reset)
@@ -4029,6 +4033,18 @@ void Ekf::resetYawByFusion(const float yaw, const float yaw_variance)
 	fuseYaw(aid_src_status, H_YAW, reset_yaw);
 
 	propagateQuatReset(quat_before_reset);
+
+	resetHorizontalVelocityToMatchYaw(-aid_src_status.innovation);
+}
+
+void Ekf::resetHorizontalVelocityToMatchYaw(const float delta_yaw)
+{
+	if (!isNorthEastAidingActive() && fabsf(delta_yaw) > 0.3f) {
+		const matrix::Dcm2f R_yaw(delta_yaw);
+		const Vector2f vel_rotated = R_yaw * Vector2f(_state.vel);
+		const float vel_var = fmaxf(P(State::vel.idx, State::vel.idx), P(State::vel.idx + 1, State::vel.idx + 1));
+		resetHorizontalVelocityTo(vel_rotated, vel_var);
+	}
 }
 #include "imu_down_sampler/imu_down_sampler.hpp"
 
@@ -6957,7 +6973,7 @@ void Ekf::controlGnssHeightFusion(const gnssSample &gps_sample)
 
 				const bool is_fusion_failing = isTimedOut(aid_src.time_last_fuse, _params.hgt_fusion_timeout_max);
 
-				if (isHeightResetRequired() && (_height_sensor_ref == HeightSensor::GNSS)) {
+				if (isHeightResetRequired() && (_height_sensor_ref == HeightSensor::GNSS) && isGnssHgtResetAllowed()) {
 					// All height sources are failing
 					ECL_WARN("%s height fusion reset required, all height sources failing", HGT_SRC_NAME);
 
@@ -6972,6 +6988,11 @@ void Ekf::controlGnssHeightFusion(const gnssSample &gps_sample)
 					// Some other height source is still working
 					ECL_WARN("stopping %s height fusion, fusion failing", HGT_SRC_NAME);
 					stopGpsHgtFusion();
+
+					if (!isGnssHgtResetAllowed()) {
+						_control_status.flags.gnss_hgt_fault = true;
+						_time_last_gnss_hgt_rejected = _time_delayed_us;
+					}
 				}
 
 			} else {
@@ -6980,34 +7001,57 @@ void Ekf::controlGnssHeightFusion(const gnssSample &gps_sample)
 			}
 
 		} else {
-			if (starting_conditions_passing) {
-				if (_params.ekf2_hgt_ref == static_cast<int32_t>(HeightSensor::GNSS)) {
-					ECL_INFO("starting %s height fusion, resetting height", HGT_SRC_NAME);
-					_height_sensor_ref = HeightSensor::GNSS;
+			if (altitude_initialisation_conditions_passing) {
+				// Altitude not initialized, GNSS is the configured height reference
+				_information_events.flags.reset_hgt_to_gps = true;
+				initialiseAltitudeTo(measurement, measurement_var);
+				bias_est.reset();
 
+				// Start fusion if GPS vertical position control is also enabled
+				if (starting_conditions_passing) {
+					_height_sensor_ref = HeightSensor::GNSS;
+					resetAidSourceStatusZeroInnovation(aid_src);
+					aid_src.time_last_fuse = _time_delayed_us;
+					bias_est.setFusionActive();
+					_control_status.flags.gps_hgt = true;
+				}
+
+			} else if (starting_conditions_passing) {
+				if (_params.ekf2_hgt_ref == static_cast<int32_t>(HeightSensor::GNSS) && isGnssHgtResetAllowed()) {
+					_height_sensor_ref = HeightSensor::GNSS;
 					_information_events.flags.reset_hgt_to_gps = true;
 
-					initialiseAltitudeTo(measurement, measurement_var);
+					resetAltitudeTo(measurement, measurement_var);
 					bias_est.reset();
 					resetAidSourceStatusZeroInnovation(aid_src);
 
+					aid_src.time_last_fuse = _time_delayed_us;
+					bias_est.setFusionActive();
+					_control_status.flags.gps_hgt = true;
+					_control_status.flags.gnss_hgt_fault = false;
+
 				} else {
-					ECL_INFO("starting %s height fusion", HGT_SRC_NAME);
-					bias_est.setBias(-_gpos.altitude() + measurement);
+					bool is_gnss_hgt_consistent = true;
+
+					if (_control_status.flags.gnss_hgt_fault) {
+						if (aid_src.innovation_rejected) {
+							_time_last_gnss_hgt_rejected = _time_delayed_us;
+						}
+
+						is_gnss_hgt_consistent = isTimedOut(_time_last_gnss_hgt_rejected, _params.hgt_fusion_timeout_max);
+					}
+
+					if (is_gnss_hgt_consistent) {
+						if (_params.ekf2_hgt_ref != static_cast<int32_t>(HeightSensor::GNSS)) {
+							bias_est.setBias(-_gpos.altitude() + measurement);
+						}
+
+						aid_src.time_last_fuse = _time_delayed_us;
+						bias_est.setFusionActive();
+						_control_status.flags.gps_hgt = true;
+						_control_status.flags.gnss_hgt_fault = false;
+					}
 				}
-
-				aid_src.time_last_fuse = _time_delayed_us;
-				bias_est.setFusionActive();
-				_control_status.flags.gps_hgt = true;
-
-			} if (altitude_initialisation_conditions_passing) {
-
-				// Do not start GNSS altitude aiding, but use measurement
-				// to initialize altitude and bias of other height sensors
-				_information_events.flags.reset_hgt_to_gps = true;
-
-				initialiseAltitudeTo(measurement, measurement_var);
-				bias_est.reset();
 			}
 		}
 
@@ -7031,6 +7075,15 @@ void Ekf::stopGpsHgtFusion()
 
 		_control_status.flags.gps_hgt = false;
 	}
+}
+
+bool Ekf::isGnssHgtResetAllowed()
+{
+	const bool allowed = !(static_cast<GnssMode>(_params.ekf2_gps_mode) == GnssMode::kDeadReckoning
+			       && isOtherSourceOfVerticalPositionAidingThan(_control_status.flags.gps_hgt))
+			     || !PX4_ISFINITE(_local_origin_alt);
+
+	return allowed;
 }
 /****************************************************************************
  *
@@ -7158,7 +7211,8 @@ void Ekf::controlGnssVelFusion(estimator_aid_source3d_s &aid_src, const bool for
 	const bool continuing_conditions_passing = (_params.ekf2_gps_ctrl & static_cast<int32_t>(GnssCtrl::VEL))
 			&& _control_status.flags.tilt_align
 			&& _control_status.flags.yaw_align
-			&& !_control_status.flags.gnss_fault;
+			&& !_control_status.flags.gnss_fault
+			&& !_control_status.flags.gnss_hgt_fault;
 	const bool starting_conditions_passing = continuing_conditions_passing && _gnss_checks.passed();
 
 	if (_control_status.flags.gnss_vel) {
@@ -7214,7 +7268,8 @@ void Ekf::controlGnssPosFusion(estimator_aid_source2d_s &aid_src, const bool for
 
 	const bool continuing_conditions_passing = gnss_pos_enabled
 			&& _control_status.flags.tilt_align
-			&& _control_status.flags.yaw_align;
+			&& _control_status.flags.yaw_align
+			&& !_control_status.flags.gnss_hgt_fault;
 	const bool starting_conditions_passing = continuing_conditions_passing && _gnss_checks.passed();
 	const bool gpos_init_conditions_passing = gnss_pos_enabled && _gnss_checks.passed();
 
@@ -12336,6 +12391,7 @@ void EKF2::PublishStatusFlags(const hrt_abstime &timestamp)
 		status_flags.cs_gnss_vel            = _ekf.control_status_flags().gnss_vel;
 		status_flags.cs_gnss_fault          = _ekf.control_status_flags().gnss_fault;
 		status_flags.cs_yaw_manual          = _ekf.control_status_flags().yaw_manual;
+		status_flags.cs_gnss_hgt_fault      = _ekf.control_status_flags().gnss_hgt_fault;
 
 		status_flags.fault_status_changes     = _filter_fault_status_changes;
 		status_flags.fs_bad_mag_x             = _ekf.fault_status_flags().bad_mag_x;

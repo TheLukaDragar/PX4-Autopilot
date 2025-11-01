@@ -6,7 +6,7 @@ Parsing /Users/carbs/Desktop/PX4-Autopilot/src/modules/mavlink/mavlink/message_d
 MAV_BOOL_FALSE has invalid values (bitmask must have powers of 2)
 Validating /Users/carbs/Desktop/PX4-Autopilot/src/modules/mavlink/mavlink/message_definitions/v1.0/minimal.xml
 Parsing /Users/carbs/Desktop/PX4-Autopilot/src/modules/mavlink/mavlink/message_definitions/v1.0/minimal.xml
-Found 229 MAVLink message types in 3 XML files
+Found 230 MAVLink message types in 3 XML files
 Generating C implementation in directory /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/mavlink/common
 Generating C implementation in directory /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/mavlink/standard
 Generating C implementation in directory /Users/carbs/Desktop/PX4-Autopilot/build/hkust_nxt-dual_default/mavlink/minimal

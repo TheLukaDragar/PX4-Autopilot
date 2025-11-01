@@ -7836,6 +7836,36 @@ PARAM_DEFINE_FLOAT(MAV_1_HL_FREQ, 0.015);
 PARAM_DEFINE_FLOAT(MAV_2_HL_FREQ, 0.015);
 
 /**
+ * MAVLink Mode for SOM to FMU communication channel
+ *
+ * The MAVLink Mode defines the set of streamed messages (for example the
+ * vehicle's attitude) and their sending rates.
+ * 
+ *
+ * @group MAVLink
+ * @value 0 Normal
+ * @value 2 Onboard
+ * @value 5 Config
+ * @value 7 Minimal
+ * @value 11 Onboard Low Bandwidth
+ * @value 13 Low Bandwidth
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(MAV_S_MODE, 11);
+
+/**
+ * Enable MAVLink forwarding on TELEM2
+ *
+ * TELEM2 on Skynode only.
+ * 
+ *
+ * @group MAVLink
+ * @boolean
+ * @reboot_required True
+ */
+PARAM_DEFINE_INT32(MAV_S_FORWARD, 0);
+
+/**
  * Accelerometer 0 calibration device ID
  *
  * Device ID of the accelerometer this calibration applies to.
