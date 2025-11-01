@@ -47,13 +47,13 @@ publications:
     type: px4_msgs::msg::SensorCombined
     rate_limit: 200.
 
-  # - topic: /fmu/out/sensor_accel
-  #   type: px4_msgs::msg::SensorAccel
-  #   rate_limit: 200.
+  - topic: /fmu/out/sensor_accel
+    type: px4_msgs::msg::SensorAccel
+    rate_limit: 200.
 
-  # - topic: /fmu/out/sensor_gyro
-  #   type: px4_msgs::msg::SensorGyro
-  #   rate_limit: 200.
+  - topic: /fmu/out/sensor_gyro
+    type: px4_msgs::msg::SensorGyro
+    rate_limit: 200.
 
   # - topic: /fmu/out/sensor_accel_fifo
   #   type: px4_msgs::msg::SensorAccelFifo
