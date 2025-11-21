@@ -23,3 +23,6 @@ else
     # Run simulator_mavlink module for interface with gazebo-classic
     . px4-rc.mavlinksim
 fi
+
+
+    
