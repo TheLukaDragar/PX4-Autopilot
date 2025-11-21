@@ -652,32 +652,58 @@ void UxrceddsClient::run()
 			perf_begin(_loop_perf);
 			perf_count(_loop_interval_perf);
 
-			int orb_poll_timeout_ms = 10;
-
-			int bytes_available = 0;
-
-			if (ioctl(_fd, FIONREAD, (unsigned long)&bytes_available) == OK) {
-				if (bytes_available > 10) {
-					orb_poll_timeout_ms = 0;
+			// Hybrid event-driven + poll architecture
+			if (_subs->has_event_driven_topics()) {
+				// Wait for event-driven topic updates with timeout
+				struct timespec ts;
+				px4_clock_gettime(CLOCK_REALTIME, &ts);
+				ts.tv_nsec += 10'000'000; // 10ms timeout
+				if (ts.tv_nsec >= 1'000'000'000) {
+					ts.tv_sec++;
+					ts.tv_nsec -= 1'000'000'000;
 				}
-			}
 
-			/* Wait for topic updates for max 10 ms */
-			int poll = px4_poll(_subs->fds, (sizeof(_subs->fds) / sizeof(_subs->fds[0])), orb_poll_timeout_ms);
+				// Wait on semaphore (posted by callbacks when data arrives)
+				if (px4_sem_timedwait(&_subs->event_sem, &ts) == 0) {
+					// Event-driven topic updated - process immediately
+					_subs->update_event_driven(&session, _reliable_out, _best_effort_out, _participant_id, _client_namespace);
+				}
 
-			/* Handle the poll results */
-			if (poll > 0) {
-				_subs->update(&session, _reliable_out, _best_effort_out, _participant_id, _client_namespace);
+				// Also check poll-based topics (non-blocking)
+				int poll = px4_poll(_subs->fds, (sizeof(_subs->fds) / sizeof(_subs->fds[0])), 0);
+				if (poll > 0) {
+					_subs->update(&session, _reliable_out, _best_effort_out, _participant_id, _client_namespace);
+				}
 
 			} else {
-				if (poll < 0) {
-					// poll error
-					if (poll_error_counter < 10 || poll_error_counter % 50 == 0) {
-						// prevent flooding
-						PX4_ERR("ERROR while polling uorbs: %d", poll);
-					}
+				// Backward compatible: pure poll-based for rate-limited topics
+				int orb_poll_timeout_ms = 10;
 
-					poll_error_counter++;
+				int bytes_available = 0;
+
+				if (ioctl(_fd, FIONREAD, (unsigned long)&bytes_available) == OK) {
+					if (bytes_available > 10) {
+						orb_poll_timeout_ms = 0;
+					}
+				}
+
+				/* Wait for topic updates for max 10 ms */
+				int poll = px4_poll(_subs->fds, (sizeof(_subs->fds) / sizeof(_subs->fds[0])), orb_poll_timeout_ms);
+
+				/* Handle the poll results */
+				if (poll > 0) {
+					_subs->update(&session, _reliable_out, _best_effort_out, _participant_id, _client_namespace);
+
+				} else {
+					if (poll < 0) {
+						// poll error
+						if (poll_error_counter < 10 || poll_error_counter % 50 == 0) {
+							// prevent flooding
+							PX4_ERR("ERROR while polling uorbs: %d", poll);
+						}
+
+						poll_error_counter++;
+					}
 				}
 			}
 
@@ -978,6 +1004,10 @@ int UxrceddsClient::print_status()
 	}
 
 	PX4_INFO("timesync converged: %s", _timesync.sync_converged() ? "true" : "false");
+
+	if (_subs) {
+		_subs->print_statistics();
+	}
 
 	perf_print_counter(_loop_perf);
 	perf_print_counter(_loop_interval_perf);
