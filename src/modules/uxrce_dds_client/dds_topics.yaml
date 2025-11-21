@@ -47,13 +47,13 @@ publications:
     type: px4_msgs::msg::SensorCombined
     rate_limit: 200.
 
-  - topic: /fmu/out/sensor_accel
-    type: px4_msgs::msg::SensorAccel
-    rate_limit: 200.
+  # - topic: /fmu/out/sensor_accel
+  #   type: px4_msgs::msg::SensorAccel
+  #   rate_limit: 200.
 
-  - topic: /fmu/out/sensor_gyro
-    type: px4_msgs::msg::SensorGyro
-    rate_limit: 200.
+  # - topic: /fmu/out/sensor_gyro
+  #   type: px4_msgs::msg::SensorGyro
+  #   rate_limit: 200.
 
   # - topic: /fmu/out/sensor_accel_fifo
   #   type: px4_msgs::msg::SensorAccelFifo
@@ -85,13 +85,13 @@ publications:
   - topic: /fmu/out/vehicle_command_ack
     type: px4_msgs::msg::VehicleCommandAck
 
-  - topic: /fmu/out/vehicle_global_position
-    type: px4_msgs::msg::VehicleGlobalPosition
-    rate_limit: 50.
+  # - topic: /fmu/out/vehicle_global_position
+  #   type: px4_msgs::msg::VehicleGlobalPosition
+  #   rate_limit: 50.
 
-  - topic: /fmu/out/vehicle_gps_position
-    type: px4_msgs::msg::SensorGps
-    rate_limit: 50.
+  # - topic: /fmu/out/vehicle_gps_position
+  #   type: px4_msgs::msg::SensorGps
+  #   rate_limit: 50.
 
   - topic: /fmu/out/vehicle_local_position
     type: px4_msgs::msg::VehicleLocalPosition
@@ -104,9 +104,9 @@ publications:
     type: px4_msgs::msg::VehicleStatus
     rate_limit: 5.
 
-  - topic: /fmu/out/airspeed_validated
-    type: px4_msgs::msg::AirspeedValidated
-    rate_limit: 50.
+  # - topic: /fmu/out/airspeed_validated
+  #   type: px4_msgs::msg::AirspeedValidated
+  #   rate_limit: 50.
 
   - topic: /fmu/out/cpuload
     type: px4_msgs::msg::Cpuload
@@ -134,6 +134,13 @@ publications:
   - topic: /fmu/out/distance_sensor
     type: px4_msgs::msg::DistanceSensor
     rate_limit: 10.
+
+  - topic: /fmu/out/vehicle_imu
+    type: px4_msgs::msg::VehicleImu
+    event_driven: true
+
+  - topic: /fmu/out/esc_status
+    type: px4_msgs::msg::EscStatus
 
 
 # Create uORB::Publication

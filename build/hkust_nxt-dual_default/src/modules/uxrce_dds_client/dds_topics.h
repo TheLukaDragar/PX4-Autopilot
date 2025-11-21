@@ -7,13 +7,12 @@
 #include <mathlib/mathlib.h>
 #include <uORB/Publication.hpp>
 #include <uORB/PublicationMulti.hpp>
+#include <uORB/SubscriptionCallback.hpp>
 #include <uORB/uORB.h>
 #include <uORB/ucdr/actuator_motors.h>
 #include <uORB/topics/actuator_motors.h>
 #include <uORB/ucdr/actuator_servos.h>
 #include <uORB/topics/actuator_servos.h>
-#include <uORB/ucdr/airspeed_validated.h>
-#include <uORB/topics/airspeed_validated.h>
 #include <uORB/ucdr/arming_check_reply.h>
 #include <uORB/topics/arming_check_reply.h>
 #include <uORB/ucdr/arming_check_request.h>
@@ -28,6 +27,8 @@
 #include <uORB/topics/cpuload.h>
 #include <uORB/ucdr/distance_sensor.h>
 #include <uORB/topics/distance_sensor.h>
+#include <uORB/ucdr/esc_status.h>
+#include <uORB/topics/esc_status.h>
 #include <uORB/ucdr/estimator_status_flags.h>
 #include <uORB/topics/estimator_status_flags.h>
 #include <uORB/ucdr/failsafe_flags.h>
@@ -56,14 +57,8 @@
 #include <uORB/topics/register_ext_component_reply.h>
 #include <uORB/ucdr/register_ext_component_request.h>
 #include <uORB/topics/register_ext_component_request.h>
-#include <uORB/ucdr/sensor_accel.h>
-#include <uORB/topics/sensor_accel.h>
 #include <uORB/ucdr/sensor_combined.h>
 #include <uORB/topics/sensor_combined.h>
-#include <uORB/ucdr/sensor_gps.h>
-#include <uORB/topics/sensor_gps.h>
-#include <uORB/ucdr/sensor_gyro.h>
-#include <uORB/topics/sensor_gyro.h>
 #include <uORB/ucdr/sensor_optical_flow.h>
 #include <uORB/topics/sensor_optical_flow.h>
 #include <uORB/ucdr/telemetry_status.h>
@@ -88,6 +83,8 @@
 #include <uORB/topics/vehicle_control_mode.h>
 #include <uORB/ucdr/vehicle_global_position.h>
 #include <uORB/topics/vehicle_global_position.h>
+#include <uORB/ucdr/vehicle_imu.h>
+#include <uORB/topics/vehicle_imu.h>
 #include <uORB/ucdr/vehicle_land_detected.h>
 #include <uORB/topics/vehicle_land_detected.h>
 #include <uORB/ucdr/vehicle_local_position.h>
@@ -121,25 +118,22 @@ static_assert(sizeof(manual_control_setpoint_s) <= max_topic_size, "topic too la
 static_assert(sizeof(message_format_response_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(position_setpoint_triplet_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(sensor_combined_s) <= max_topic_size, "topic too large, increase max_topic_size");
-static_assert(sizeof(sensor_accel_s) <= max_topic_size, "topic too large, increase max_topic_size");
-static_assert(sizeof(sensor_gyro_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(timesync_status_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_land_detected_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_attitude_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_control_mode_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_command_ack_s) <= max_topic_size, "topic too large, increase max_topic_size");
-static_assert(sizeof(vehicle_global_position_s) <= max_topic_size, "topic too large, increase max_topic_size");
-static_assert(sizeof(sensor_gps_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_local_position_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_odometry_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_status_s) <= max_topic_size, "topic too large, increase max_topic_size");
-static_assert(sizeof(airspeed_validated_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(cpuload_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(home_position_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(wind_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(obstacle_distance_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(vehicle_constraints_s) <= max_topic_size, "topic too large, increase max_topic_size");
 static_assert(sizeof(distance_sensor_s) <= max_topic_size, "topic too large, increase max_topic_size");
+static_assert(sizeof(vehicle_imu_s) <= max_topic_size, "topic too large, increase max_topic_size");
+static_assert(sizeof(esc_status_s) <= max_topic_size, "topic too large, increase max_topic_size");
 
 
 
@@ -169,11 +163,34 @@ struct SendSubscription {
 	uint32_t topic_size;
 	UcdrSerializeMethod ucdr_serialize_method;
 	uint64_t publish_interval_ms;
+	bool event_driven;
+};
+
+// Callback for event-driven topics
+class EventDrivenCallback : public uORB::SubscriptionCallback
+{
+public:
+	EventDrivenCallback(void *owner, const orb_metadata *meta) :
+		uORB::SubscriptionCallback(meta), _owner(owner), _callback_count(0) {}
+
+	void call() override {
+		_callback_count++;
+		// Notify owner that event-driven topic updated
+		if (_owner) {
+			px4_sem_post((px4_sem_t*)_owner);
+		}
+	}
+
+	uint32_t get_callback_count() const { return _callback_count; }
+
+private:
+	void *_owner;
+	uint32_t _callback_count;
 };
 
 // Subscribers for messages to send
 struct SendTopicsSubs {
-	SendSubscription send_subscriptions[30] = {
+	SendSubscription send_subscriptions[27] = {
 			{ ORB_ID(register_ext_component_reply),
 			  uxr_object_id(0, UXR_INVALID_ID),
 			  "px4_msgs::msg::dds_::RegisterExtComponentReply_",
@@ -181,7 +198,8 @@ struct SendTopicsSubs {
 			  get_message_version<register_ext_component_reply_s>(),
 			  ucdr_topic_size_register_ext_component_reply(),
 			  &ucdr_serialize_register_ext_component_reply,
-			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(arming_check_request),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -190,7 +208,8 @@ struct SendTopicsSubs {
 			  get_message_version<arming_check_request_s>(),
 			  ucdr_topic_size_arming_check_request(),
 			  &ucdr_serialize_arming_check_request,
-			  static_cast<uint64_t>((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(mode_completed),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -199,7 +218,8 @@ struct SendTopicsSubs {
 			  get_message_version<mode_completed_s>(),
 			  ucdr_topic_size_mode_completed(),
 			  &ucdr_serialize_mode_completed,
-			  static_cast<uint64_t>((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(battery_status),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -208,7 +228,8 @@ struct SendTopicsSubs {
 			  get_message_version<battery_status_s>(),
 			  ucdr_topic_size_battery_status(),
 			  &ucdr_serialize_battery_status,
-			  static_cast<uint64_t>((1.0 > 0) ? (1e3 / 1.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((1.0 > 0) ? (1e3 / 1.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(collision_constraints),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -217,7 +238,8 @@ struct SendTopicsSubs {
 			  get_message_version<collision_constraints_s>(),
 			  ucdr_topic_size_collision_constraints(),
 			  &ucdr_serialize_collision_constraints,
-			  static_cast<uint64_t>((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(estimator_status_flags),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -226,7 +248,8 @@ struct SendTopicsSubs {
 			  get_message_version<estimator_status_flags_s>(),
 			  ucdr_topic_size_estimator_status_flags(),
 			  &ucdr_serialize_estimator_status_flags,
-			  static_cast<uint64_t>((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(failsafe_flags),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -235,7 +258,8 @@ struct SendTopicsSubs {
 			  get_message_version<failsafe_flags_s>(),
 			  ucdr_topic_size_failsafe_flags(),
 			  &ucdr_serialize_failsafe_flags,
-			  static_cast<uint64_t>((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(manual_control_setpoint),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -244,7 +268,8 @@ struct SendTopicsSubs {
 			  get_message_version<manual_control_setpoint_s>(),
 			  ucdr_topic_size_manual_control_setpoint(),
 			  &ucdr_serialize_manual_control_setpoint,
-			  static_cast<uint64_t>((25.0 > 0) ? (1e3 / 25.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((25.0 > 0) ? (1e3 / 25.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(message_format_response),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -253,7 +278,8 @@ struct SendTopicsSubs {
 			  get_message_version<message_format_response_s>(),
 			  ucdr_topic_size_message_format_response(),
 			  &ucdr_serialize_message_format_response,
-			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(position_setpoint_triplet),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -262,7 +288,8 @@ struct SendTopicsSubs {
 			  get_message_version<position_setpoint_triplet_s>(),
 			  ucdr_topic_size_position_setpoint_triplet(),
 			  &ucdr_serialize_position_setpoint_triplet,
-			  static_cast<uint64_t>((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(sensor_combined),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -271,25 +298,8 @@ struct SendTopicsSubs {
 			  get_message_version<sensor_combined_s>(),
 			  ucdr_topic_size_sensor_combined(),
 			  &ucdr_serialize_sensor_combined,
-			  static_cast<uint64_t>((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
-			},
-			{ ORB_ID(sensor_accel),
-			  uxr_object_id(0, UXR_INVALID_ID),
-			  "px4_msgs::msg::dds_::SensorAccel_",
-			  "/fmu/out/sensor_accel",
-			  get_message_version<sensor_accel_s>(),
-			  ucdr_topic_size_sensor_accel(),
-			  &ucdr_serialize_sensor_accel,
-			  static_cast<uint64_t>((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
-			},
-			{ ORB_ID(sensor_gyro),
-			  uxr_object_id(0, UXR_INVALID_ID),
-			  "px4_msgs::msg::dds_::SensorGyro_",
-			  "/fmu/out/sensor_gyro",
-			  get_message_version<sensor_gyro_s>(),
-			  ucdr_topic_size_sensor_gyro(),
-			  &ucdr_serialize_sensor_gyro,
-			  static_cast<uint64_t>((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(timesync_status),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -298,7 +308,8 @@ struct SendTopicsSubs {
 			  get_message_version<timesync_status_s>(),
 			  ucdr_topic_size_timesync_status(),
 			  &ucdr_serialize_timesync_status,
-			  static_cast<uint64_t>((10.0 > 0) ? (1e3 / 10.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((10.0 > 0) ? (1e3 / 10.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(vehicle_land_detected),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -307,7 +318,8 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_land_detected_s>(),
 			  ucdr_topic_size_vehicle_land_detected(),
 			  &ucdr_serialize_vehicle_land_detected,
-			  static_cast<uint64_t>((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(vehicle_attitude),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -316,7 +328,8 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_attitude_s>(),
 			  ucdr_topic_size_vehicle_attitude(),
 			  &ucdr_serialize_vehicle_attitude,
-			  static_cast<uint64_t>((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((200.0 > 0) ? (1e3 / 200.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(vehicle_control_mode),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -325,7 +338,8 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_control_mode_s>(),
 			  ucdr_topic_size_vehicle_control_mode(),
 			  &ucdr_serialize_vehicle_control_mode,
-			  static_cast<uint64_t>((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(vehicle_command_ack),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -334,25 +348,8 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_command_ack_s>(),
 			  ucdr_topic_size_vehicle_command_ack(),
 			  &ucdr_serialize_vehicle_command_ack,
-			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
-			},
-			{ ORB_ID(vehicle_global_position),
-			  uxr_object_id(0, UXR_INVALID_ID),
-			  "px4_msgs::msg::dds_::VehicleGlobalPosition_",
-			  "/fmu/out/vehicle_global_position",
-			  get_message_version<vehicle_global_position_s>(),
-			  ucdr_topic_size_vehicle_global_position(),
-			  &ucdr_serialize_vehicle_global_position,
-			  static_cast<uint64_t>((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
-			},
-			{ ORB_ID(vehicle_gps_position),
-			  uxr_object_id(0, UXR_INVALID_ID),
-			  "px4_msgs::msg::dds_::SensorGps_",
-			  "/fmu/out/vehicle_gps_position",
-			  get_message_version<sensor_gps_s>(),
-			  ucdr_topic_size_sensor_gps(),
-			  &ucdr_serialize_sensor_gps,
-			  static_cast<uint64_t>((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(vehicle_local_position),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -361,7 +358,8 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_local_position_s>(),
 			  ucdr_topic_size_vehicle_local_position(),
 			  &ucdr_serialize_vehicle_local_position,
-			  static_cast<uint64_t>((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(vehicle_odometry),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -370,7 +368,8 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_odometry_s>(),
 			  ucdr_topic_size_vehicle_odometry(),
 			  &ucdr_serialize_vehicle_odometry,
-			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(vehicle_status),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -379,16 +378,8 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_status_s>(),
 			  ucdr_topic_size_vehicle_status(),
 			  &ucdr_serialize_vehicle_status,
-			  static_cast<uint64_t>((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
-			},
-			{ ORB_ID(airspeed_validated),
-			  uxr_object_id(0, UXR_INVALID_ID),
-			  "px4_msgs::msg::dds_::AirspeedValidated_",
-			  "/fmu/out/airspeed_validated",
-			  get_message_version<airspeed_validated_s>(),
-			  ucdr_topic_size_airspeed_validated(),
-			  &ucdr_serialize_airspeed_validated,
-			  static_cast<uint64_t>((50.0 > 0) ? (1e3 / 50.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(cpuload),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -397,7 +388,8 @@ struct SendTopicsSubs {
 			  get_message_version<cpuload_s>(),
 			  ucdr_topic_size_cpuload(),
 			  &ucdr_serialize_cpuload,
-			  static_cast<uint64_t>((1.0 > 0) ? (1e3 / 1.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((1.0 > 0) ? (1e3 / 1.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(home_position),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -406,7 +398,8 @@ struct SendTopicsSubs {
 			  get_message_version<home_position_s>(),
 			  ucdr_topic_size_home_position(),
 			  &ucdr_serialize_home_position,
-			  static_cast<uint64_t>((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((5.0 > 0) ? (1e3 / 5.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(wind),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -415,7 +408,8 @@ struct SendTopicsSubs {
 			  get_message_version<wind_s>(),
 			  ucdr_topic_size_wind(),
 			  &ucdr_serialize_wind,
-			  static_cast<uint64_t>((1.0 > 0) ? (1e3 / 1.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((1.0 > 0) ? (1e3 / 1.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(obstacle_distance_fused),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -424,7 +418,8 @@ struct SendTopicsSubs {
 			  get_message_version<obstacle_distance_s>(),
 			  ucdr_topic_size_obstacle_distance(),
 			  &ucdr_serialize_obstacle_distance,
-			  static_cast<uint64_t>((10.0 > 0) ? (1e3 / 10.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((10.0 > 0) ? (1e3 / 10.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(vehicle_constraints),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -433,7 +428,8 @@ struct SendTopicsSubs {
 			  get_message_version<vehicle_constraints_s>(),
 			  ucdr_topic_size_vehicle_constraints(),
 			  &ucdr_serialize_vehicle_constraints,
-			  static_cast<uint64_t>((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 			{ ORB_ID(distance_sensor),
 			  uxr_object_id(0, UXR_INVALID_ID),
@@ -442,26 +438,71 @@ struct SendTopicsSubs {
 			  get_message_version<distance_sensor_s>(),
 			  ucdr_topic_size_distance_sensor(),
 			  &ucdr_serialize_distance_sensor,
-			  static_cast<uint64_t>((10.0 > 0) ? (1e3 / 10.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
+			  static_cast<uint64_t>(false ? 0 : ((10.0 > 0) ? (1e3 / 10.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
+			},
+			{ ORB_ID(vehicle_imu),
+			  uxr_object_id(0, UXR_INVALID_ID),
+			  "px4_msgs::msg::dds_::VehicleImu_",
+			  "/fmu/out/vehicle_imu",
+			  get_message_version<vehicle_imu_s>(),
+			  ucdr_topic_size_vehicle_imu(),
+			  &ucdr_serialize_vehicle_imu,
+			  static_cast<uint64_t>(true ? 0 : ((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  true,
+			},
+			{ ORB_ID(esc_status),
+			  uxr_object_id(0, UXR_INVALID_ID),
+			  "px4_msgs::msg::dds_::EscStatus_",
+			  "/fmu/out/esc_status",
+			  get_message_version<esc_status_s>(),
+			  ucdr_topic_size_esc_status(),
+			  &ucdr_serialize_esc_status,
+			  static_cast<uint64_t>(false ? 0 : ((0 > 0) ? (1e3 / 1000.0) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  false,
 			},
 	};
 
-	px4_pollfd_struct_t fds[30] {};
+	px4_pollfd_struct_t fds[27] {};
+	EventDrivenCallback *callbacks[27] {};
+	px4_sem_t event_sem;
 
 	uint32_t num_payload_sent{};
 
 	bool init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace);
 	void update(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId best_effort_stream_id, uxrObjectId participant_id, const char *client_namespace);
+	void update_event_driven(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId best_effort_stream_id, uxrObjectId participant_id, const char *client_namespace);
 	void reset();
+	bool has_event_driven_topics() const;
+	int get_poll_timeout_ms() const;
+	void print_statistics() const;
 };
 
 bool SendTopicsSubs::init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace) {
 	bool ret = true;
+
+	// Initialize semaphore for event-driven topics
+	px4_sem_init(&event_sem, 0, 0);
+
 	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
-		if (fds[idx].events == 0) {
-			fds[idx].fd = orb_subscribe(send_subscriptions[idx].orb_meta);
-			fds[idx].events = POLLIN;
-			orb_set_interval(fds[idx].fd, send_subscriptions[idx].publish_interval_ms);
+		if (send_subscriptions[idx].event_driven) {
+			// Event-driven: only use callback subscription, no poll
+			fds[idx].fd = -1;
+			fds[idx].events = 0;
+
+			callbacks[idx] = new EventDrivenCallback(&event_sem, send_subscriptions[idx].orb_meta);
+			if (callbacks[idx]) {
+				callbacks[idx]->subscribe();
+				callbacks[idx]->registerCallback();
+			}
+		} else {
+			// Rate-limited: only use poll subscription, no callback
+			if (fds[idx].events == 0) {
+				fds[idx].fd = orb_subscribe(send_subscriptions[idx].orb_meta);
+				fds[idx].events = POLLIN;
+				orb_set_interval(fds[idx].fd, send_subscriptions[idx].publish_interval_ms);
+			}
+			callbacks[idx] = nullptr;
 		}
 
 		if (!create_data_writer(session, reliable_out_stream_id, participant_id, static_cast<ORB_ID>(send_subscriptions[idx].orb_meta->o_id), client_namespace, send_subscriptions[idx].topic,
@@ -477,9 +518,21 @@ void SendTopicsSubs::reset() {
 	num_payload_sent = 0;
 	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
 		send_subscriptions[idx].data_writer = uxr_object_id(0, UXR_INVALID_ID);
-		orb_unsubscribe(fds[idx].fd);
-		fds[idx].fd = -1;
+
+		// Only unsubscribe valid poll subscriptions
+		if (fds[idx].fd >= 0) {
+			orb_unsubscribe(fds[idx].fd);
+			fds[idx].fd = -1;
+		}
+
+		// Clean up callbacks
+		if (callbacks[idx]) {
+			callbacks[idx]->unregisterCallback();
+			delete callbacks[idx];
+			callbacks[idx] = nullptr;
+		}
 	}
+	px4_sem_destroy(&event_sem);
 };
 
 void SendTopicsSubs::update(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId best_effort_stream_id, uxrObjectId participant_id, const char *client_namespace)
@@ -489,6 +542,11 @@ void SendTopicsSubs::update(uxrSession *session, uxrStreamId reliable_out_stream
 	alignas(sizeof(uint64_t)) char topic_data[max_topic_size];
 
 	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
+		// Skip event-driven topics (they use callback path, not poll path)
+		if (send_subscriptions[idx].event_driven) {
+			continue;
+		}
+
 		if (fds[idx].revents & POLLIN) {
 			// Topic updated, copy data and send
 			orb_copy(send_subscriptions[idx].orb_meta, fds[idx].fd, &topic_data);
@@ -511,6 +569,58 @@ void SendTopicsSubs::update(uxrSession *session, uxrStreamId reliable_out_stream
 				//PX4_ERR("Error UXR_INVALID_ID %s", send_subscriptions[idx].subscription.get_topic()->o_name);
 			}
 
+		}
+	}
+}
+
+void SendTopicsSubs::update_event_driven(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId best_effort_stream_id, uxrObjectId participant_id, const char *client_namespace)
+{
+	int64_t time_offset_us = session->time_offset / 1000; // ns -> us
+	alignas(sizeof(uint64_t)) char topic_data[max_topic_size];
+
+	// Process all event-driven topics that have updates
+	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
+		if (send_subscriptions[idx].event_driven && callbacks[idx]) {
+			// Check if there are updates available
+			while (callbacks[idx]->updated()) {
+				if (callbacks[idx]->copy(&topic_data) && send_subscriptions[idx].data_writer.id != UXR_INVALID_ID) {
+					ucdrBuffer ub;
+					uint32_t topic_size = send_subscriptions[idx].topic_size;
+					if (uxr_prepare_output_stream(session, best_effort_stream_id, send_subscriptions[idx].data_writer, &ub, topic_size) != UXR_INVALID_REQUEST_ID) {
+						send_subscriptions[idx].ucdr_serialize_method(&topic_data, ub, time_offset_us);
+						uxr_flash_output_streams(session);
+						num_payload_sent += topic_size;
+					}
+				}
+			}
+		}
+	}
+}
+
+bool SendTopicsSubs::has_event_driven_topics() const
+{
+	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
+		if (send_subscriptions[idx].event_driven) {
+			return true;
+		}
+	}
+	return false;
+}
+
+int SendTopicsSubs::get_poll_timeout_ms() const
+{
+	// If we have event-driven topics, use semaphore timedwait instead of poll timeout
+	// Otherwise use default 10ms poll
+	return has_event_driven_topics() ? 0 : 10;
+}
+
+void SendTopicsSubs::print_statistics() const
+{
+	PX4_INFO("=== Event-Driven Statistics ===");
+	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
+		if (send_subscriptions[idx].event_driven && callbacks[idx]) {
+			PX4_INFO("  %s: %" PRIu32 " callbacks", send_subscriptions[idx].orb_meta->o_name,
+			         callbacks[idx]->get_callback_count());
 		}
 	}
 }
