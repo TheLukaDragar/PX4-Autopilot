@@ -149,6 +149,33 @@ parameters:
       max: 720.0
       unit: deg
       decimal: 1
+    MNT_OFF_ROLL:
+      description:
+        short: Offset for roll channel output (only in MNT_MODE_OUT=AUX)
+      type: float
+      default: 0.0
+      min: -360.0
+      max: 360.0
+      unit: deg
+      decimal: 1
+    MNT_OFF_PITCH:
+      description:
+        short: Offset for pitch channel output (only in MNT_MODE_OUT=AUX)
+      type: float
+      default: 0.0
+      min: -360.0
+      max: 360.0
+      unit: deg
+      decimal: 1
+    MNT_OFF_YAW:
+      description:
+        short: Offset for yaw channel output (only in MNT_MODE_OUT=AUX)
+      type: float
+      default: 0.0
+      min: -360.0
+      max: 360.0
+      unit: deg
+      decimal: 1
     MNT_RATE_PITCH:
       description:
         short: Angular pitch rate for manual input in degrees/second

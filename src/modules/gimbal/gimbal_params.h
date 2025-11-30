@@ -68,6 +68,9 @@ struct Parameters {
 	float mnt_min_pitch;
 	float mnt_range_roll;
 	float mnt_range_yaw;
+	float mnt_off_roll;
+	float mnt_off_pitch;
+	float mnt_off_yaw;
 	int32_t mav_sysid;
 	int32_t mav_compid;
 	float mnt_rate_pitch;
@@ -91,6 +94,9 @@ struct ParameterHandles {
 	param_t mnt_min_pitch;
 	param_t mnt_range_roll;
 	param_t mnt_range_yaw;
+	param_t mnt_off_roll;
+	param_t mnt_off_pitch;
+	param_t mnt_off_yaw;
 	param_t mav_sysid;
 	param_t mav_compid;
 	param_t mnt_rate_pitch;
