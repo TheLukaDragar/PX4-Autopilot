@@ -45,8 +45,6 @@
 #include <debug.h>
 #include <errno.h>
 #include <syslog.h>
-#include <fcntl.h>
-#include <unistd.h>
 
 #include <nuttx/config.h>
 #include <nuttx/board.h>
@@ -190,33 +188,14 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 				syslog(LOG_INFO, "[boot] W25N MTD registered at /dev/mtd0\n");
 
 #ifdef CONFIG_FS_LITTLEFS
-				ret = nx_mount("/dev/mtd0", CONFIG_BOARD_ROOT_PATH, "littlefs", 0, NULL);
-
-				if (ret == 0) {
-					/* Verify the filesystem is usable by creating a test file */
-					int fd = open(CONFIG_BOARD_ROOT_PATH "/.mount_test", O_CREAT | O_WRONLY | O_TRUNC);
-
-					if (fd >= 0) {
-						close(fd);
-						unlink(CONFIG_BOARD_ROOT_PATH "/.mount_test");
-
-					} else {
-						syslog(LOG_WARNING, "[boot] littlefs mounted but not usable, reformatting\n");
-						nx_umount2(CONFIG_BOARD_ROOT_PATH, 0);
-						ret = -1;
-					}
-				}
-
-				if (ret < 0) {
-					ret = nx_mount("/dev/mtd0", CONFIG_BOARD_ROOT_PATH, "littlefs", 0, "forceformat");
-				}
+				ret = nx_mount("/dev/mtd0", "/fs/microsd", "littlefs", 0, "autoformat");
 
 				if (ret < 0) {
 					syslog(LOG_ERR, "[boot] FAILED to mount littlefs: %d\n", ret);
 					led_on(LED_RED);
 
 				} else {
-					syslog(LOG_INFO, "[boot] LittleFS mounted at %s\n", CONFIG_BOARD_ROOT_PATH);
+					syslog(LOG_INFO, "[boot] LittleFS mounted at /fs/microsd\n");
 				}
 
 #endif

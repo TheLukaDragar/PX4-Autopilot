@@ -1,6 +1,6 @@
 # Gear Up AirBrainH743
 
-::: warning
+:::warning
 PX4 does not manufacture this (or any) autopilot.
 Contact the [manufacturer](https://takeyourgear.com/) for hardware support.
 :::
@@ -8,8 +8,6 @@ Contact the [manufacturer](https://takeyourgear.com/) for hardware support.
 ::: info
 This flight controller is [manufacturer supported](../flight_controller/autopilot_manufacturer_supported.md).
 :::
-
-Purchase from [takeyourgear.com](https://takeyourgear.com/pages/products/airbrain).
 
 For more information and pinout, check the [GitHub documentation](https://github.com/GearUp-Company/AirBrainH743).
 
@@ -31,7 +29,7 @@ For more information and pinout, check the [GitHub documentation](https://github
 
 ## Connectors and Pins
 
-::: warning
+:::warning
 The pin order is different from the Pixhawk standard (compatible to the Betaflight standard).
 :::
 
@@ -39,20 +37,20 @@ The pin order is different from the Pixhawk standard (compatible to the Betaflig
 
 Current UART configuration:
 
-| UART   | Device     | Function             |
-| ------ | ---------- | -------------------- |
-| USART1 | /dev/ttyS0 | Console/Debug        |
-| USART2 | /dev/ttyS1 | RC Input             |
-| USART3 | /dev/ttyS2 | TEL4 (DJI/MSP)       |
-| UART4  | /dev/ttyS3 | TEL1                 |
-| UART5  | /dev/ttyS4 | TEL2                 |
-| UART7  | /dev/ttyS5 | TEL3 (ESC Telemetry) |
-| UART8  | /dev/ttyS6 | GPS1                 |
+| UART   | Device     | Function                     |
+| ------ | ---------- | ---------------------------- |
+| USART1 | /dev/ttyS0 | Console/Debug                |
+| USART2 | /dev/ttyS1 | RC Input                     |
+| USART3 | /dev/ttyS2 | TEL4 (DJI/MSP)               |
+| UART4  | /dev/ttyS3 | TEL1                         |
+| UART5  | /dev/ttyS4 | TEL2                         |
+| UART7  | /dev/ttyS5 | TEL3 (ESC Telemetry)         |
+| UART8  | /dev/ttyS6 | GPS1                         |
 
 ### Motor/Servo Outputs
 
 | Connector | Pin | Function     |
-| --------- | --- | ------------ |
+| ----------| ------------------ |
 | ESC       | M1  | Motor 1      |
 | ESC       | M2  | Motor 2      |
 | ESC       | M3  | Motor 3      |
@@ -74,7 +72,7 @@ Download the [gearup_airbrainh743_bootloader.bin](https://github.com/PX4/PX4-Aut
 
 To [build PX4](../dev_setup/building_px4.md) for this target:
 
-```sh
+```
 make gearup_airbrainh743_default
 ```
 
@@ -84,12 +82,14 @@ Firmware can be installed in any of the normal ways:
 
 - Build and upload the source:
 
-  ```sh
+  ```
   make gearup_airbrainh743_default upload
   ```
 
 - [Load the firmware](../config/firmware.md) using _QGroundControl_.
   You can use either pre-built firmware or your own custom firmware.
+
+## Debug Port
 
 ### System Console
 
