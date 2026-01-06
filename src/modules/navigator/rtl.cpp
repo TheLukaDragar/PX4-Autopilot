@@ -328,6 +328,7 @@ bool RTL::isLanding()
 
 void RTL::setRtlTypeAndDestination()
 {
+<<<<<<< HEAD
 	uint8_t safe_point_index = UINT8_MAX;
 	RtlType new_rtl_type{RtlType::RTL_DIRECT};
 
@@ -371,6 +372,73 @@ void RTL::setRtlTypeAndDestination()
 	} else {
 		// check the closest allowed destination.
 		findRtlDestination(destination_type, destination, safe_point_index);
+=======
+	init_rtl_mission_type();
+
+	uint8_t safe_point_index{UINT8_MAX};
+
+	if (_param_rtl_type.get() == 5) {
+		PositionYawSetpoint rtl_position;
+		findClosestSafePoint(rtl_position, safe_point_index);
+		DestinationType destination_type = DestinationType::DESTINATION_TYPE_SAFE_POINT;
+
+		if (safe_point_index == UINT8_MAX) {
+			// no safe point found, set destination to last position with valid data link
+			for (auto &telemetry_status :  _telemetry_status_subs) {
+				telemetry_status_s telemetry;
+
+				if (telemetry_status.update(&telemetry)) {
+
+					if (telemetry.heartbeat_type_gcs) {
+						_last_position_before_link_loss.alt = _global_pos_sub.get().alt;
+						_last_position_before_link_loss.lat = _global_pos_sub.get().lat;
+						_last_position_before_link_loss.lon = _global_pos_sub.get().lon;
+						break;
+					}
+				}
+			}
+
+			if (!PX4_ISFINITE(_last_position_before_link_loss.lat) || !PX4_ISFINITE(_last_position_before_link_loss.lon)) {
+				// if we never had a valid data link position, fallback to current position
+				rtl_position.alt = _global_pos_sub.get().alt;
+				rtl_position.lat = _global_pos_sub.get().lat;
+				rtl_position.lon = _global_pos_sub.get().lon;
+
+			} else {
+				rtl_position = _last_position_before_link_loss;
+			}
+
+			destination_type = DestinationType::DESTINATION_TYPE_LAST_LINK_POSITION;
+		}
+
+		// set rtl altitude to the destination from the beginning for DestinationType::DESTINATION_TYPE_LAST_LINK_POSITION
+		const float rtl_alt = destination_type == DestinationType::DESTINATION_TYPE_SAFE_POINT ? computeReturnAltitude(rtl_position,
+				      (float)_param_rtl_cone_half_angle_deg.get()) : rtl_position.alt;
+
+		loiter_point_s landing_loiter;
+		landing_loiter.lat = rtl_position.lat;
+		landing_loiter.lon = rtl_position.lon;
+		landing_loiter.height_m = NAN;
+
+		land_approaches_s rtl_land_approaches{readVtolLandApproaches(rtl_position)};
+
+		if (_vehicle_status_sub.get().is_vtol
+		    && (_vehicle_status_sub.get().vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING)
+		    && rtl_land_approaches.isAnyApproachValid()) {
+			landing_loiter = chooseBestLandingApproach(rtl_land_approaches);
+		}
+
+		_rtl_type = RtlType::RTL_DIRECT;
+		_rtl_direct.setRtlAlt(rtl_alt);
+		_rtl_direct.setRtlPosition(rtl_position, landing_loiter);
+
+	} else if (_param_rtl_type.get() != 2 && _param_rtl_type.get() != 4) {
+		// check the closest allowed destination.
+		DestinationType destination_type{DestinationType::DESTINATION_TYPE_HOME};
+		PositionYawSetpoint rtl_position;
+		findRtlDestination(destination_type, rtl_position, safe_point_index);
+		const float rtl_alt = computeReturnAltitude(rtl_position, (float)_param_rtl_cone_half_angle_deg.get());
+>>>>>>> 604d7a7940 (RTL: add new RTL_TYPE to only allow returns to safe points or last link position)
 
 		if (destination_type == DestinationType::DESTINATION_TYPE_MISSION_LAND) {
 			new_rtl_type = RtlType::RTL_DIRECT_MISSION_LAND;
@@ -419,7 +487,53 @@ void RTL::setRtlTypeAndDestination()
 	_rtl_status_pub.publish(rtl_status);
 }
 
+<<<<<<< HEAD
 PositionYawSetpoint RTL::findClosestSafePoint(float min_dist, uint8_t &safe_point_index)
+=======
+void RTL::findClosestSafePoint(PositionYawSetpoint &rtl_position, uint8_t &safe_point_index)
+{
+	float min_dist = FLT_MAX;
+
+	if (_safe_points_updated) {
+
+		_one_rally_point_has_land_approach = false;
+
+		for (int current_seq = 0; current_seq < _dataman_cache_safepoint.size(); ++current_seq) {
+			mission_item_s mission_safe_point;
+
+			const bool success = _dataman_cache_safepoint.loadWait(static_cast<dm_item_t>(_stats.dataman_id), current_seq,
+					     reinterpret_cast<uint8_t *>(&mission_safe_point),
+					     sizeof(mission_item_s), 500_ms);
+
+			if (!success) {
+				PX4_ERR("dm_read failed");
+				continue;
+			}
+
+			if (mission_safe_point.nav_cmd == NAV_CMD_RALLY_POINT) {
+				const float dist{get_distance_to_next_waypoint(_global_pos_sub.get().lat, _global_pos_sub.get().lon, mission_safe_point.lat, mission_safe_point.lon)};
+
+				PositionYawSetpoint safepoint_position;
+				setSafepointAsDestination(safepoint_position, mission_safe_point);
+
+				const bool current_safe_point_has_approaches{hasVtolLandApproach(safepoint_position)};
+
+				_one_rally_point_has_land_approach |= current_safe_point_has_approaches;
+
+				if (((dist + MIN_DIST_THRESHOLD) < min_dist) && ((_param_rtl_approach_force.get() == 0)
+						|| current_safe_point_has_approaches)) {
+					min_dist = dist;
+					rtl_position = safepoint_position;
+					safe_point_index = current_seq;
+				}
+			}
+		}
+	}
+}
+
+void RTL::findRtlDestination(DestinationType &destination_type, PositionYawSetpoint &rtl_position,
+			     uint8_t &safe_point_index)
+>>>>>>> 604d7a7940 (RTL: add new RTL_TYPE to only allow returns to safe points or last link position)
 {
 	const bool vtol_in_fw_mode = _vehicle_status_sub.get().is_vtol
 				     && (_vehicle_status_sub.get().vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING);
@@ -446,12 +560,17 @@ PositionYawSetpoint RTL::findClosestSafePoint(float min_dist, uint8_t &safe_poin
 				continue;
 			}
 
+<<<<<<< HEAD
 			// Ignore safepoints which are too close to the homepoint (only if home is an option to return to)
 			const bool far_from_home = get_distance_to_next_waypoint(_home_pos_sub.get().lat, _home_pos_sub.get().lon,
 						   mission_safe_point.lat, mission_safe_point.lon) > MAX_DIST_FROM_HOME_FOR_LAND_APPROACHES;
 
 			if (far_from_home || (_param_rtl_type.get() == 5)) {
 				const float dist{get_distance_to_next_waypoint(_global_pos_sub.get().lat, _global_pos_sub.get().lon, mission_safe_point.lat, mission_safe_point.lon)};
+=======
+			if (mission_safe_point.nav_cmd == NAV_CMD_RALLY_POINT && dist_to_home > MAX_DIST_FROM_HOME_FOR_LAND_APPROACHES) { // remove!
+				float dist{get_distance_to_next_waypoint(_global_pos_sub.get().lat, _global_pos_sub.get().lon, mission_safe_point.lat, mission_safe_point.lon)};
+>>>>>>> 604d7a7940 (RTL: add new RTL_TYPE to only allow returns to safe points or last link position)
 
 				PositionYawSetpoint safepoint_position;
 				setSafepointAsDestination(safepoint_position, mission_safe_point);
@@ -469,6 +588,7 @@ PositionYawSetpoint RTL::findClosestSafePoint(float min_dist, uint8_t &safe_poin
 			}
 		}
 	}
+<<<<<<< HEAD
 
 	return safe_point;
 }
@@ -542,6 +662,8 @@ void RTL::findRtlDestination(DestinationType &destination_type, PositionYawSetpo
 		destination.lon = _global_pos_sub.get().lon;
 		destination_type = DestinationType::DESTINATION_TYPE_SAFE_POINT;
 	}
+=======
+>>>>>>> 604d7a7940 (RTL: add new RTL_TYPE to only allow returns to safe points or last link position)
 }
 
 void RTL::setLandPosAsDestination(PositionYawSetpoint &rtl_position, mission_item_s &land_mission_item) const
@@ -579,9 +701,15 @@ void RTL::setSafepointAsDestination(PositionYawSetpoint &rtl_position, const mis
 	}
 }
 
+<<<<<<< HEAD
 float RTL::computeReturnAltitude(const PositionYawSetpoint &rtl_position) const
 {
 	if (_param_rtl_cone_ang.get() > 0 && _vehicle_status_sub.get().vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING) {
+=======
+float RTL::computeReturnAltitude(const PositionYawSetpoint &rtl_position, float cone_half_angle_deg) const
+{
+	if (_param_rtl_cone_half_angle_deg.get() > 0 && _vehicle_status_sub.get().vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING) {
+>>>>>>> 604d7a7940 (RTL: add new RTL_TYPE to only allow returns to safe points or last link position)
 		// horizontal distance to destination
 		const float destination_dist =
 			get_distance_to_next_waypoint(_global_pos_sub.get().lat, _global_pos_sub.get().lon, rtl_position.lat, rtl_position.lon);
@@ -597,6 +725,7 @@ float RTL::computeReturnAltitude(const PositionYawSetpoint &rtl_position) const
 
 		if (destination_dist <= _param_nav_acc_rad.get()) {
 			return_altitude_amsl = rtl_position.alt + 2.0f * destination_dist;
+<<<<<<< HEAD
 
 		} else {
 			if (destination_dist <= _param_rtl_min_dist.get()) {
@@ -615,6 +744,26 @@ float RTL::computeReturnAltitude(const PositionYawSetpoint &rtl_position) const
 
 		return constrain(return_altitude_amsl, _global_pos_sub.get().alt, max_return_altitude);
 
+=======
+
+		} else {
+			if (destination_dist <= _param_rtl_min_dist.get()) {
+
+				// constrain cone half angle to meaningful values. All other cases are already handled above.
+				const float cone_half_angle_rad = radians(constrain(cone_half_angle_deg, 1.0f, 89.0f));
+
+				// minimum altitude we need in order to be within the user defined cone
+				const float cone_intersection_altitude_amsl = destination_dist / tanf(cone_half_angle_rad) + rtl_position.alt;
+
+				return_altitude_amsl = min(cone_intersection_altitude_amsl, return_altitude_amsl);
+			}
+
+			return_altitude_amsl = max(return_altitude_amsl, return_altitude_min_outside_acceptance_rad_amsl);
+		}
+
+		return constrain(return_altitude_amsl, _global_pos_sub.get().alt, max_return_altitude);
+
+>>>>>>> 604d7a7940 (RTL: add new RTL_TYPE to only allow returns to safe points or last link position)
 	} else {
 		// standard behaviour: return altitude above rtl destination
 		return max(_global_pos_sub.get().alt, rtl_position.alt + _param_rtl_return_alt.get());
@@ -623,6 +772,35 @@ float RTL::computeReturnAltitude(const PositionYawSetpoint &rtl_position) const
 
 void RTL::initRtlMissionType(RtlType new_rtl_type, float rtl_alt)
 {
+<<<<<<< HEAD
+=======
+	RtlType new_rtl_mission_type{RtlType::RTL_DIRECT_MISSION_LAND};
+
+	if (_param_rtl_type.get() == 2) {
+		if (hasMissionLandStart()) {
+			new_rtl_mission_type = RtlType::RTL_MISSION_FAST;
+
+		} else {
+			new_rtl_mission_type = RtlType::RTL_MISSION_FAST_REVERSE;
+		}
+
+	} else if (_param_rtl_type.get() == 4) {
+		if (hasMissionLandStart() && reverseIsFurther()) {
+			new_rtl_mission_type = RtlType::RTL_MISSION_FAST;
+
+		} else {
+			new_rtl_mission_type = RtlType::RTL_MISSION_FAST_REVERSE;
+		}
+
+	} else if (_param_rtl_type.get() == 5) {
+		new_rtl_mission_type = RtlType::RTL_DIRECT;
+	}
+
+	if (_set_rtl_mission_type == new_rtl_mission_type) {
+		return;
+	}
+
+>>>>>>> 604d7a7940 (RTL: add new RTL_TYPE to only allow returns to safe points or last link position)
 	if (_rtl_mission_type_handle) {
 		delete _rtl_mission_type_handle;
 		_rtl_mission_type_handle = nullptr;
