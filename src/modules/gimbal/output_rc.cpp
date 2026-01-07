@@ -38,6 +38,8 @@
 #include <px4_platform_common/defines.h>
 #include <matrix/matrix/math.hpp>
 
+using math::constrain;
+
 namespace gimbal
 {
 
@@ -155,12 +157,12 @@ void OutputRC::_stream_device_attitude_status()
 			if (_absolute_angle[2]) {
 				attitude_status.device_flags |= gimbal_device_attitude_status_s::DEVICE_FLAGS_YAW_LOCK;
 				// absolute frame
-				q = matrix::Quaternionf(_last_valid_setpoint);
+				q = matrix::Quaternionf(_q_setpoint);
 
 			} else {
 				attitude_status.device_flags |= gimbal_device_attitude_status_s::DEVICE_FLAGS_YAW_IN_VEHICLE_FRAME;
 				// yaw vehicle frame
-				q = matrix::Quaternionf(_last_valid_setpoint);
+				q = matrix::Quaternionf(_q_setpoint);
 			}
 
 
