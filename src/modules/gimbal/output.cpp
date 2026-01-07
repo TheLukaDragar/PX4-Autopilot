@@ -286,16 +286,6 @@ void OutputBase::_calculate_angle_output(const hrt_abstime &t)
 							    math::radians(_parameters.mnt_lnd_p_max));
 		}
 	}
-
-	_angle_outputs_filtered.setParameters(dt, _parameters.mnt_tau);
-	matrix::Vector3f filtered_outputs = _angle_outputs_filtered.update(matrix::Vector3f(_angle_outputs));
-
-	for (int i = 0; i < 3; i++) {
-		_angle_outputs[i] = filtered_outputs(i);
-	}
-
-	set_last_valid_setpoint(compensate, euler_vehicle);
-
 }
 
 void OutputBase::set_stabilize(bool roll_stabilize, bool pitch_stabilize, bool yaw_stabilize)
@@ -305,7 +295,7 @@ void OutputBase::set_stabilize(bool roll_stabilize, bool pitch_stabilize, bool y
 	_stabilize[2] = yaw_stabilize;
 }
 
-void OutputBase::set_last_valid_setpoint(const bool compensate[3], const matrix::Eulerf &euler_vehicle)
+void OutputBase::set_last_valid_setpoint(const bool compensate[3], const matrix::Eulerf euler_vehicle)
 {
 	// No updates from angular velocity, hence no modification of last valid setpoint
 	if (!PX4_ISFINITE(_angle_velocity[0]) && !PX4_ISFINITE(_angle_velocity[1]) && !PX4_ISFINITE(_angle_velocity[2])) {

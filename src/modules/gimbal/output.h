@@ -38,8 +38,6 @@
 #include "gimbal_params.h"
 #include <drivers/drv_hrt.h>
 #include <lib/geo/geo.h>
-#include <mathlib/math/filter/AlphaFilter.hpp>
-#include <matrix/Vector3.hpp>
 #include <uORB/Publication.hpp>
 #include <uORB/Subscription.hpp>
 #include <uORB/topics/mount_orientation.h>
@@ -94,7 +92,6 @@ protected:
 	// Pitch and role are by default aligned with the horizon.
 	// Yaw follows the vehicle (not lock/absolute mode).
 	bool _absolute_angle[3] = {true, true, false };
-	AlphaFilter<matrix::Vector3f> _angle_outputs_filtered;
 
 	/** calculate the _angle_outputs (with speed) and stabilize if needed */
 	void _calculate_angle_output(const hrt_abstime &t);
@@ -106,9 +103,9 @@ protected:
 	 * the received MAVLink command, the last valid setpoint is updated to account for the vehicle attitude.
 	 *
 	 * @param compensate Boolean per axis (roll, pitch, yaw). If true, the vehicle attitude is taken into account.
-	 * @param euler_vehicle Reference to Euler float
+	 * @param euler_vehicle
 	 */
-	void set_last_valid_setpoint(const bool compensate[3], const matrix::Eulerf &euler_vehicle);
+	void set_last_valid_setpoint(const bool compensate[3], const matrix::Eulerf euler_vehicle);
 
 	float _angle_outputs[3] = { 0.f, 0.f, 0.f }; ///< calculated output angles (roll, pitch, yaw) [rad]
 
