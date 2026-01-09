@@ -1,3 +1,0 @@
-board_adc start
-icm42688p -s start
-spl06 -X start

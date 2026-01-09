@@ -22,3 +22,13 @@ param set-default MSP_OSD_CONFIG 102
 param set-default CA_AIRFRAME 0
 param set-default CA_ROTOR_COUNT 4
 param set-default CBRK_SUPPLY_CHK 894281
+
+
+#param set-default UXRCE_DDS_SYNCT 1
+param set-default RC_PORT_CONFIG 0          # No RC port
+param set-default COM_RC_IN_MODE 1       # only joystick
+
+
+param set-default MPC_ALT_MODE 0
+param set-default EKF2_GPS_CTRL 0
+param set-default EKF2_HGT_REF 0
