@@ -153,7 +153,7 @@ bool SendTopicsSubs::init(uxrSession *session, uxrStreamId reliable_out_stream_i
 		}
 
 		if (!create_data_writer(session, reliable_out_stream_id, participant_id, static_cast<ORB_ID>(send_subscriptions[idx].orb_meta->o_id), client_namespace, send_subscriptions[idx].topic,
-								   send_subscriptions[idx].message_version, send_subscriptions[idx].orb_instance,
+								   send_subscriptions[idx].message_version, 0,
 								   send_subscriptions[idx].dds_type_name, send_subscriptions[idx].data_writer)) {
 			ret = false;
 		}

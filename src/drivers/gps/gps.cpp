@@ -971,12 +971,11 @@ GPS::run()
 					.jam_det_sensitivity_hi = jam_det_sensitivity_hi > 0,
 					.mode = ubx_mode,
 				};
-
 				_helper = new GPSDriverUBX(_interface, &GPS::callback, this, &_sensor_gps, _p_report_sat_info, settings);
 
-				set_device_type(DRV_GPS_DEVTYPE_UBX);
-				break;
-			}
+			set_device_type(DRV_GPS_DEVTYPE_UBX);
+			break;
+		}
 
 #ifndef CONSTRAINED_FLASH
 
