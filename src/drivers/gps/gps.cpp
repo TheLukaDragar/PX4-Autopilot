@@ -907,20 +907,13 @@ GPS::run()
 			_mode = gps_driver_mode_t::UBX;
 
 		/* FALLTHROUGH */
-		case gps_driver_mode_t::UBX: {
-				GPSDriverUBX::Settings settings = {
-					.dynamic_model = (uint8_t)gps_ubx_dynmodel,
-					.heading_offset = heading_offset,
-					.uart2_baudrate = f9p_uart2_baudrate,
-					.ppk_output = ppk_output > 0,
-					.mode = ubx_mode,
-				};
+	case gps_driver_mode_t::UBX: {
+			_helper = new GPSDriverUBX(_interface, &GPS::callback, this, &_sensor_gps, _p_report_sat_info,
+						   (uint8_t)gps_ubx_dynmodel, heading_offset, f9p_uart2_baudrate, ubx_mode);
 
-				_helper = new GPSDriverUBX(_interface, &GPS::callback, this, &_sensor_gps, _p_report_sat_info, settings);
-
-				set_device_type(DRV_GPS_DEVTYPE_UBX);
-				break;
-			}
+			set_device_type(DRV_GPS_DEVTYPE_UBX);
+			break;
+		}
 
 #ifndef CONSTRAINED_FLASH
 
