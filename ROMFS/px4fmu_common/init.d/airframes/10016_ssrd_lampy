@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# @name SSRD Lampy Quadrotor SITL with Collision Prevention
+#
+# @type Quadrotor Wide
+#
+# @maintainer Custom Configuration
+#
+
+. ${R}etc/init.d/rc.mc_defaults
+
+
+param set-default CA_AIRFRAME 0
+
+param set-default CA_ROTOR_COUNT 4
+param set-default CA_ROTOR0_PX 0.1515
+param set-default CA_ROTOR0_PY 0.245
+param set-default CA_ROTOR0_KM 0.05
+param set-default CA_ROTOR1_PX -0.1515
+param set-default CA_ROTOR1_PY -0.1875
+param set-default CA_ROTOR1_KM 0.05
+param set-default CA_ROTOR2_PX 0.1515
+param set-default CA_ROTOR2_PY -0.245
+param set-default CA_ROTOR2_KM -0.05
+param set-default CA_ROTOR3_PX -0.1515
+param set-default CA_ROTOR3_PY 0.1875
+param set-default CA_ROTOR3_KM -0.05
+
+param set-default PWM_MAIN_FUNC1 101
+param set-default PWM_MAIN_FUNC2 102
+param set-default PWM_MAIN_FUNC3 103
+param set-default PWM_MAIN_FUNC4 104
+
+# Collision Prevention Parameters
+param set-default CP_DIST -1.0          # Enable collision prevention with 2m safety distance
+param set-default CP_GO_NO_DATA 1      # Don't move without sensor data (safer)
+param set-default MPC_POS_MODE 4       # Acceleration-based position mode (REQUIRED for collision prevention)
+param set-default COM_OBS_AVOID 1     # Enable obstacle avoidance PROBABLY LEGACY BUT MAVLINK NEEDS IT
+param set-default CP_DELAY 0.4         # Sensor delay compensation
+param set-default CP_GUIDE_ANG 30      # Guidance angle for obstacle avoidance
