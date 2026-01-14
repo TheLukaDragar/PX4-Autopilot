@@ -6,8 +6,6 @@
 
 #include <sys/stat.h>
 
-ModuleBase::Descriptor Raptor::desc{task_spawn, custom_command, print_usage};
-
 Raptor::Raptor(): ModuleParams(nullptr), ScheduledWorkItem(MODULE_NAME, px4::wq_configurations::rate_ctrl)
 {
 	// node state
@@ -186,7 +184,6 @@ bool Raptor::init()
 			rewind(f);
 			bool successfully_loaded = false;
 			using SPEC = rlt::persist::backends::tar::ReaderGroupSpecification<TI, rlt::persist::backends::tar::PosixFileData<TI>>;
-
 			rlt::persist::backends::tar::ReaderGroup<SPEC> reader_group;
 			reader_group.data.f = f;
 			reader_group.data.size = size;
@@ -260,7 +257,6 @@ bool Raptor::init()
 	register_ext_component_request.register_mode = true;
 	register_ext_component_request.enable_replace_internal_mode = _param_mc_raptor_offboard.get();
 	register_ext_component_request.replace_internal_mode = vehicle_status_s::NAVIGATION_STATE_OFFBOARD;
-	register_ext_component_request.request_offboard_setpoints = true;
 	_register_ext_component_request_pub.publish(register_ext_component_request);
 
 	int32_t imu_gyro_ratemax = _param_imu_gyro_ratemax.get();
@@ -457,7 +453,7 @@ void Raptor::Run()
 		}
 
 		ScheduleClear();
-		exit_and_cleanup(desc);
+		exit_and_cleanup();
 		return;
 	}
 
@@ -973,8 +969,8 @@ int Raptor::task_spawn(int argc, char *argv[])
 	Raptor *instance = new Raptor();
 
 	if (instance) {
-		desc.object.store(instance);
-		desc.task_id = task_id_is_work_queue;
+		_object.store(instance);
+		_task_id = task_id_is_work_queue;
 
 		if (instance->init()) {
 			return PX4_OK;
@@ -985,8 +981,8 @@ int Raptor::task_spawn(int argc, char *argv[])
 	}
 
 	delete instance;
-	desc.object.store(nullptr);
-	desc.task_id = -1;
+	_object.store(nullptr);
+	_task_id = -1;
 
 	return PX4_ERROR;
 }
@@ -1010,7 +1006,7 @@ int Raptor::custom_command(int argc, char *argv[])
 				return PX4_ERROR;
 			}
 
-			Raptor *instance = get_instance<Raptor>(desc);
+			Raptor *instance = get_instance();
 
 			if (instance == nullptr) {
 				PX4_ERR("mc_raptor is not running");
@@ -1077,5 +1073,5 @@ RAPTOR Policy Flight Mode
 
 extern "C" __EXPORT int mc_raptor_main(int argc, char *argv[])
 {
-	return ModuleBase::main(Raptor::desc, argc, argv);
+	return Raptor::main(argc, argv);
 }
