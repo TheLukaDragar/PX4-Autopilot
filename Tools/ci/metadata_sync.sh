@@ -115,6 +115,18 @@ ensure_emscripten() {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# Whitespace Normalization
+# ═══════════════════════════════════════════════════════════════════════════════
+
+normalize_whitespace() {
+    local file="$1"
+    if [[ -f "$file" ]]; then
+        # Remove trailing whitespace from each line
+        sed -i 's/[[:space:]]*$//' "$file"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # Generation Functions
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -123,7 +135,7 @@ generate_parameters() {
     if [[ "$VERBOSE" == "true" ]]; then
         make parameters_metadata
     else
-        make parameters_metadata >/dev/null
+        make parameters_metadata >/dev/null 2>&1
     fi
 }
 
@@ -132,7 +144,7 @@ generate_airframes() {
     if [[ "$VERBOSE" == "true" ]]; then
         make airframe_metadata
     else
-        make airframe_metadata >/dev/null
+        make airframe_metadata >/dev/null 2>&1
     fi
 }
 
@@ -141,7 +153,7 @@ generate_modules() {
     if [[ "$VERBOSE" == "true" ]]; then
         make module_documentation
     else
-        make module_documentation >/dev/null
+        make module_documentation >/dev/null 2>&1
     fi
 }
 
@@ -150,7 +162,7 @@ generate_msg_docs() {
     if [[ "$VERBOSE" == "true" ]]; then
         make msg_docs
     else
-        make msg_docs >/dev/null
+        make msg_docs >/dev/null 2>&1
     fi
 }
 
@@ -159,7 +171,7 @@ generate_uorb_graphs() {
     if [[ "$VERBOSE" == "true" ]]; then
         make uorb_graphs
     else
-        make uorb_graphs >/dev/null
+        make uorb_graphs >/dev/null 2>&1
     fi
 }
 
@@ -169,7 +181,7 @@ generate_failsafe_web() {
     if [[ "$VERBOSE" == "true" ]]; then
         make failsafe_web
     else
-        make failsafe_web >/dev/null
+        make failsafe_web >/dev/null 2>&1
     fi
 }
 
@@ -187,6 +199,7 @@ sync_parameters() {
         die "Source file not found: $src (did you run --generate?)"
     fi
 
+    normalize_whitespace "$src"
     mkdir -p "$(dirname "$dest")"
     cp "$src" "$dest"
     log_verbose "  $src -> $dest"
@@ -202,6 +215,7 @@ sync_airframes() {
         die "Source file not found: $src (did you run --generate?)"
     fi
 
+    normalize_whitespace "$src"
     mkdir -p "$(dirname "$dest")"
     cp "$src" "$dest"
     log_verbose "  $src -> $dest"
@@ -225,6 +239,7 @@ sync_modules() {
     mkdir -p "$dest_dir"
 
     for src in "${src_files[@]}"; do
+        normalize_whitespace "$src"
         local name
         name=$(basename "$src")
         cp "$src" "$dest_dir/$name"
@@ -233,7 +248,7 @@ sync_modules() {
 }
 
 sync_msg_docs() {
-    local src_dir="build/msg_docs"
+    local src_dir="build/px4_sitl_default/msg_docs"
     local dest_dir="docs/en/msg_docs"
     local middleware_dir="docs/en/middleware"
 
@@ -252,6 +267,7 @@ sync_msg_docs() {
     mkdir -p "$middleware_dir"
 
     for src in "${src_files[@]}"; do
+        normalize_whitespace "$src"
         local name
         name=$(basename "$src")
 
