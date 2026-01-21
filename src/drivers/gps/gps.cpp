@@ -798,6 +798,7 @@ GPS::run()
 		param_get(handle, &gps_ubx_min_elev);
 	}
 
+<<<<<<< HEAD
 	int32_t gps_ubx_rate = 0;
 	handle = param_find("GPS_UBX_RATE");
 
@@ -805,6 +806,8 @@ GPS::run()
 		param_get(handle, &gps_ubx_rate);
 	}
 
+=======
+>>>>>>> 58fbdcdff4 (Expose u-blox min elevation, min SNR and DGNSS timeout parameters RTK Fix Improvements (#25720))
 	handle = param_find("GPS_UBX_MODE");
 
 	GPSDriverUBX::UBXMode ubx_mode{GPSDriverUBX::UBXMode::Normal};
@@ -964,6 +967,7 @@ GPS::run()
 					.dgnss_timeout = (uint8_t)gps_ubx_dgnss_to,
 					.min_cno = (uint8_t)gps_ubx_min_cno,
 					.min_elev = (int8_t)gps_ubx_min_elev,
+<<<<<<< HEAD
 					.output_rate = (uint8_t)gps_ubx_rate,
 					.heading_offset = heading_offset,
 					.uart2_baudrate = f9p_uart2_baudrate,
@@ -971,6 +975,14 @@ GPS::run()
 					.jam_det_sensitivity_hi = jam_det_sensitivity_hi > 0,
 					.mode = ubx_mode,
 				};
+=======
+					.heading_offset = heading_offset,
+					.uart2_baudrate = f9p_uart2_baudrate,
+					.ppk_output = ppk_output > 0,
+					.mode = ubx_mode,
+				};
+
+>>>>>>> 58fbdcdff4 (Expose u-blox min elevation, min SNR and DGNSS timeout parameters RTK Fix Improvements (#25720))
 				_helper = new GPSDriverUBX(_interface, &GPS::callback, this, &_sensor_gps, _p_report_sat_info, settings);
 
 			set_device_type(DRV_GPS_DEVTYPE_UBX);
