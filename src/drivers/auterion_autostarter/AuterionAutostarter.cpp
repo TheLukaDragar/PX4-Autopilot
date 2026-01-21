@@ -41,8 +41,11 @@
 #include <builtin/builtin.h>
 #include <sys/wait.h>
 
+<<<<<<< HEAD
 ModuleBase::Descriptor AuterionAutostarter::desc{task_spawn, custom_command, print_usage};
 
+=======
+>>>>>>> 7680efc855 (auterion autostarter: Added autostart for PWM_EXPANDER, generalized c… (#25925))
 AuterionAutostarter::AuterionAutostarter() :
 	ScheduledWorkItem(MODULE_NAME, px4::wq_configurations::hp_default)
 {
@@ -557,5 +560,9 @@ Driver for starting and auto-detecting different power monitors.
 
 extern "C" __EXPORT int auterion_autostarter_main(int argc, char *argv[])
 {
+<<<<<<< HEAD
 	return ModuleBase::main(AuterionAutostarter::desc, argc, argv);
+=======
+	return AuterionAutostarter::main(argc, argv);
+>>>>>>> 7680efc855 (auterion autostarter: Added autostart for PWM_EXPANDER, generalized c… (#25925))
 }

@@ -71,12 +71,19 @@ private:
 	struct i2c_master_s *_i2c {nullptr};
 };
 
+<<<<<<< HEAD
 class AuterionAutostarter : public ModuleBase, public px4::ScheduledWorkItem
 {
 
 public:
 	static Descriptor desc;
 
+=======
+class AuterionAutostarter : public ModuleBase<AuterionAutostarter>, public px4::ScheduledWorkItem
+{
+
+public:
+>>>>>>> 7680efc855 (auterion autostarter: Added autostart for PWM_EXPANDER, generalized c… (#25925))
 	AuterionAutostarter();
 	virtual ~AuterionAutostarter();
 
