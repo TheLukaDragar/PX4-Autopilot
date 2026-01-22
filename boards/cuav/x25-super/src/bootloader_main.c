@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2019-2026 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2014-2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,31 +32,91 @@
  ****************************************************************************/
 
 /**
- * @file bootloader_main.c
+ * UAVCAN CAN node ID (0 for dynamic allocation).
  *
- * FMU-specific early startup code for bootloader
-*/
+ * @min 0
+ * @max 127
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_NODE_ID, 0);
 
-#include "board_config.h"
-#include "bl.h"
+/**
+ * UAVCAN CAN bus bitrate.
+ *
+ * @min 20000
+ * @max 1000000
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_BITRATE, 1000000);
 
-#include <nuttx/config.h>
-#include <nuttx/board.h>
-#include <chip.h>
-#include <stm32_uart.h>
-#include <arch/board/board.h>
-#include "arm_internal.h"
-#include <px4_platform_common/init.h>
+/**
+ * CAN built-in bus termination
+ *
+ * @boolean
+ * @max 1
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_TERM, 0);
 
-extern int sercon_main(int c, char **argv);
+/**
+ * Enable MovingBaselineData subscription
+ *
+ * @boolean
+ * @max 1
+ * @reboot_required true
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_SUB_MBD, 0);
 
-void board_late_initialize(void)
-{
-	sercon_main(0, NULL);
-}
+/**
+ * Enable RTCM subscription
+ *
+ * @boolean
+ * @reboot_required true
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_SUB_RTCM, 0);
 
-extern void sys_tick_handler(void);
-void board_timerhook(void)
-{
-	sys_tick_handler();
-}
+/**
+ * Enable MovingBaselineData publication
+ *
+ * @boolean
+ * @reboot_required true
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_PUB_MBD, 0);
+
+/**
+ * Enable RawIMU pub
+ *
+ * @boolean
+ * @max 1
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_PUB_IMU, 0);
+
+/**
+ * Enable barometer publication
+ *
+ * Enables publication of static pressure and static temperature
+ * from the barometer sensor over UAVCAN.
+ *
+ * @boolean
+ * @max 1
+ * @reboot_required true
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_PUB_BAR, 1);
+
+/**
+ * Enable magnetometer publication
+ *
+ * Enables publication of magnetic field strength
+ * from the magnetometer sensor over UAVCAN.
+ *
+ * @boolean
+ * @max 1
+ * @reboot_required true
+ * @group UAVCAN
+ */
+PARAM_DEFINE_INT32(CANNODE_PUB_MAG, 1);
