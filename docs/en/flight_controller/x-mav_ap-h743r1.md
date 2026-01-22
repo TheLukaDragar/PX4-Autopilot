@@ -26,7 +26,11 @@ These flight controllers are [manufacturer supported](../flight_controller/autop
 - On-board sensors
   - Accel/Gyro: ICM-42688-P\*2(Version1), BMI270\*2(Version2)
   - Mag: QMC5883P
+<<<<<<< HEAD
   - Barometer: SPL06
+=======
+  - Barometer: DPS310(Version1),SPL06(Version2)
+>>>>>>> 490423f7cf (board:changed ap-h743r1 dma allocation and internal mag to qmc5883p. (#26112))
 
 ### Interfaces
 

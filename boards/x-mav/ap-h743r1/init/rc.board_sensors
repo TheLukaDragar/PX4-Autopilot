@@ -20,4 +20,8 @@ fi
 spl06 -I  start -a 0x76
 
 # internal mag
+<<<<<<< HEAD
 qmc5883p -I -R 4 start
+=======
+qmc5883p -I -R 2 start
+>>>>>>> 490423f7cf (board:changed ap-h743r1 dma allocation and internal mag to qmc5883p. (#26112))
