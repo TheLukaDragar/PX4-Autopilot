@@ -86,8 +86,12 @@ vtxtable save
 
 This will create a VTX table with 5 power levels.
 
+<<<<<<< HEAD
 ```sh
 nsh> vtxtable status
+=======
+```nsh> vtxtable status
+>>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 INFO  [vtxtable] VTX table "Peak THOR T67":
 INFO  [vtxtable] Power levels:
 INFO  [vtxtable]   1:  0 = 25

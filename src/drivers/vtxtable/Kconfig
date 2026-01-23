@@ -19,7 +19,11 @@ if DRIVERS_VTXTABLE
 		default n if !(VTXTABLE_CONFIG_FILE != "")
 
 	config VTXTABLE_AUX_MAP
+<<<<<<< HEAD
 		bool "VTX Auxiliary Map"
+=======
+		string "VTX Auxiliary Map"
+>>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 		default n
 		---help---
 			Enable the AUX map for mapping AUX channel ranges to VTX
