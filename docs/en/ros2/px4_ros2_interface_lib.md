@@ -6,10 +6,13 @@
 At the time of writing, parts of the PX4 ROS 2 Interface Library are experimental, and hence subject to change.
 :::
 
+<<<<<<< HEAD
 :::info
 When using `rmw_zenoh`, the PX4 ROS 2 Interface Library requires ROS 2 Jazzy or later, and is not compatible with ROS 2 Humble or earlier.
 :::
 
+=======
+>>>>>>> 965325626e (docs: mention python bindings in ros lib)
 The [PX4 ROS 2 Interface Library](https://github.com/Auterion/px4-ros2-interface-lib) is a C++ library (with Python bindings) that simplifies controlling and interacting with PX4 from ROS 2.
 
 The library provides three high-level interfaces for developers:
