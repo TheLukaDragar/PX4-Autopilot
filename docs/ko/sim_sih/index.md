@@ -16,8 +16,18 @@ It also integrates seamlessly with ROS 2 via with no additional configuration (s
 
 Two modes are supported:
 
+<<<<<<< HEAD
 - **[SITL](#sih-as-sitl-no-fc):** Runs on your computer with no hardware needed, and headless (without a UI) by default.
   _This is the fastest and easiest way to start a simulation on PX4._
+=======
+- SIH is compatible with all PX4 supported boards except those based on FMUv2.
+- SIH for MC quadrotor is supported from PX4 v1.9.
+- SIH for FW (airplane) and VTOL tailsitter are supported from PX4 v1.13.
+- SIH as SITL (without hardware) from PX4 v1.14.
+- SIH for Standard VTOL from PX4 v1.16.
+- SIH for MC Hexacopter X from PX4 v1.17.
+- SIH for Ackermann Rover from PX4 v1.17.
+>>>>>>> f26254a622 (New Crowdin translations - ko (#26246))
 
 - **[SIH on flight controller hardware](#sih-on-flight-controller-hardware):** Runs the entire simulation on the autopilot (`SYS_HITL=2`).
 

@@ -3,7 +3,11 @@
 PX4 릴리스 노트는 각 릴리스의 변경 사항들을 설명합니다.
 
 - [main](../releases/main.md) (changes planned for v1.18 or later)
+<<<<<<< HEAD
 - [v1.17](../releases/1.17.md) (changes in v1.17, since v1.16)
+=======
+- [v1.17](../releases/1.17.md) (changes planned for v1.17, since v1.16)
+>>>>>>> f26254a622 (New Crowdin translations - ko (#26246))
 - [v1.16](../releases/1.16.md)
 - [v1.15](../releases/1.15.md)
 - [v1.14](../releases/1.14.md)

@@ -58,7 +58,11 @@ It also highlights devices that connect via the CAN bus, and those which support
 | [Septentrio AsteRx-m3 Pro](../gps_compass/septentrio_asterx-rib.md)                                                  |        AsteRx        |     ✓    |            |      [Septentrio Dual Antenna]      |  ✓  |
 | [Septentrio mosaic-go](../gps_compass/septentrio_mosaic-go.md)                                                       | mosaic X5 / mosaic H |     ✓    |            |      [Septentrio Dual Antenna]      |  ✓  |
 | [SIRIUS RTK GNSS ROVER (F9P)](https://store-drotek.com/911-sirius-rtk-gnss-rover-f9p.html)        |          F9P         |     ✓    |            |              [Dual F9P]             |     |
+<<<<<<< HEAD
 | [SparkFun GPS-RTK2 Board - ZED-F9P](https://www.sparkfun.com/sparkfun-gps-rtk2-board-zed-f9p-qwiic-gps-15136.html)   |          F9P         |     ✓    |            |              [Dual F9P]             |     |
+=======
+| [SparkFun GPS-RTK2 Board - ZED-F9P](https://www.sparkfun.com/products/15136)                                         |          F9P         |     ✓    |            |              [Dual F9P]             |     |
+>>>>>>> f26254a622 (New Crowdin translations - ko (#26246))
 | [Trimble MB-Two](../gps_compass/rtk_gps_trimble_mb_two.md)                                                           |          F9P         |     ✓    |            |                  ✓                  |     |
 
 <!-- links used in above table -->
@@ -153,6 +157,7 @@ RTK GPS 연결은 기본적으로 플러그앤플레이입니다.
    ![survey-in](../../assets/qgc/setup/rtk/qgc_rtk_survey-in.png)
 
 4. Survey-in이 완료되면 :
+
    - The RTK GPS icon changes to white and _QGroundControl_ starts to stream position data to the vehicle:
 
      ![RTK streaming](../../assets/qgc/setup/rtk/qgc_rtk_streaming.png)

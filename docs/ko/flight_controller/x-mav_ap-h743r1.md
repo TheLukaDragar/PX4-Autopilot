@@ -26,10 +26,14 @@ It brings you ultimate performance, stability, and reliability in every aspect.
 - 내장 센서 :
   - Accel/Gyro: ICM-42688-P\*2(Version1), BMI270\*2(Version2)
 <<<<<<< HEAD
+<<<<<<< HEAD
   - Mag: QMC5883P
 =======
   - 자력계: QMC5883P
 >>>>>>> 490423f7cf (board:changed ap-h743r1 dma allocation and internal mag to qmc5883p. (#26112))
+=======
+  - Mag: QMC5883P
+>>>>>>> f26254a622 (New Crowdin translations - ko (#26246))
   - Barometer: DPS310(Version1),SPL06(Version2)
 
 ### 인터페이스

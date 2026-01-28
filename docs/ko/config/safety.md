@@ -122,6 +122,14 @@ Users that want to disable this failsafe in specific modes can do so using the p
 PX4 and the receiver may also need to be configured in order to _detect RC loss_: [Radio Setup > RC Loss Detection](../config/radio.md#rc-loss-detection).
 :::
 
+<<<<<<< HEAD
+=======
+![Safety - RC Loss (QGC)](../../assets/qgc/setup/safety/safety_rc_loss.png)
+
+The QGCroundControl Safety UI allows you to set the [failsafe action](#failsafe-actions) and [manual control loss timeout](#COM_RC_LOSS_T).
+Users that want to disable this failsafe in specific modes can do so using the parameter [COM_RCL_EXCEPT](#COM_RCL_EXCEPT).
+
+>>>>>>> f26254a622 (New Crowdin translations - ko (#26246))
 Additional (and underlying) parameter settings are shown below.
 
 | 매개변수                                                                                                                                                                 | 설정                          | 설명                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
