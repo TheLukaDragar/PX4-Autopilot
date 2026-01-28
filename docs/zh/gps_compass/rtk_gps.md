@@ -57,7 +57,11 @@ It also highlights devices that connect via the CAN bus, and those which support
 | [Septentrio AsteRx-m3 Pro](../gps_compass/septentrio_asterx-rib.md)                                                  |        AsteRx        | &check; |                             |      [Septentrio Dual Antenna]      | &check; |
 | [Septentrio mosaic-go](../gps_compass/septentrio_mosaic-go.md)                                                       | mosaic X5 / mosaic H | &check; |                             |      [Septentrio Dual Antenna]      | &check; |
 | [SIRIUS RTK GNSS ROVER (F9P)](https://store-drotek.com/911-sirius-rtk-gnss-rover-f9p.html)        |          F9P         | &check; |                             |              [Dual F9P]             |                             |
+<<<<<<< HEAD
 | [SparkFun GPS-RTK2 Board - ZED-F9P](https://www.sparkfun.com/sparkfun-gps-rtk2-board-zed-f9p-qwiic-gps-15136.html)   |          F9P         | &check; |                             |              [Dual F9P]             |                             |
+=======
+| [SparkFun GPS-RTK2 Board - ZED-F9P](https://www.sparkfun.com/products/15136)                                         |          F9P         | &check; |                             |              [Dual F9P]             |                             |
+>>>>>>> c7e47c5d35 (New Crowdin translations - zh-CN (#26248))
 | [Trimble MB-Two](../gps_compass/rtk_gps_trimble_mb_two.md)                                                           |          F9P         | &check; |                             |     &check;     |                             |
 
 <!-- links used in above table -->
@@ -152,6 +156,7 @@ The RTK GPS connection is essentially plug and play:
    ![survey-in](../../assets/qgc/setup/rtk/qgc_rtk_survey-in.png)
 
 4. 测量完成：
+
    - The RTK GPS icon changes to white and _QGroundControl_ starts to stream position data to the vehicle:
 
      ![RTK streaming](../../assets/qgc/setup/rtk/qgc_rtk_streaming.png)

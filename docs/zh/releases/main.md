@@ -59,7 +59,11 @@ Please continue reading for [upgrade instructions](#upgrade-guide).
 
 ### 仿真
 
+<<<<<<< HEAD
 - SIH: Add option to set wind velocity ([PX4-Autopilot#26467](https://github.com/PX4-Autopilot/pull/26467))
+=======
+- TBD
+>>>>>>> c7e47c5d35 (New Crowdin translations - zh-CN (#26248))
 
 <!-- MOVED THIS TO v1.17
 
