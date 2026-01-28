@@ -3,7 +3,11 @@
 Перелік PX4 реліз, вони містять список змін, що відбулися в кожному релізі, пояснення включених функцій, виправлень, застарілих та оновлень.
 
 - [main](../releases/main.md) (changes planned for v1.18 or later)
+<<<<<<< HEAD
 - [v1.17](../releases/1.17.md) (changes in v1.17, since v1.16)
+=======
+- [v1.17](../releases/1.17.md) (changes planned for v1.17, since v1.16)
+>>>>>>> 203249cb49 (New Crowdin translations - uk (#26247))
 - [v1.16](../releases/1.16.md)
 - [v1.15](../releases/1.15.md)
 - [v1.14](../releases/1.14.md)

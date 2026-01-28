@@ -1,6 +1,10 @@
 # Asset Tracking
 
+<<<<<<< HEAD
 <Badge type="tip" text="PX4 v1.18" />
+=======
+<Badge type="tip" text="main (planned for: PX4 v1.18)" />
+>>>>>>> 203249cb49 (New Crowdin translations - uk (#26247))
 
 PX4 can track and log detailed information about external hardware devices connected to the flight controller.
 This enables unique identification of vehicle parts throughout their operational lifetime using device IDs, serial numbers, and version information.

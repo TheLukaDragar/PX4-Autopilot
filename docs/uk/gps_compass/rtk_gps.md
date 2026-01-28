@@ -57,7 +57,11 @@ PX4 supports the [u-blox M8P](https://www.u-blox.com/en/product/neo-m8p-series),
 | [Septentrio AsteRx-m3 Pro](../gps_compass/septentrio_asterx-rib.md)                                                  |        AsteRx        |     ✓    |            |      [Septentrio Dual Antenna]      |  ✓  |
 | [Septentrio mosaic-go](../gps_compass/septentrio_mosaic-go.md)                                                       | mosaic X5 / mosaic H |     ✓    |            |      [Septentrio Dual Antenna]      |  ✓  |
 | [SIRIUS RTK GNSS ROVER (F9P)](https://store-drotek.com/911-sirius-rtk-gnss-rover-f9p.html)        |          F9P         |     ✓    |            |              [Dual F9P]             |     |
+<<<<<<< HEAD
 | [SparkFun GPS-RTK2 Board - ZED-F9P](https://www.sparkfun.com/sparkfun-gps-rtk2-board-zed-f9p-qwiic-gps-15136.html)   |          F9P         |     ✓    |            |              [Dual F9P]             |     |
+=======
+| [SparkFun GPS-RTK2 Board - ZED-F9P](https://www.sparkfun.com/products/15136)                                         |          F9P         |     ✓    |            |              [Dual F9P]             |     |
+>>>>>>> 203249cb49 (New Crowdin translations - uk (#26247))
 | [Trimble MB-Two](../gps_compass/rtk_gps_trimble_mb_two.md)                                                           |          F9P         |     ✓    |            |                  ✓                  |     |
 
 <!-- links used in above table -->
@@ -152,6 +156,7 @@ This should be set by default, but if not, follow the [MAVLink2 configuration in
    ![survey-in](../../assets/qgc/setup/rtk/qgc_rtk_survey-in.png)
 
 4. Після завершення опитування:
+
    - The RTK GPS icon changes to white and _QGroundControl_ starts to stream position data to the vehicle:
 
      ![RTK streaming](../../assets/qgc/setup/rtk/qgc_rtk_streaming.png)
