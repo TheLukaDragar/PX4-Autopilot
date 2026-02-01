@@ -28,7 +28,11 @@ PX4 ROS 2 模式相较于 PX4 内部模式，更易于实现和维护，并且�
 
 :::tip
 If you want to use Python, check out the [examples in the repository](https://github.com/Auterion/px4-ros2-interface-lib/tree/main/examples/python).
+<<<<<<< HEAD
 Not all classes have Python bindings yet — the [supported bindings are here](https://auterion.github.io/px4-ros2-interface-lib/python/index.html).
+=======
+Not all classes have Python bindings yet — the [supported bindings are here](https://github.com/Auterion/px4-ros2-interface-lib/tree/main/px4_ros2_py/src/px4_ros2).
+>>>>>>> ac99826be6 (New Crowdin translations - zh-CN (#26398))
 You are welcome to add and contribute missing classes.
 :::
 

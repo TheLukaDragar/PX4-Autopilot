@@ -175,7 +175,11 @@ This consists of a single _C_ file and a _cmake_ definition (which tells the too
 4. Create and open a new _Kconfig_ definition file named **Kconfig** and define your symbol for naming (see [Kconfig naming convention](../hardware/porting_guide_config.md#px4-kconfig-symbol-naming-convention)).
    复制下面的文本：
 
+<<<<<<< HEAD
    ```txt
+=======
+   ```text
+>>>>>>> ac99826be6 (New Crowdin translations - zh-CN (#26398))
    menuconfig EXAMPLES_PX4_SIMPLE_APP
    	bool "px4_simple_app"
    	default n
