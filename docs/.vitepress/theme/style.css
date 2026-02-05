@@ -163,15 +163,6 @@
 
 
 /**
- * Custom style to hide search on the ome page
- * -------------------------------------------------------------------------- */
-
-.home #local-search {
-    display: none;
-  }
-
-
-/**
  * Custom styles for wide pages
  * -------------------------------------------------------------------------- */
 
