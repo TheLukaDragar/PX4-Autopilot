@@ -27,11 +27,7 @@ Unless the mode is safety-critical, requires strict timing or very high update r
 
 ::: tip
 If you want to use Python, check out the [examples in the repository](https://github.com/Auterion/px4-ros2-interface-lib/tree/main/examples/python).
-<<<<<<< HEAD
 Not all classes have Python bindings yet — the [supported bindings are here](https://auterion.github.io/px4-ros2-interface-lib/python/index.html).
-=======
-Not all classes have Python bindings yet — the [supported bindings are here](https://github.com/Auterion/px4-ros2-interface-lib/tree/main/px4_ros2_py/src/px4_ros2).
->>>>>>> 965325626e (docs: mention python bindings in ros lib)
 You are welcome to add and contribute missing classes.
 :::
 
