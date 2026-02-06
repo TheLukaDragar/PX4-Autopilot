@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2026 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2017 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,17 +31,34 @@
  *
  ****************************************************************************/
 
-#include <px4_arch/i2c_hw_description.h>
-
-/*
- * I2C bus configuration for AirBrainH743
+/**
+ * Lightware SF1xx/SF20/LW20 laser rangefinder (i2c)
  *
- * I2C1: Internal bus - PB6 (SCL), PB7 (SDA)
- *       Devices: DPS310 baro @ 0x76, LIS2MDL compass @ 0x1E
- * I2C4: External bus - PD12 (SCL), PD13 (SDA)
+ * @reboot_required true
+ * @min 0
+ * @max 9
+ * @group Sensors
+ * @value 0 Disabled
+ * @value 1 SF10/a
+ * @value 2 SF10/b
+ * @value 3 SF10/c
+ * @value 4 SF11/c
+ * @value 5 SF/LW20/b
+ * @value 6 SF/LW20/c
+ * @value 7 SF/LW30/d
+ * @value 8 GRF250
+ * @value 9 GRF500
  */
+PARAM_DEFINE_INT32(SENS_EN_SF1XX, 0);
 
-constexpr px4_i2c_bus_t px4_i2c_buses[I2C_BUS_MAX_BUS_ITEMS] = {
-	initI2CBusInternal(1),
-	initI2CBusExternal(4),
-};
+/**
+ * Lightware SF1xx/SF20/LW20 Operation Mode
+ *
+ * @value 0 Disabled
+ * @value 1 Enabled
+ * @value 2 Enabled in VTOL MC mode, listen to request from system in FW mode
+ *
+ * @min 0
+ * @max 2
+ */
+PARAM_DEFINE_INT32(SF1XX_MODE, 1);
