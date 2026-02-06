@@ -11,50 +11,55 @@ All documentation CI is consolidated into a single orchestrator workflow organiz
 
 **Workflow file:** [`docs-orchestrator.yml`](https://github.com/PX4/PX4-Autopilot/blob/main/.github/workflows/docs-orchestrator.yml)
 
-This is the main documentation workflow. It runs on pull requests, pushes to `main` and `release/**` branches, and manual `workflow_dispatch` triggers, performing different jobs depending on the trigger event.
+This is the main documentation workflow. It runs on pull requests and pushes to `main` and `release/**` branches, performing different jobs depending on the trigger event.
 Jobs are organized in tiers, where each tier depends on the previous one completing successfully.
 
 #### Tier Structure
 
-| Tier | Job            | PR                           | Push / Dispatch | Description                                                   |
-| ---- | -------------- | ---------------------------- | --------------- | ------------------------------------------------------------- |
-| T1   | Detect Changes | Yes                          | —               | Checks if source code files changed (triggers metadata regen) |
-| T2   | PR Metadata    | Yes (conditional)            | —               | Builds PX4 SITL and regenerates all auto-generated docs       |
-| T2   | Metadata Sync  | —                            | Yes             | Builds PX4 SITL, regenerates metadata, auto-commits           |
-| T2   | Link Check     | Yes                          | —               | Checks for broken links in changed files, posts PR comment    |
-| T3   | Build Site     | Yes (if docs/source changed) | Yes (after T2)  | Builds the VitePress documentation site                       |
-| T4   | Deploy         | —                            | Yes             | Deploys to AWS S3                                             |
+| Tier | Job | PR | Push | Description |
+|------|-----|----|------|-------------|
+| 0 | Detect Changed Paths | Yes | — | Checks if source code files changed (triggers metadata regen) |
+| 1 | Metadata Generation | Yes (conditional) | Yes | Builds PX4 SITL and regenerates all auto-generated docs |
+| 2 | Link Validation | Yes | — | Checks for broken links in changed files, posts PR comment |
+| 3 | Build Site | Yes (gated on Tier 2) | Yes (after Tier 1) | Builds the VitePress documentation site |
+| 4 | Deploy + Crowdin Upload | — | Yes | Deploys to AWS S3 and uploads sources to Crowdin |
 
 #### Pull Request Flow
 
-When a PR modifies files in `docs/**` or the orchestrator workflow file itself, the workflow validates the changes:
+When a PR modifies files in `docs/**`, the workflow validates the changes:
 
-```txt
+```
 PR Event
     │
     ▼
 ┌─────────────────────────────────────┐
-│ T1: Detect Changes                  │
+│ Tier 0: Detect Changed Paths       │
 │  • Checks if src/msg/ROMFS changed  │
 └─────────────────┬───────────────────┘
                   │
-          ┌───────┴───────┐
-          ▼               ▼
-┌──────────────────┐ ┌─────────────────────────┐
-│ T2: PR Metadata  │ │ T2: Link Check (~30s)   │
-│ (conditional)    │ │  • Detects changed .md   │
-│  • Builds SITL   │ │  • Runs filtered check   │
-│  • Generates     │ │  • Posts PR comment      │
-│    metadata      │ │  • Runs full check       │
-│  • Builds        │ └────────────┬────────────┘
-│    failsafe web  │              │
-└────────┬─────────┘              │
-         └───────────┬────────────┘
-                     ▼
+                  ▼
 ┌─────────────────────────────────────┐
-│ T3: Build Site (~7-10 min)         │
-│  (skipped if only workflow YAML     │
-│   changed — no docs/source changes) │
+│ Tier 1: PR Metadata Regen          │
+│  (only if source files changed)     │
+│  • Builds px4_sitl_default          │
+│  • Generates parameter/airframe/    │
+│    module documentation             │
+│  • Builds failsafe web simulator    │
+└─────────────────┬───────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────┐
+│ Tier 2: Link Validation (~30 sec)  │
+│  • Detects changed docs/en/*.md     │
+│  • Runs filtered link check         │
+│  • Posts sticky PR comment (flaws)  │
+│  • Runs full link check (artifact)  │
+└─────────────────┬───────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────┐
+│ Tier 3: Build Site (~7-10 min)     │
+│  (only if link check passed)        │
 │  • Builds VitePress site            │
 │  • Verifies no build errors         │
 └─────────────────┬───────────────────┘
@@ -63,69 +68,68 @@ PR Event
                 DONE
 ```
 
-| Job                    | Duration | Description                                                                                                                             |
-| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **T1: Detect Changes** | ~10s     | Determines if metadata regeneration is needed                                                                                           |
-| **T2: PR Metadata**    | ~10-15m  | Rebuilds PX4 SITL and regenerates all metadata (only if source files changed)                                                           |
-| **T2: Link Check**     | ~30s     | Checks for broken links in changed markdown files and posts a sticky comment to the PR (skipped on fork PRs)                            |
-| **T3: Build Site**     | ~7-10m   | Builds the VitePress site to verify there are no build errors. Skipped when only the workflow YAML changed (no docs or source changes). |
+| Job | Duration | Description |
+|-----|----------|-------------|
+| **Detect Changed Paths** | ~10s | Determines if metadata regeneration is needed |
+| **PR Metadata Regen** | ~10-15m | Rebuilds PX4 SITL and regenerates all metadata (conditional) |
+| **Link Validation** | ~30s | Checks for broken links in changed markdown files and posts a sticky comment to the PR |
+| **Build Site** | ~7-10m | Builds the VitePress site to verify there are no build errors. Gated on link check passing. |
 
-#### Push / Dispatch Flow (main/release branches)
+#### Push Flow (main/release branches)
 
-When changes are pushed to `main` or `release/**` branches (or a `workflow_dispatch` is triggered), the workflow regenerates metadata, builds, and deploys.
-Only `main` and `release/*` branches are accepted for deploy — other branches will fail with a clear error.
+When changes are pushed to `main` or `release/**` branches, the workflow regenerates metadata, builds, and deploys:
 
-```txt
-Push / Dispatch Event
+```
+Push Event
     │
     ▼
 ┌─────────────────────────────────────┐
-│ T2: Metadata Sync (~10-15 min)     │
+│ Tier 1: Regenerate Metadata         │
+│  (~10-15 min)                       │
 │  • Builds px4_sitl_default          │
 │  • Generates parameter/airframe/    │
 │    module documentation             │
 │  • Builds failsafe web simulator    │
 │  • Formats with Prettier            │
 │  • Auto-commits if changes detected │
-│    (with [skip ci])                 │
 └─────────────────┬───────────────────┘
                   │
                   ▼
 ┌─────────────────────────────────────┐
-│ T3: Build Site (~7-10 min)         │
+│ Tier 3: Build Site (~7-10 min)     │
 │  • Builds VitePress site            │
 │  • Uploads build artifact           │
 └─────────────────┬───────────────────┘
                   │
-                  ▼
-┌─────────────────────────────────────┐
-│ T4: Deploy (~3 min)                │
-│  • Syncs to AWS S3                  │
-│  • HTML: 60s cache                  │
-│  • Assets: 24h immutable cache      │
-└─────────────────────────────────────┘
+          ┌───────┴───────┐
+          ▼               ▼
+┌──────────────┐  ┌──────────────────┐
+│ Tier 4:      │  │ Tier 4:          │
+│ Deploy to    │  │ Crowdin Upload   │
+│ AWS (~3 min) │  │ (~4 min)         │
+│ • S3 sync    │  │ • Upload sources │
+└──────────────┘  └──────────────────┘
 ```
 
-| Job                   | Duration | Description                                                                                       |
-| --------------------- | -------- | ------------------------------------------------------------------------------------------------- |
-| **T2: Metadata Sync** | ~10-15m  | Rebuilds PX4 SITL, regenerates all metadata, formats with Prettier, auto-commits with `[skip ci]` |
-| **T3: Build Site**    | ~7-10m   | Builds the VitePress documentation site                                                           |
-| **T4: Deploy**        | ~3m      | Syncs built site to AWS S3 (HTML: 60s cache, assets: 24h cache)                                   |
-
-Crowdin upload is handled by a separate workflow (see below).
+| Job | Duration | Description |
+|-----|----------|-------------|
+| **Regenerate Metadata** | ~10-15m | Rebuilds PX4 SITL, regenerates all metadata, formats with Prettier, auto-commits |
+| **Build Site** | ~7-10m | Builds the VitePress documentation site |
+| **Deploy to AWS** | ~3m | Syncs built site to AWS S3 (HTML: 60s cache, assets: 24h cache) |
+| **Crowdin Upload** | ~4m | Uploads English source files to Crowdin for translation (main branch only) |
 
 #### Generated Metadata
 
 The metadata regeneration job creates the following auto-generated documentation:
 
-| Type               | Output                                           | Description                                  |
-| ------------------ | ------------------------------------------------ | -------------------------------------------- |
-| Parameters         | `docs/en/advanced_config/parameter_reference.md` | Complete parameter reference                 |
-| Airframes          | `docs/en/airframes/airframe_reference.md`        | Airframe configurations                      |
-| Modules            | `docs/en/modules/*.md`                           | Module documentation                         |
-| Messages           | `docs/en/msg_docs/*.md`                          | uORB message documentation                   |
-| uORB Graphs        | `docs/public/middleware/*.json`                  | Topic dependency graphs                      |
-| Failsafe Simulator | `docs/public/config/failsafe/*`                  | Interactive failsafe simulator (WebAssembly) |
+| Type | Output | Description |
+|------|--------|-------------|
+| Parameters | `docs/en/advanced_config/parameter_reference.md` | Complete parameter reference |
+| Airframes | `docs/en/airframes/airframe_reference.md` | Airframe configurations |
+| Modules | `docs/en/modules/*.md` | Module documentation |
+| Messages | `docs/en/msg_docs/*.md` | uORB message documentation |
+| uORB Graphs | `docs/public/middleware/*.json` | Topic dependency graphs |
+| Failsafe Simulator | `docs/public/config/failsafe/*` | Interactive failsafe simulator (WebAssembly) |
 
 ::: warning
 Do not manually edit the auto-generated files listed above. They are overwritten on every push to main.
@@ -133,26 +137,15 @@ Do not manually edit the auto-generated files listed above. They are overwritten
 
 #### Path Triggers
 
-The workflow triggers on different paths depending on the event:
+The workflow triggers on changes to these paths:
 
-**Push** (main/release branches):
-
-| Path                     | Reason                                |
-| ------------------------ | ------------------------------------- |
-| `docs/**`                | Documentation source files            |
-| `src/**`                 | Source code changes affect metadata   |
-| `msg/**`                 | Message definitions affect metadata   |
-| `ROMFS/**`               | ROMFS files affect metadata           |
+| Path | Reason |
+|------|--------|
+| `docs/**` | Documentation source files |
+| `src/**` | Source code changes affect metadata |
+| `msg/**` | Message definitions affect metadata |
+| `ROMFS/**` | ROMFS files affect metadata |
 | `Tools/module_config/**` | Module configuration affects metadata |
-
-**Pull Request:**
-
-| Path                                      | Reason                         |
-| ----------------------------------------- | ------------------------------ |
-| `docs/**`                                 | Documentation source files     |
-| `.github/workflows/docs-orchestrator.yml` | Changes to the workflow itself |
-
-Source-only changes on PRs are detected at runtime by the T1: Detect Changes job using [dorny/paths-filter](https://github.com/dorny/paths-filter), which conditionally triggers the T2: PR Metadata job.
 
 ### Crowdin Download Workflow
 
@@ -160,9 +153,9 @@ Source-only changes on PRs are detected at runtime by the T1: Detect Changes job
 
 This scheduled workflow downloads completed translations from Crowdin and creates pull requests.
 
-| Setting              | Value                                                   |
-| -------------------- | ------------------------------------------------------- |
-| **Schedule**         | Every Sunday at 00:00 UTC                               |
+| Setting | Value |
+|---------|-------|
+| **Schedule** | Every Sunday at 00:00 UTC |
 | **Target Languages** | Korean (ko), Ukrainian (uk), Chinese Simplified (zh-CN) |
 
 **Process:**
@@ -175,20 +168,20 @@ This scheduled workflow downloads completed translations from Crowdin and create
 
 The workflows use caching to speed up builds:
 
-| Cache        | Size  | Purpose                               |
-| ------------ | ----- | ------------------------------------- |
-| ccache       | 1GB   | C++ compilation cache for SITL builds |
-| node_modules | ~26MB | Node.js dependencies for VitePress    |
+| Cache | Size | Purpose |
+|-------|------|---------|
+| ccache | 1GB | C++ compilation cache for SITL builds |
+| node_modules | ~26MB | Node.js dependencies for VitePress |
 
 ### Infrastructure
 
 Jobs run on [runs-on](https://runs-on.com/) self-hosted runners with S3 cache:
 
-| Job                | Runner                         |
-| ------------------ | ------------------------------ |
-| T1: Detect Changes | ubuntu-latest                  |
-| T2: PR Metadata    | 4 CPU (with px4-dev container) |
-| T2: Metadata Sync  | 4 CPU (with px4-dev container) |
-| T2: Link Check     | ubuntu-latest                  |
-| T3: Build Site     | 4 CPU                          |
-| T4: Deploy         | ubuntu-latest                  |
+| Job | Runner |
+|-----|--------|
+| Detect Changed Paths | ubuntu-latest |
+| Link Validation | ubuntu-latest |
+| Metadata Regen | 4 CPU (with px4-dev container) |
+| Build Site | 4 CPU |
+| Deploy to AWS | ubuntu-latest |
+| Crowdin Upload | ubuntu-latest |
