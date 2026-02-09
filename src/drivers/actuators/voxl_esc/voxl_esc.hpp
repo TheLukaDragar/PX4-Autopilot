@@ -58,11 +58,9 @@
 
 using namespace device;
 
-class VoxlEsc : public ModuleBase, public OutputModuleInterface
+class VoxlEsc : public ModuleBase<VoxlEsc>, public OutputModuleInterface
 {
 public:
-	static Descriptor desc;
-
 	VoxlEsc();
 	virtual ~VoxlEsc();
 
@@ -83,7 +81,8 @@ public:
 	void print_params();
 
 	/** @see OutputModuleInterface */
-	bool updateOutputs(float outputs[MAX_ACTUATORS], unsigned num_outputs, unsigned num_control_groups_updated) override;
+	bool updateOutputs(uint16_t outputs[MAX_ACTUATORS],
+			   unsigned num_outputs, unsigned num_control_groups_updated) override;
 
 	virtual int	init();
 	int device_init(); // function where uart port is opened and ESC queried
@@ -175,7 +174,6 @@ private:
 		int32_t		esc_over_temp_threshold{0};
 		int32_t		gpio_ctl_channel{0};
 		int32_t		cmd_type{0};
-		int32_t		turtle_button_on{-1};
 	} voxl_esc_params_t;
 
 	struct EscChan {
@@ -271,7 +269,7 @@ private:
 
 	bool			_device_initialized{false};
 
-	void			update_leds(const vehicle_control_mode_s &mode, const led_control_s &control);
+	void			update_leds(vehicle_control_mode_s mode, led_control_s control);
 
 	int				read_response(Command *out_cmd);
 	int				parse_response(uint8_t *buf, uint8_t len, bool print_feedback);
