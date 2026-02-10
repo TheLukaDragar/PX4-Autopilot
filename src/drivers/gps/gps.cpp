@@ -979,6 +979,7 @@ GPS::run()
 					.heading_offset = heading_offset,
 					.uart2_baudrate = f9p_uart2_baudrate,
 					.ppk_output = ppk_output > 0,
+					.jam_det_sensitivity_hi = jam_det_sensitivity_hi > 0,
 					.mode = ubx_mode,
 				};
 
