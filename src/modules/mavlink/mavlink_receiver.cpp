@@ -157,6 +157,10 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_ping(msg);
 		break;
 
+	case MAVLINK_MSG_ID_CUSTOM_PING:
+		handle_message_custom_ping(msg);
+		break;
+
 	case MAVLINK_MSG_ID_SET_MODE:
 		handle_message_set_mode(msg);
 		break;
@@ -1777,9 +1781,35 @@ MavlinkReceiver::handle_message_ping(mavlink_message_t *msg)
 			uorb_ping_msg.system_id = msg->sysid;
 			uorb_ping_msg.component_id = msg->compid;
 
-			_ping_pub.publish(uorb_ping_msg);
-		}
+		_ping_pub.publish(uorb_ping_msg);
 	}
+}
+}
+
+void
+MavlinkReceiver::handle_message_custom_ping(mavlink_message_t *msg)
+{
+	// Decode custom ping message from MAVLink
+	mavlink_custom_ping_t custom_ping_mavlink;
+	mavlink_msg_custom_ping_decode(msg, &custom_ping_mavlink);
+
+	// Create uORB custom_ping message
+	custom_ping_s custom_ping_uorb{};
+
+	custom_ping_uorb.timestamp = hrt_absolute_time();
+	custom_ping_uorb.sequence = custom_ping_mavlink.sequence;
+	custom_ping_uorb.data1 = custom_ping_mavlink.data1;
+	custom_ping_uorb.data2 = custom_ping_mavlink.data2;
+	custom_ping_uorb.status = custom_ping_mavlink.status;
+
+	// Publish to uORB
+	_custom_ping_pub.publish(custom_ping_uorb);
+
+	PX4_INFO("Custom Ping received: seq=%u, data1=%.2f, data2=%.2f, status=%u",
+		 custom_ping_uorb.sequence,
+		 (double)custom_ping_uorb.data1,
+		 (double)custom_ping_uorb.data2,
+		 custom_ping_uorb.status);
 }
 
 void

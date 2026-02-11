@@ -95,10 +95,11 @@ publications:
 
   - topic: /fmu/out/vehicle_local_position
     type: px4_msgs::msg::VehicleLocalPosition
-    rate_limit: 50.
+    rate_limit: 200.
 
   - topic: /fmu/out/vehicle_odometry
     type: px4_msgs::msg::VehicleOdometry
+    rate_limit: 200.
 
   - topic: /fmu/out/vehicle_status
     type: px4_msgs::msg::VehicleStatus
@@ -142,9 +143,34 @@ publications:
   - topic: /fmu/out/esc_status
     type: px4_msgs::msg::EscStatus
 
+  - topic: /fmu/out/rate_ctrl_status
+    type: px4_msgs::msg::RateCtrlStatus
+    rate_limit: 200.
+
+  # Custom Speedo messages
+  - topic: /fmu/out/custom_ping
+    type: px4_msgs::msg::CustomPing
+
+  - topic: /fmu/out/tf_transform
+    type: px4_msgs::msg::TfTransform
+    rate_limit: 20.
+
 
 # Create uORB::Publication
 subscriptions:
+
+  # Custom Speedo messages (ROS2 -> PX4)
+  - topic: /fmu/in/custom_pong
+    type: px4_msgs::msg::CustomPong
+
+  - topic: /fmu/in/tf_transform
+    type: px4_msgs::msg::TfTransform
+
+  - topic: /fmu/in/trajectory_header
+    type: px4_msgs::msg::TrajectoryHeader
+
+  - topic: /fmu/in/trajectory_waypoint
+    type: px4_msgs::msg::TrajectoryWaypoint
 
   - topic: /fmu/in/vehicle_constraints
     type: px4_msgs::msg::VehicleConstraints
