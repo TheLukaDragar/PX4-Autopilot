@@ -28,7 +28,7 @@ Unless the mode is safety-critical, requires strict timing or very high update r
 
 :::tip
 If you want to use Python, check out the [examples in the repository](https://github.com/Auterion/px4-ros2-interface-lib/tree/main/examples/python).
-Not all classes have Python bindings yet — the [supported bindings are here](https://auterion.github.io/px4-ros2-interface-lib/python/index.html).
+Not all classes have Python bindings yet — the [supported bindings are here](https://github.com/Auterion/px4-ros2-interface-lib/tree/main/px4_ros2_py/src/px4_ros2).
 You are welcome to add and contribute missing classes.
 :::
 
@@ -580,7 +580,7 @@ For ease of use we expose these valid combinations as new SetpointTypes.
 
 The RoverSetpointTypes exposed through the control interface are combinations of these setpoints that lead to a valid control input:
 
-| SetpointType                                                                                                                        | Position                    | Speed                                            | Throttle                                         | Attitude                                         | 주파수                                              | Steering                                         | Control Flags                                          |
+| SetpointType                                                                                                                        | Position                    | Speed                                            | 스로틀                                              | Attitude                                         | 주파수                                              | Steering                                         | Control Flags                                          |
 | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------ |
 | [RoverPosition](https://auterion.github.io/px4-ros2-interface-lib/classpx4__ros2_1_1RoverPositionSetpointType.html#details)         | &check; | (&check;) | (&check;) | (&check;) | (&check;) | (&check;) | Position, Velocity, Attitude, Rate, Control Allocation |
 | [RoverSpeedAttitude](https://auterion.github.io/px4-ros2-interface-lib/classpx4__ros2_1_1RoverSpeedAttitudeSetpointType.html)       |                             | &check;                      | (&check;) | &check;                      | (&check;) | (&check;) | Velocity, Attitude, Rate, Control Allocation           |
