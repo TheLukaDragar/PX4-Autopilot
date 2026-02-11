@@ -57,6 +57,8 @@ set(msg_files
 	CollisionConstraints.msg
 	ControlAllocatorStatus.msg
 	Cpuload.msg
+	CustomPing.msg
+	CustomPong.msg
 	DatamanRequest.msg
 	DatamanResponse.msg
 	DebugArray.msg
@@ -221,9 +223,12 @@ set(msg_files
 	TaskStackInfo.msg
 	TecsStatus.msg
 	TelemetryStatus.msg
+	TfTransform.msg
 	TiltrotorExtraControls.msg
 	TimesyncStatus.msg
+	TrajectoryHeader.msg
 	TrajectorySetpoint6dof.msg
+	TrajectoryWaypoint.msg
 	TransponderReport.msg
 	TuneControl.msg
 	UavcanParameterRequest.msg

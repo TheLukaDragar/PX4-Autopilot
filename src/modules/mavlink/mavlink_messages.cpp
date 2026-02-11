@@ -107,6 +107,10 @@
 #include "streams/OPTICAL_FLOW_RAD.hpp"
 #include "streams/ORBIT_EXECUTION_STATUS.hpp"
 #include "streams/PING.hpp"
+#include "streams/CUSTOM_PONG.hpp"
+#include "streams/TF_TRANSFORM.hpp"
+#include "streams/TRAJECTORY_HEADER.hpp"
+#include "streams/TRAJECTORY_WAYPOINT.hpp"
 #include "streams/POSITION_TARGET_GLOBAL_INT.hpp"
 #include "streams/POSITION_TARGET_LOCAL_NED.hpp"
 #include "streams/PROTOCOL_VERSION.hpp"
@@ -449,6 +453,18 @@ static const StreamListItem streams_list[] = {
 #if defined(PING_HPP)
 	create_stream_list_item<MavlinkStreamPing>(),
 #endif // PING_HPP
+#if defined(CUSTOM_PONG_HPP)
+	create_stream_list_item<MavlinkStreamCustomPong>(),
+#endif // CUSTOM_PONG_HPP
+#if defined(TF_TRANSFORM_HPP)
+	create_stream_list_item<MavlinkStreamTfTransform>(),
+#endif // TF_TRANSFORM_HPP
+#if defined(TRAJECTORY_HEADER_HPP)
+	create_stream_list_item<MavlinkStreamTrajectoryHeader>(),
+#endif // TRAJECTORY_HEADER_HPP
+#if defined(TRAJECTORY_WAYPOINT_HPP)
+	create_stream_list_item<MavlinkStreamTrajectoryWaypoint>(),
+#endif // TRAJECTORY_WAYPOINT_HPP
 #if defined(ORBIT_EXECUTION_STATUS_HPP)
 	create_stream_list_item<MavlinkStreamOrbitStatus>(),
 #endif // ORBIT_EXECUTION_STATUS_HPP

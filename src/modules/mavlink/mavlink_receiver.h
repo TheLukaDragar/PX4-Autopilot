@@ -94,6 +94,7 @@
 #include <uORB/topics/open_drone_id_self_id.h>
 #include <uORB/topics/open_drone_id_system.h>
 #include <uORB/topics/ping.h>
+#include <uORB/topics/custom_ping.h>
 #include <uORB/topics/position_setpoint_triplet.h>
 #include <uORB/topics/radio_status.h>
 #include <uORB/topics/rc_channels.h>
@@ -193,6 +194,7 @@ private:
 	void handle_message_open_drone_id_system(mavlink_message_t *msg);
 	void handle_message_optical_flow_rad(mavlink_message_t *msg);
 	void handle_message_ping(mavlink_message_t *msg);
+	void handle_message_custom_ping(mavlink_message_t *msg);
 	void handle_message_play_tune(mavlink_message_t *msg);
 	void handle_message_play_tune_v2(mavlink_message_t *msg);
 	void handle_message_radio_status(mavlink_message_t *msg);
@@ -364,6 +366,7 @@ private:
 	uORB::PublicationMulti<input_rc_s>			_rc_pub{ORB_ID(input_rc)};
 	uORB::PublicationMulti<manual_control_setpoint_s>	_manual_control_input_pub{ORB_ID(manual_control_input)};
 	uORB::PublicationMulti<ping_s>				_ping_pub{ORB_ID(ping)};
+	uORB::PublicationMulti<custom_ping_s>			_custom_ping_pub{ORB_ID(custom_ping)};
 	uORB::PublicationMulti<radio_status_s>			_radio_status_pub{ORB_ID(radio_status)};
 	uORB::PublicationMulti<sensor_baro_s>			_sensor_baro_pub{ORB_ID(sensor_baro)};
 	uORB::PublicationMulti<sensor_gps_s>			_sensor_gps_pub{ORB_ID(sensor_gps)};
