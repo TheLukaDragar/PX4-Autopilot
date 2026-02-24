@@ -44,6 +44,7 @@
 #include <lib/conversion/rotation.h>
 #include <lib/systemlib/px4_macros.h>
 
+#include <cinttypes>
 #include <math.h>
 #include <poll.h>
 
@@ -1809,7 +1810,7 @@ MavlinkReceiver::handle_message_custom_ping(mavlink_message_t *msg)
 	// Publish to uORB
 	_custom_ping_pub.publish(custom_ping_uorb);
 
-	PX4_INFO("Custom Ping received: seq=%u, data1=%.2f, data2=%.2f, status=%u",
+	PX4_INFO("Custom Ping received: seq=%" PRIu32 ", data1=%.2f, data2=%.2f, status=%" PRIu8,
 		 custom_ping_uorb.sequence,
 		 (double)custom_ping_uorb.data1,
 		 (double)custom_ping_uorb.data2,
