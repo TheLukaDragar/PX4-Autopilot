@@ -72,11 +72,11 @@ param set-default BAT_EMERGEN_THR 0.05
 # Control
 ################################################################################
 
-param set-default THR_MDL_FAC 0.73
-param set-default MPC_THR_HOVER	0.3
+# param set-default THR_MDL_FAC 0.73
+# param set-default MPC_THR_HOVER	0.3
 
-param set-default MPC_THR_MAX 0.75
-param set-default MPC_THR_MIN 0.
+# param set-default MPC_THR_MAX 0.75
+# param set-default MPC_THR_MIN 0.
 
 ################################################################################
 # EKF2
