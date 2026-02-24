@@ -61,6 +61,7 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/airspeed_validated.h>
 #include <uORB/topics/vehicle_air_data.h>
+#include <uORB/topics/esc_status.h>
 
 #include <lib/geo/geo.h>
 
@@ -99,6 +100,7 @@ const uint16_t osd_altitude_pos = 2416;
 // Bottom Row 2
 const uint16_t osd_rssi_value_pos = 2445;
 const uint16_t osd_avg_cell_voltage_pos = 2446;
+const uint16_t osd_esc_tmp_pos = 2447;
 const uint16_t osd_mah_drawn_pos = 2449;
 
 // Bottom Row 3
@@ -196,7 +198,7 @@ void MspOsd::SendConfig()
 
 	// possibly available, but not currently used
 	msp_osd_config.osd_flymode_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_esc_tmp_pos = 			LOCATION_HIDDEN;
+	msp_osd_config.osd_esc_tmp_pos = enabled(SymbolIndex::ESC_TMP) ? osd_esc_tmp_pos : LOCATION_HIDDEN;
 	msp_osd_config.osd_pitch_angle_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_roll_angle_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_horizon_sidebars_pos = 		LOCATION_HIDDEN;
@@ -366,6 +368,14 @@ void MspOsd::Run()
 		const auto msg = msp_osd::construct_rendor_BATTERY_STATE(battery_status);
 		this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_battery_state_t));
 
+	}
+
+	// ESC temperature (from esc_status)
+	if (enabled(SymbolIndex::ESC_TMP)) {
+		esc_status_s esc_status{};
+		_esc_status_sub.copy(&esc_status);
+		const auto msg = msp_osd::construct_rendor_ESC_TMP(esc_status);
+		this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_esc_tmp_t));
 	}
 
 	// MSP_RAW_GPS
