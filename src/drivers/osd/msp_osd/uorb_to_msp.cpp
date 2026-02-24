@@ -552,6 +552,34 @@ msp_rendor_altitude_t construct_Rendor_ALTITUDE(const sensor_gps_s &vehicle_gps_
 	return altitude;
 }
 
+msp_rendor_esc_tmp_t construct_rendor_ESC_TMP(const esc_status_s &esc_status)
+{
+	msp_rendor_esc_tmp_t esc_tmp;
+
+	esc_tmp.screenYPosition = 0x04;
+	esc_tmp.screenXPosition = 0x0A;
+
+	float max_temp = -INFINITY;
+	bool any_valid = false;
+
+	for (int i = 0; i < esc_status_s::CONNECTED_ESC_MAX && i < esc_status.esc_count; i++) {
+		float t = esc_status.esc[i].esc_temperature;
+		if (PX4_ISFINITE(t) && t > 0.f) {
+			any_valid = true;
+			if (t > max_temp) { max_temp = t; }
+		}
+	}
+
+	memset(&esc_tmp.str[0], 0, sizeof(esc_tmp.str));
+	if (any_valid) {
+		snprintf(&esc_tmp.str[0], sizeof(esc_tmp.str), "%3.0fC", (double)max_temp);
+	} else {
+		snprintf(&esc_tmp.str[0], sizeof(esc_tmp.str), " --");
+	}
+
+	return esc_tmp;
+}
+
 msp_esc_sensor_data_dji_t construct_ESC_SENSOR_DATA()
 {
 	// initialize result

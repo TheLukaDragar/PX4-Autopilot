@@ -27,6 +27,8 @@ if (Protobuf_FOUND)
             ${Protobuf_INCLUDE_DIRS}
     )
     target_link_libraries(px4_gz_msgs PUBLIC ${PROTOBUF_LIBRARIES})
+    # Protobuf/Abseil headers can trigger -Wdouble-promotion (float promoted to double in templates)
+    target_compile_options(px4_gz_msgs PRIVATE -Wno-double-promotion)
     if (Protobuf_VERSION VERSION_LESS "3.8")
         target_compile_options(px4_gz_msgs PRIVATE -Wno-error=float-equal)
     endif()

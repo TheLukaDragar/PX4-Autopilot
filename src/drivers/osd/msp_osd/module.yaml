@@ -33,7 +33,7 @@ parameters:
                 13: NUMERICAL_VARIO
                 # the following are reserved but not currently functional
                 14: (unused) FLYMODE
-                15: (unused) ESC_TMP
+                15: ESC_TMP
                 16: (unused) PITCH_ANGLE
                 17: (unused) ROLL_ANGLE
                 18: CROSSHAIRS
