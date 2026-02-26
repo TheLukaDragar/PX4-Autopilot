@@ -34,6 +34,11 @@ param set-default CA_ROTOR2_PZ 0
 param set-default CA_ROTOR3_CT 6.50
 param set-default CA_ROTOR3_KM -0.05
 
+
+param set-default CA_ROTOR3_PX -0.06
+param set-default CA_ROTOR3_PY 0.08
+param set-default CA_ROTOR3_PZ 0
+
 param set-default PWM_MAIN_FUNC1 101
 param set-default PWM_MAIN_FUNC2 102
 param set-default PWM_MAIN_FUNC3 103
@@ -55,3 +60,34 @@ param set-default MPC_POS_MODE 4       # Acceleration-based position mode (REQUI
 param set-default COM_OBS_AVOID 1     # Enable obstacle avoidance PROBABLY LEGACY BUT MAVLINK NEEDS IT
 param set-default CP_DELAY 0.4         # Sensor delay compensation
 param set-default CP_GUIDE_ANG 30      # Guidance angle for obstacle avoidance
+
+# Keep PX4 on simulation time (HIL timestamps); don't sync to DDS agent system time (see docs/ROS2_CLOCK_AND_PX4_TIME.md)
+param set-default UXRCE_DDS_SYNCT 0
+
+# # ── GPS disabled; optical flow + range finder for navigation ─────────────────
+# # No GPS hardware — allow arming and prevent GPS-dependent checks
+# param set-default SYS_HAS_GPS 0
+# param set-default MAV_USEHILGPS 0
+# param set-default COM_ARM_WO_GPS 2
+# param set-default EKF2_GPS_CTRL 0
+# param set-default SIM_GPS_USED 0
+
+# # Optical flow fusion (values from lampy_prod_backup.params)
+# param set-default EKF2_OF_CTRL 1
+# param set-default EKF2_OF_DELAY 20.0
+# param set-default EKF2_OF_QMIN 1
+# param set-default EKF2_OF_N_MIN 0.15
+# param set-default EKF2_OF_N_MAX 0.50
+# param set-default EKF2_OF_GYR_SRC 0          # use IMU gyro for compensation
+# # Sensor position relative to IMU (downward camera at base_link, 2 cm below)
+# param set-default EKF2_OF_POS_X 0.084
+# param set-default EKF2_OF_POS_Y 0.0
+# param set-default EKF2_OF_POS_Z 0.032
+# # Range finder as height source (HIL_OPTICAL_FLOW.distance drives terrain estimate)
+# param set-default EKF2_RNG_CTRL 1
+# param set-default EKF2_RNG_DELAY 5.0
+# param set-default EKF2_RNG_NOISE 0.10
+# param set-default EKF2_RNG_POS_X 0.084
+# param set-default EKF2_RNG_POS_Y 0.0
+# param set-default EKF2_RNG_POS_Z 0.032
+# param set-default EKF2_HGT_REF 0             # 0=baro 1=GPS 2=range 3=vision
