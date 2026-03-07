@@ -45,27 +45,13 @@ publications:
 
   - topic: /fmu/out/sensor_combined
     type: px4_msgs::msg::SensorCombined
-    rate_limit: 200.
-
-  - topic: /fmu/out/sensor_accel
-    type: px4_msgs::msg::SensorAccel
-    rate_limit: 200.
-
-  - topic: /fmu/out/sensor_gyro
-    type: px4_msgs::msg::SensorGyro
-    rate_limit: 200.
-
-  # - topic: /fmu/out/sensor_accel_fifo
-  #   type: px4_msgs::msg::SensorAccelFifo
-  #   rate_limit: 200.
-
-  # - topic: /fmu/out/sensor_gyro_fifo
-  #   type: px4_msgs::msg::SensorGyroFifo
-  #   rate_limit: 200.
 
   - topic: /fmu/out/timesync_status
     type: px4_msgs::msg::TimesyncStatus
     rate_limit: 10.
+
+  - topic: /fmu/out/transponder_report
+    type: px4_msgs::msg::TransponderReport
 
   # - topic: /fmu/out/vehicle_angular_velocity
   #   type: px4_msgs::msg::VehicleAngularVelocity
@@ -76,7 +62,7 @@ publications:
 
   - topic: /fmu/out/vehicle_attitude
     type: px4_msgs::msg::VehicleAttitude
-    rate_limit: 200.
+    rate_limit: 50.
 
   - topic: /fmu/out/vehicle_control_mode
     type: px4_msgs::msg::VehicleControlMode
@@ -85,35 +71,32 @@ publications:
   - topic: /fmu/out/vehicle_command_ack
     type: px4_msgs::msg::VehicleCommandAck
 
-  # - topic: /fmu/out/vehicle_global_position
-  #   type: px4_msgs::msg::VehicleGlobalPosition
-  #   rate_limit: 50.
+  - topic: /fmu/out/vehicle_global_position
+    type: px4_msgs::msg::VehicleGlobalPosition
+    rate_limit: 50.
 
-  # - topic: /fmu/out/vehicle_gps_position
-  #   type: px4_msgs::msg::SensorGps
-  #   rate_limit: 50.
+  - topic: /fmu/out/vehicle_gps_position
+    type: px4_msgs::msg::SensorGps
+    rate_limit: 50.
 
   - topic: /fmu/out/vehicle_local_position
     type: px4_msgs::msg::VehicleLocalPosition
-    rate_limit: 200.
+    rate_limit: 50.
 
   - topic: /fmu/out/vehicle_odometry
     type: px4_msgs::msg::VehicleOdometry
-    rate_limit: 200.
+    rate_limit: 100.
 
   - topic: /fmu/out/vehicle_status
     type: px4_msgs::msg::VehicleStatus
     rate_limit: 5.
 
-  # - topic: /fmu/out/airspeed_validated
-  #   type: px4_msgs::msg::AirspeedValidated
-  #   rate_limit: 50.
+  - topic: /fmu/out/airspeed_validated
+    type: px4_msgs::msg::AirspeedValidated
+    rate_limit: 50.
 
-  - topic: /fmu/out/cpuload
-    type: px4_msgs::msg::Cpuload
-    rate_limit: 1.
-  # - topic: /fmu/out/vtol_vehicle_status
-  #   type: px4_msgs::msg::VtolVehicleStatus
+  - topic: /fmu/out/vtol_vehicle_status
+    type: px4_msgs::msg::VtolVehicleStatus
 
   - topic: /fmu/out/home_position
     type: px4_msgs::msg::HomePosition
@@ -123,59 +106,12 @@ publications:
     type: px4_msgs::msg::Wind
     rate_limit: 1.
 
-
-  #added by luka ssrd
-  - topic: /fmu/out/obstacle_distance_fused
-    type: px4_msgs::msg::ObstacleDistance
-    rate_limit: 10.
-
-  - topic: /fmu/out/vehicle_constraints
-    type: px4_msgs::msg::VehicleConstraints
-
-  - topic: /fmu/out/distance_sensor
-    type: px4_msgs::msg::DistanceSensor
-    rate_limit: 10.
-
-  - topic: /fmu/out/vehicle_imu
-    type: px4_msgs::msg::VehicleImu
-    event_driven: true
-
-  - topic: /fmu/out/esc_status
-    type: px4_msgs::msg::EscStatus
-
-  - topic: /fmu/out/rate_ctrl_status
-    type: px4_msgs::msg::RateCtrlStatus
-    rate_limit: 200.
-
-  # Custom Speedo messages
-  - topic: /fmu/out/custom_ping
-    type: px4_msgs::msg::CustomPing
-
-  - topic: /fmu/out/tf_transform
-    type: px4_msgs::msg::TfTransform
+  - topic: /fmu/out/gimbal_device_attitude_status
+    type: px4_msgs::msg::GimbalDeviceAttitudeStatus
     rate_limit: 20.
-
 
 # Create uORB::Publication
 subscriptions:
-
-  # Custom Speedo messages (ROS2 -> PX4)
-  - topic: /fmu/in/custom_pong
-    type: px4_msgs::msg::CustomPong
-
-  - topic: /fmu/in/tf_transform
-    type: px4_msgs::msg::TfTransform
-
-  - topic: /fmu/in/trajectory_header
-    type: px4_msgs::msg::TrajectoryHeader
-
-  - topic: /fmu/in/trajectory_waypoint
-    type: px4_msgs::msg::TrajectoryWaypoint
-
-  - topic: /fmu/in/vehicle_constraints
-    type: px4_msgs::msg::VehicleConstraints
-
-
   - topic: /fmu/in/register_ext_component_request
     type: px4_msgs::msg::RegisterExtComponentRequest
 
@@ -254,41 +190,42 @@ subscriptions:
   - topic: /fmu/in/actuator_servos
     type: px4_msgs::msg::ActuatorServos
 
-  - topic: /fmu/in/aux_global_position
-    type: px4_msgs::msg::VehicleGlobalPosition
+  - topic: /fmu/in/fixed_wing_longitudinal_setpoint
+    type: px4_msgs::msg::FixedWingLongitudinalSetpoint
 
-  # - topic: /fmu/in/fixed_wing_longitudinal_setpoint
-  #   type: px4_msgs::msg::FixedWingLongitudinalSetpoint
+  - topic: /fmu/in/fixed_wing_lateral_setpoint
+    type: px4_msgs::msg::FixedWingLateralSetpoint
 
-  # - topic: /fmu/in/fixed_wing_lateral_setpoint
-  #   type: px4_msgs::msg::FixedWingLateralSetpoint
+  - topic: /fmu/in/longitudinal_control_configuration
+    type: px4_msgs::msg::LongitudinalControlConfiguration
 
-  # - topic: /fmu/in/longitudinal_control_configuration
-  #   type: px4_msgs::msg::LongitudinalControlConfiguration
+  - topic: /fmu/in/lateral_control_configuration
+    type: px4_msgs::msg::LateralControlConfiguration
 
-  # - topic: /fmu/in/lateral_control_configuration
-  #   type: px4_msgs::msg::LateralControlConfiguration
+  - topic: /fmu/in/rover_position_setpoint
+    type: px4_msgs::msg::RoverPositionSetpoint
 
-  # - topic: /fmu/in/rover_position_setpoint
-  #   type: px4_msgs::msg::RoverPositionSetpoint
+  - topic: /fmu/in/rover_speed_setpoint
+    type: px4_msgs::msg::RoverSpeedSetpoint
 
-  # - topic: /fmu/in/rover_speed_setpoint
-  #   type: px4_msgs::msg::RoverSpeedSetpoint
+  - topic: /fmu/in/rover_attitude_setpoint
+    type: px4_msgs::msg::RoverAttitudeSetpoint
 
-  # - topic: /fmu/in/rover_attitude_setpoint
-  #   type: px4_msgs::msg::RoverAttitudeSetpoint
+  - topic: /fmu/in/rover_rate_setpoint
+    type: px4_msgs::msg::RoverRateSetpoint
 
-  # - topic: /fmu/in/rover_rate_setpoint
-  #   type: px4_msgs::msg::RoverRateSetpoint
+  - topic: /fmu/in/rover_throttle_setpoint
+    type: px4_msgs::msg::RoverThrottleSetpoint
 
-  # - topic: /fmu/in/rover_throttle_setpoint
-  #   type: px4_msgs::msg::RoverThrottleSetpoint
+  - topic: /fmu/in/rover_steering_setpoint
+    type: px4_msgs::msg::RoverSteeringSetpoint
 
-  # - topic: /fmu/in/rover_steering_setpoint
-  #   type: px4_msgs::msg::RoverSteeringSetpoint
+  - topic: /fmu/in/landing_gear
+    type: px4_msgs::msg::LandingGear
 
-  # - topic: /fmu/in/landing_gear
-  #   type: px4_msgs::msg::LandingGear
-
-# Create uORB::PublicationMulti
+# Subscriptions multiplexed to uORB multi-instances (optionally demultiplexed based on a message field)
 subscriptions_multi:
+  - topic: /fmu/in/aux_global_position
+    type: px4_msgs::msg::AuxGlobalPosition
+    route_field: id
+    max_instances: 4

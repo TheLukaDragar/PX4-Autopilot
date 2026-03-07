@@ -67,6 +67,8 @@
 
 #include "MspV1.hpp"
 
+ModuleBase::Descriptor MspOsd::desc{task_spawn, custom_command, print_usage};
+
 //OSD elements positions
 //in betaflight configurator set OSD elements to your desired positions and in CLI type "set osd" to retreieve the numbers.
 //234 -> not visible. Horizontally 2048-2074(spacing 1), vertically 2048-2528(spacing 32). 26 characters X 15 lines
@@ -248,7 +250,7 @@ void MspOsd::Run()
 {
 	if (should_exit()) {
 		ScheduleClear();
-		exit_and_cleanup();
+		exit_and_cleanup(desc);
 		return;
 	}
 
@@ -598,8 +600,8 @@ int MspOsd::task_spawn(int argc, char *argv[])
 	MspOsd *instance = new MspOsd(device);
 
 	if (instance) {
-		_object.store(instance);
-		_task_id = task_id_is_work_queue;
+		desc.object.store(instance);
+		desc.task_id = task_id_is_work_queue;
 
 		if (instance->init()) {
 			return PX4_OK;
@@ -610,8 +612,8 @@ int MspOsd::task_spawn(int argc, char *argv[])
 	}
 
 	delete instance;
-	_object.store(nullptr);
-	_task_id = -1;
+	desc.object.store(nullptr);
+	desc.task_id = -1;
 
 	return PX4_ERROR;
 }
@@ -710,8 +712,8 @@ int MspOsd::custom_command(int argc, char *argv[])
 		if (argc == 1) {
 			PX4_INFO("Please provide a channel");
 
-		} else if (is_running() && _object.load()) {
-			MspOsd *object = _object.load();
+		} else if (is_running(desc) && desc.object.load()) {
+			MspOsd *object = get_instance<MspOsd>(desc);
 			int ret = object->set_channel(argv[1]);
 
 			if (ret == -1) {
@@ -758,5 +760,5 @@ $ msp_osd
 
 extern "C" __EXPORT int msp_osd_main(int argc, char *argv[])
 {
-	return MspOsd::main(argc, argv);
+	return ModuleBase::main(MspOsd::desc, argc, argv);
 }
