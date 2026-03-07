@@ -173,6 +173,9 @@ private:
 	uORB::Publication<vehicle_command_ack_s> _command_ack_pub{ORB_ID(vehicle_command_ack)};
 	uint16_t _esc_status_counter{0};
 
+	int32_t _esc_temp_warn{0};
+	int32_t _esc_temp_over{0};
+
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::DSHOT_MIN>)    _param_dshot_min,
 		(ParamBool<px4::params::DSHOT_3D_ENABLE>) _param_dshot_3d_enable,

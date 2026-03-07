@@ -106,10 +106,18 @@
 #include "streams/OPTICAL_FLOW_RAD.hpp"
 #include "streams/ORBIT_EXECUTION_STATUS.hpp"
 #include "streams/PING.hpp"
+#if defined(MAVLINK_MSG_ID_CUSTOM_PONG)
 #include "streams/CUSTOM_PONG.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TF_TRANSFORM)
 #include "streams/TF_TRANSFORM.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TRAJECTORY_HEADER)
 #include "streams/TRAJECTORY_HEADER.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TRAJECTORY_WAYPOINT)
 #include "streams/TRAJECTORY_WAYPOINT.hpp"
+#endif
 #include "streams/POSITION_TARGET_GLOBAL_INT.hpp"
 #include "streams/POSITION_TARGET_LOCAL_NED.hpp"
 #include "streams/PROTOCOL_VERSION.hpp"
@@ -445,18 +453,18 @@ static const StreamListItem streams_list[] = {
 #if defined(PING_HPP)
 	create_stream_list_item<MavlinkStreamPing>(),
 #endif // PING_HPP
-#if defined(CUSTOM_PONG_HPP)
+#if defined(MAVLINK_MSG_ID_CUSTOM_PONG)
 	create_stream_list_item<MavlinkStreamCustomPong>(),
-#endif // CUSTOM_PONG_HPP
-#if defined(TF_TRANSFORM_HPP)
+#endif // MAVLINK_MSG_ID_CUSTOM_PONG
+#if defined(MAVLINK_MSG_ID_TF_TRANSFORM)
 	create_stream_list_item<MavlinkStreamTfTransform>(),
-#endif // TF_TRANSFORM_HPP
-#if defined(TRAJECTORY_HEADER_HPP)
+#endif // MAVLINK_MSG_ID_TF_TRANSFORM
+#if defined(MAVLINK_MSG_ID_TRAJECTORY_HEADER)
 	create_stream_list_item<MavlinkStreamTrajectoryHeader>(),
-#endif // TRAJECTORY_HEADER_HPP
-#if defined(TRAJECTORY_WAYPOINT_HPP)
+#endif // MAVLINK_MSG_ID_TRAJECTORY_HEADER
+#if defined(MAVLINK_MSG_ID_TRAJECTORY_WAYPOINT)
 	create_stream_list_item<MavlinkStreamTrajectoryWaypoint>(),
-#endif // TRAJECTORY_WAYPOINT_HPP
+#endif // MAVLINK_MSG_ID_TRAJECTORY_WAYPOINT
 #if defined(ORBIT_EXECUTION_STATUS_HPP)
 	create_stream_list_item<MavlinkStreamOrbitStatus>(),
 #endif // ORBIT_EXECUTION_STATUS_HPP

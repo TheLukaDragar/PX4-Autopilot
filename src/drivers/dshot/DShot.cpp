@@ -33,6 +33,7 @@
 
 #include "DShot.h"
 
+#include <parameters/param.h>
 #include <px4_arch/io_timer.h>
 
 #include <px4_platform_common/sem.hpp>
@@ -236,6 +237,18 @@ int DShot::handle_new_telemetry_data(const int telemetry_index, const DShotTelem
 		esc_status.esc[telemetry_index].esc_voltage     = static_cast<float>(data.voltage) * 0.01f;
 		esc_status.esc[telemetry_index].esc_current     = static_cast<float>(data.current) * 0.01f;
 		esc_status.esc[telemetry_index].esc_temperature = static_cast<float>(data.temperature);
+
+		// Apply generic ESC temperature failure bits (commander sends MAVLink warning when set)
+		uint16_t &failures = esc_status.esc[telemetry_index].failures;
+		failures &= ~((1 << esc_report_s::FAILURE_WARN_ESC_TEMPERATURE) |
+			     (1 << esc_report_s::FAILURE_OVER_ESC_TEMPERATURE));
+		const float t = esc_status.esc[telemetry_index].esc_temperature;
+		if (_esc_temp_over > 0 && t > (float)_esc_temp_over) {
+			failures |= 1 << esc_report_s::FAILURE_OVER_ESC_TEMPERATURE;
+		} else if (_esc_temp_warn > 0 && t > (float)_esc_temp_warn) {
+			failures |= 1 << esc_report_s::FAILURE_WARN_ESC_TEMPERATURE;
+		}
+
 		// TODO: accumulate consumption and use for battery estimation
 	}
 
@@ -621,6 +634,15 @@ void DShot::update_params()
 	_parameter_update_sub.copy(&pupdate);
 
 	updateParams();
+
+	param_t h = param_find("COM_ESC_TEMP_WARN");
+	if (h != PARAM_INVALID) {
+		param_get(h, &_esc_temp_warn);
+	}
+	h = param_find("COM_ESC_TEMP_OVER");
+	if (h != PARAM_INVALID) {
+		param_get(h, &_esc_temp_over);
+	}
 
 	// we use a minimum value of 1, since 0 is for disarmed
 	_mixing_output.setAllMinValues(math::constrain(static_cast<int>((_param_dshot_min.get() *
