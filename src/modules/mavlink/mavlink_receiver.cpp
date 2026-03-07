@@ -158,9 +158,11 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_ping(msg);
 		break;
 
+#if defined(MAVLINK_MSG_ID_CUSTOM_PING)
 	case MAVLINK_MSG_ID_CUSTOM_PING:
 		handle_message_custom_ping(msg);
 		break;
+#endif // MAVLINK_MSG_ID_CUSTOM_PING
 
 	case MAVLINK_MSG_ID_SET_MODE:
 		handle_message_set_mode(msg);
@@ -1864,6 +1866,7 @@ MavlinkReceiver::handle_message_ping(mavlink_message_t *msg)
 }
 }
 
+#if defined(MAVLINK_MSG_ID_CUSTOM_PING)
 void
 MavlinkReceiver::handle_message_custom_ping(mavlink_message_t *msg)
 {
@@ -1889,6 +1892,7 @@ MavlinkReceiver::handle_message_custom_ping(mavlink_message_t *msg)
 		 (double)custom_ping_uorb.data2,
 		 custom_ping_uorb.status);
 }
+#endif // MAVLINK_MSG_ID_CUSTOM_PING
 
 void
 MavlinkReceiver::handle_message_battery_status(mavlink_message_t *msg)
