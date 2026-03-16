@@ -166,14 +166,13 @@ void SendTopicsSubs::reset() {
 	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
 		send_subscriptions[idx].data_writer = uxr_object_id(0, UXR_INVALID_ID);
 
-		// Only unsubscribe valid poll subscriptions (event-driven use fd == -1)
+		// Only unsubscribe valid poll subscriptions
 		if (fds[idx].fd >= 0) {
 			orb_unsubscribe(fds[idx].fd);
 			fds[idx].fd = -1;
 		}
 
-		fds[idx].events = 0;  // force re-subscribe on reconnect (init() skips when events != 0)
-
+		// Clean up callbacks
 		if (callbacks[idx]) {
 			callbacks[idx]->unregisterCallback();
 			delete callbacks[idx];
@@ -301,13 +300,13 @@ struct RcvTopicsPubs {
 	bool init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace);
 };
 
-@[if subscriptions or subscriptions_multi]@
 static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t request_id, uxrStreamId stream_id,
 		     struct ucdrBuffer *ub, uint16_t length, void *args)
 {
 	RcvTopicsPubs *pubs = (RcvTopicsPubs *)args;
-	pubs->num_payload_received += length;
 	const int64_t time_offset_us = session->time_offset / 1000; // ns -> us
+	(void)time_offset_us; // used in subscription cases, may be unused if only default hits
+	pubs->num_payload_received += length;
 
 	switch (object_id.id) {
 @[    for idx, sub in enumerate(subscriptions)]@
@@ -360,7 +359,6 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		break;
 	}
 }
-@[end if]@
 
 bool RcvTopicsPubs::init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace)
 {
@@ -379,9 +377,7 @@ bool RcvTopicsPubs::init(uxrSession *session, uxrStreamId reliable_out_stream_id
 	}
 @[    end for]@
 
-@[    if subscriptions or subscriptions_multi]@
 	uxr_set_topic_callback(session, on_topic_update, this);
-@[    end if]@
 
 	return true;
 }

@@ -220,9 +220,11 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_follow_target(msg);
 		break;
 
+#if defined(MAVLINK_MSG_ID_GLOBAL_POSITION_SENSOR)
 	case MAVLINK_MSG_ID_GLOBAL_POSITION_SENSOR:
 		handle_message_global_position_sensor(msg);
 		break;
+#endif
 
 	case MAVLINK_MSG_ID_LANDING_TARGET:
 		handle_message_landing_target(msg);
@@ -2593,6 +2595,7 @@ MavlinkReceiver::handle_message_hil_gps(mavlink_message_t *msg)
 	_sensor_gps_pub.publish(gps);
 }
 
+#if defined(MAVLINK_MSG_ID_GLOBAL_POSITION_SENSOR)
 void
 MavlinkReceiver::handle_message_global_position_sensor(mavlink_message_t *msg)
 {
@@ -2617,6 +2620,7 @@ MavlinkReceiver::handle_message_global_position_sensor(mavlink_message_t *msg)
 
 	_aux_global_position_pub.publish(aux_global_position);
 }
+#endif
 
 #if defined(MAVLINK_MSG_ID_RANGING_BEACON)
 void

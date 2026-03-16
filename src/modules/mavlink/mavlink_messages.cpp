@@ -78,7 +78,9 @@
 #include "streams/ESTIMATOR_STATUS.hpp"
 #include "streams/EXTENDED_SYS_STATE.hpp"
 #include "streams/FLIGHT_INFORMATION.hpp"
+#if defined(MAVLINK_MSG_ID_GLOBAL_POSITION_SENSOR)
 #include "streams/GLOBAL_POSITION_SENSOR.hpp"
+#endif
 #include "streams/GLOBAL_POSITION_INT.hpp"
 #if defined(MAVLINK_MSG_ID_GNSS_INTEGRITY)
 #include "streams/GNSS_INTEGRITY.hpp"
