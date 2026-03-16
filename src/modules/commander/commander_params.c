@@ -698,12 +698,12 @@ PARAM_DEFINE_INT32(COM_ARM_CHK_ESCS, 0);
  * and the ESC failure flag is set. Set to 0 to disable. Applies to ESCs that report
  * temperature (e.g. DShot telemetry, VOXL ESC). VOXL ESCs use VOXL_ESC_T_WARN instead.
  *
- * @unit degC
+ * @unit celcius
  * @min 0
  * @max 150
  * @group Commander
  */
-PARAM_DEFINE_INT32(COM_ESC_TEMP_WARN, 0);
+PARAM_DEFINE_INT32(COM_ESC_TMP_WARN, 0);
 
 /**
  * ESC over-temperature (critical) threshold.
@@ -712,12 +712,12 @@ PARAM_DEFINE_INT32(COM_ESC_TEMP_WARN, 0);
  * over MAVLink and the ESC failure flag is set. Set to 0 to disable. Applies to ESCs
  * that report temperature. VOXL ESCs use VOXL_ESC_T_OVER instead.
  *
- * @unit degC
+ * @unit celcius
  * @min 0
  * @max 150
  * @group Commander
  */
-PARAM_DEFINE_INT32(COM_ESC_TEMP_OVER, 0);
+PARAM_DEFINE_INT32(COM_ESC_TMP_OVER, 0);
 
 /**
  * Condition to enter prearmed mode

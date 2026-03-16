@@ -637,11 +637,11 @@ void DShot::update_params()
 
 	updateParams();
 
-	param_t h = param_find("COM_ESC_TEMP_WARN");
+	param_t h = param_find("COM_ESC_TMP_WARN");
 	if (h != PARAM_INVALID) {
 		param_get(h, &_esc_temp_warn);
 	}
-	h = param_find("COM_ESC_TEMP_OVER");
+	h = param_find("COM_ESC_TMP_OVER");
 	if (h != PARAM_INVALID) {
 		param_get(h, &_esc_temp_over);
 	}

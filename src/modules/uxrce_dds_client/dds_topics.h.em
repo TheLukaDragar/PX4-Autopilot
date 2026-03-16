@@ -305,6 +305,7 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 {
 	RcvTopicsPubs *pubs = (RcvTopicsPubs *)args;
 	const int64_t time_offset_us = session->time_offset / 1000; // ns -> us
+	(void)time_offset_us; // used in subscription cases, may be unused if only default hits
 	pubs->num_payload_received += length;
 
 	switch (object_id.id) {
