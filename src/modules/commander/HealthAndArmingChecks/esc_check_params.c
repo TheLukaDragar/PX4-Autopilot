@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2022 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2026 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,38 +32,73 @@
  ****************************************************************************/
 
 /**
- * @file zero_innovation_heading_update.cpp
- * Control function for ekf heading update when at rest or no other heading source available
+ * Enable Actuator Failure check
+ *
+ * If enabled, the HealthAndArmingChecks will verify that for motors, a minimum amount of ESC current per throttle
+ * level is being consumed.
+ * Otherwise this indicates an motor failure.
+ * This check only works for ESCs that report current consumption.
+ *
+ * @boolean
+ *
+ * @group Motor Failure
  */
+PARAM_DEFINE_INT32(FD_ACT_EN, 0);
 
-#include "ekf.h"
+/**
+ * Motor Failure Current/Throttle Scale
+ *
+ * Determines the slope between expected steady state current and linearized, normalized thrust command.
+ * E.g. FD_ACT_MOT_C2T A represents the expected steady state current at 100%.
+ * FD_ACT_LOW_OFF and FD_ACT_HIGH_OFF offset the threshold from that slope.
+ *
+ * @group Motor Failure
+ * @min 0.0
+ * @max 50.0
+ * @unit A/%
+ * @decimal 2
+ * @increment 1
+ */
+PARAM_DEFINE_FLOAT(MOTFAIL_C2T, 35.f);
 
-void Ekf::controlZeroInnovationHeadingUpdate()
-{
-	const bool yaw_aiding = _control_status.flags.mag_hdg || _control_status.flags.mag_3D
-				|| _control_status.flags.ev_yaw || _control_status.flags.gnss_yaw;
+/**
+ * Undercurrent motor failure limit offset
+ *
+ * threshold = FD_ACT_MOT_C2T * thrust - FD_ACT_LOW_OFF
+ *
+ * @group Motor Failure
+ * @min 0
+ * @max 30
+ * @unit A
+ * @decimal 2
+ * @increment 1
+ */
+PARAM_DEFINE_FLOAT(MOTFAIL_LOW_OFF, 10.f);
 
-	// fuse zero innovation at a limited rate if the yaw variance is too large
-	if (!yaw_aiding
-	    && isTimedOut(_time_last_heading_fuse, (uint64_t)200'000)) {
+/**
+ * Overcurrent motor failure limit offset
+ *
+ * threshold = FD_ACT_MOT_C2T * thrust + FD_ACT_HIGH_OFF
+ *
+ * @group Motor Failure
+ * @min 0
+ * @max 30
+ * @unit A
+ * @decimal 2
+ * @increment 1
+ */
+PARAM_DEFINE_FLOAT(MOTFAIL_HIGH_OFF, 10.f);
 
-		// Use an observation variance larger than usual but small enough
-		// to constrain the yaw variance just below the threshold
-		const float obs_var = _control_status.flags.tilt_align ? 0.25f : 0.001f;
-
-		estimator_aid_source1d_s aid_src_status{};
-		aid_src_status.observation = getEulerYaw(_state.quat_nominal);
-		aid_src_status.observation_variance = obs_var;
-		aid_src_status.innovation = 0.f;
-
-		VectorState H_YAW;
-
-		computeYawInnovVarAndH(obs_var, aid_src_status.innovation_variance, H_YAW);
-
-		if (!_control_status.flags.tilt_align
-		    || (aid_src_status.innovation_variance - obs_var) > sq(_params.ekf2_head_noise)) {
-			// The yaw variance is too large, fuse fake measurement
-			fuseYaw(aid_src_status, H_YAW);
-		}
-	}
-}
+/**
+ * Motor Failure Hysteresis Time
+ *
+ * Motor failure only triggers after current thresholds are exceeded for this time.
+ *
+ * @group Motor Failure
+ * @unit s
+ * @min 0.01
+ * @max 10
+ * @decimal 2
+ * @increment 1
+ */
+PARAM_DEFINE_FLOAT(MOTFAIL_TIME, 1.f);

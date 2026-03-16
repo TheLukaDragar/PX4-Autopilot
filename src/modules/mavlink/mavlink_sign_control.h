@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2014 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2026 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,16 +32,68 @@
  ****************************************************************************/
 
 /**
- * @file mavlink_tests.cpp
+ * @file mavlink_sign_control.h
+ * Mavlink messages signing control helpers.
+ *
+ * @author Yulian oifa <yulian.oifa@mobius-software.com>
  */
 
-#include <systemlib/err.h>
+#ifndef MAVLINK_SIGN_CONTROL_H_
+#define MAVLINK_SIGN_CONTROL_H_
 
-#include "mavlink_ftp_test.h"
+#define MAVLINK_SD_ROOT_PATH    CONFIG_BOARD_ROOT_PATH "/"
+#define MAVLINK_FOLDER_PATH MAVLINK_SD_ROOT_PATH"/mavlink"
+#define MAVLINK_SECRET_FILE MAVLINK_FOLDER_PATH"/mavlink-signing-key.bin"
 
-extern "C" __EXPORT int mavlink_tests_main(int argc, char *argv[]);
+#define MAVLINK_SECRET_KEY_TIMESTAMP_LENGTH 8 ///< size of timestamp in bytes
+#define MAVLINK_SECRET_KEY_LENGTH 32 ///< size of key in bytes
 
-int mavlink_tests_main(int argc, char *argv[])
+#include "mavlink_receiver.h"
+
+class Mavlink;
+
+class MavlinkSignControl
 {
-	return mavlink_ftp_test() ? 0 : -1;
-}
+
+public:
+	MavlinkSignControl();
+	~MavlinkSignControl();
+
+	enum PROTO_SIGN {
+		PROTO_SIGN_OPTIONAL = 0,
+		PROTO_SIGN_NON_USB,
+		PROTO_SIGN_ALWAYS
+	};
+
+	/**
+	 * Initialize signing and read configuration from file
+	 */
+	void start(int _instance_id, mavlink_status_t *_mavlink_status, mavlink_accept_unsigned_t accept_unsigned_callback);
+
+	/**
+	 * Checks whether the message is SETUP_SIGNING, and if yes , updates local key
+	 */
+	bool check_for_signing(const mavlink_message_t *msg);
+
+	/**
+	 * stores the key and timestamp from memory to file
+	 */
+	void write_key_and_timestamp();
+
+	/**
+	 * Checks whether should accept unsigned message for specific sign mode
+	 */
+	bool accept_unsigned(int32_t sign_mode, bool is_usb_uart, uint32_t message_id);
+
+	static bool is_array_all_zeros(uint8_t arr[], size_t size);
+private:
+	mavlink_signing_t _mavlink_signing {};
+
+	/**
+	 * Checks whether the key has been initialized
+	 */
+	bool _is_signing_initialized;
+};
+
+
+#endif /* MAVLINK_SIGN_CONTROL_H_ */
