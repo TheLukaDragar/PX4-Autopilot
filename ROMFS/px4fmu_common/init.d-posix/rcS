@@ -320,6 +320,10 @@ then
 	# Override port if environment variable is defined
 	uxrce_dds_port="$PX4_UXRCE_DDS_PORT"
 fi
+# Override UXRCE_DDS_PTCFG from env (0=default, 1=localhost-only, 2=custom)
+if [ -n "$UXRCE_DDS_PTCFG" ]; then
+	param set UXRCE_DDS_PTCFG $UXRCE_DDS_PTCFG
+fi
 
 uxrce_dds_client start -t udp -p $uxrce_dds_port $uxrce_dds_ns
 
