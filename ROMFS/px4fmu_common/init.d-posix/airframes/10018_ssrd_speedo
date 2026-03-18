@@ -1,0 +1,93 @@
+#!/bin/sh
+#
+# @name SSRD Speedo Quadrotor SITL (2 kg, APC 7x11E, 10k RPM hover)
+#
+# @type Quadrotor Wide
+#
+# @maintainer Custom Configuration
+#
+
+. ${R}etc/init.d/rc.mc_defaults
+
+# Frame config from speedo2.0bacupwip.params
+param set-default CA_AIRFRAME 0
+param set-default CA_ROTOR_COUNT 4
+
+param set-default CA_ROTOR0_CT 6.50
+param set-default CA_ROTOR0_KM 0.05
+param set-default CA_ROTOR0_PX 0.09
+param set-default CA_ROTOR0_PY 0.09
+param set-default CA_ROTOR0_PZ 0.03
+
+param set-default CA_ROTOR1_CT 6.50
+param set-default CA_ROTOR1_KM 0.05
+param set-default CA_ROTOR1_PX -0.09
+param set-default CA_ROTOR1_PY -0.09
+param set-default CA_ROTOR1_PZ 0.03
+
+param set-default CA_ROTOR2_CT 6.50
+param set-default CA_ROTOR2_KM -0.05
+param set-default CA_ROTOR2_PX 0.095
+param set-default CA_ROTOR2_PY -0.09
+param set-default CA_ROTOR2_PZ 0.03
+
+param set-default CA_ROTOR3_CT 6.50
+param set-default CA_ROTOR3_KM -0.05
+param set-default CA_ROTOR3_PX -0.09
+param set-default CA_ROTOR3_PY 0.09
+param set-default CA_ROTOR3_PZ 0.03
+
+param set-default PWM_MAIN_FUNC1 101
+param set-default PWM_MAIN_FUNC2 102
+param set-default PWM_MAIN_FUNC3 103
+param set-default PWM_MAIN_FUNC4 104
+
+# Battery: 12S LiPo (44.4V nominal, 50.4V full)
+param set-default BAT1_N_CELLS 12
+param set-default BAT1_V_CHARGED 4.2
+param set-default BAT1_V_EMPTY 3.2
+# BAT1_A_PER_V not in this PX4 version
+param set-default BAT_CRIT_THR 0.20
+param set-default BAT_EMERGEN_THR 0.05
+param set-default BAT_LOW_THR 0.35
+
+# MC attitude gains (from speedo2.0bacupwip.params)
+param set-default MC_ROLL_P 8.0
+param set-default MC_PITCH_P 8.0
+param set-default MC_YAW_P 3.0
+param set-default MC_ROLLRATE_P 0.15
+param set-default MC_ROLLRATE_I 0.3
+param set-default MC_ROLLRATE_D 0.0022
+param set-default MC_ROLLRATE_K 0.7
+param set-default MC_PITCHRATE_P 0.15
+param set-default MC_PITCHRATE_I 0.3
+param set-default MC_PITCHRATE_D 0.0022
+param set-default MC_PITCHRATE_K 0.7
+param set-default MC_YAWRATE_P 0.2
+param set-default MC_YAWRATE_I 0.1
+param set-default MC_YAWRATE_K 0.4
+param set-default MC_YAW_WEIGHT 0.4
+
+# MPC position/velocity gains (from speedo2.0bacupwip.params)
+param set-default MPC_XY_P 0.95
+param set-default MPC_Z_P 1.0
+param set-default MPC_XY_VEL_P_ACC 1.8
+param set-default MPC_XY_VEL_I_ACC 0.4
+param set-default MPC_XY_VEL_D_ACC 0.2
+param set-default MPC_Z_VEL_P_ACC 7.5
+param set-default MPC_Z_VEL_I_ACC 2.0
+param set-default MPC_Z_VEL_D_ACC 0.0
+param set-default MPC_THR_HOVER 0.21
+param set-default MPC_XY_CRUISE 5.0
+param set-default MPC_XY_VEL_MAX 12.0
+param set-default MPC_Z_VEL_MAX_UP 3.0
+param set-default MPC_Z_VEL_MAX_DN 1.5
+
+# Keep PX4 on simulation time (HIL timestamps)
+param set-default UXRCE_DDS_SYNCT 0
+
+# Offboard/swarm: no RC required
+param set COM_RC_IN_MODE 1
+param set NAV_RCL_ACT 0
+param set COM_RCL_EXCEPT 4
+param set COM_RC_OVERRIDE 0
