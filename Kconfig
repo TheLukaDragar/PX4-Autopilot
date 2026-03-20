@@ -181,6 +181,9 @@ menu "Serial ports"
 
     config BOARD_SERIAL_EXT2
         string "EXT2 tty port"
+
+    config BOARD_SERIAL_ACM0
+        string "ACM0 tty port"
 endmenu
 
 menu "File paths"
