@@ -64,6 +64,13 @@ param set-default CP_GUIDE_ANG 30      # Guidance angle for obstacle avoidance
 # Keep PX4 on simulation time (HIL timestamps); don't sync to DDS agent system time (see docs/ROS2_CLOCK_AND_PX4_TIME.md)
 param set-default UXRCE_DDS_SYNCT 0
 
+# Offboard/swarm: no RC required — ROS2 controls the drone via MAVLink/Offboard
+# param set (not set-default) so these override any previously saved param values
+param set COM_RC_IN_MODE 1      # MAVLink only — RC and RC calibration checks disabled
+param set NAV_RCL_ACT 0         # No action on RC loss
+param set COM_RCL_EXCEPT 4      # Ignore RC loss in Offboard mode (bit 2)
+param set COM_RC_OVERRIDE 0     # Disable RC override of offboard control
+
 # # ── GPS disabled; optical flow + range finder for navigation ─────────────────
 # # No GPS hardware — allow arming and prevent GPS-dependent checks
 # param set-default SYS_HAS_GPS 0

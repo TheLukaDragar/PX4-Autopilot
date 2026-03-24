@@ -97,6 +97,10 @@ publications:
     type: px4_msgs::msg::VehicleLocalPosition
     rate_limit: 200.
 
+  - topic: /fmu/out/vehicle_local_position_setpoint
+    type: px4_msgs::msg::VehicleLocalPositionSetpoint
+    rate_limit: 200.
+
   - topic: /fmu/out/vehicle_odometry
     type: px4_msgs::msg::VehicleOdometry
     rate_limit: 200.
