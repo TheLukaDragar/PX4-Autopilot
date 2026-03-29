@@ -123,5 +123,6 @@ px4_add_romfs_files(
 	22000_isaacsim_s500
 	10016_ssrd_lampy
 	10017_ssrd_lampy_flow
+	10018_ssrd_speedo
 	# [22000, 22999] Reserve for custom models
 )
