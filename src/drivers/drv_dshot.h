@@ -64,14 +64,22 @@ typedef enum {
 	DShot_cmd_save_settings,
 	DShot_cmd_spin_direction_normal   = 20,
 	DShot_cmd_spin_direction_reversed = 21,
-	DShot_cmd_led0_on,      // BLHeli32 only
-	DShot_cmd_led1_on,      // BLHeli32 only
-	DShot_cmd_led2_on,      // BLHeli32 only
-	DShot_cmd_led3_on,      // BLHeli32 only
-	DShot_cmd_led0_off,     // BLHeli32 only
-	DShot_cmd_led1_off,     // BLHeli32 only
-	DShot_cmd_led2_off,     // BLHeli32 only
-	DShot_cmd_led4_off,     // BLHeli32 only
+	DShot_cmd_tone1 = 22,
+	DShot_cmd_tone2 = 23,
+	DShot_cmd_tone3 = 24,
+	DShot_cmd_tone4 = 25,
+	DShot_cmd_tone5 = 26,
+	DShot_cmd_tone6 = 27,
+	DShot_cmd_tone7 = 28,
+	DShot_cmd_tone8 = 29,
+	// DShot_cmd_led0_on,      // BLHeli32 only
+	// DShot_cmd_led1_on,      // BLHeli32 only
+	// DShot_cmd_led2_on,      // BLHeli32 only
+	// DShot_cmd_led3_on,      // BLHeli32 only
+	// DShot_cmd_led0_off,     // BLHeli32 only
+	// DShot_cmd_led1_off,     // BLHeli32 only
+	// DShot_cmd_led2_off,     // BLHeli32 only
+	// DShot_cmd_led4_off,     // BLHeli32 only
 	DShot_cmd_audio_stream_mode_on_off              = 30, // KISS audio Stream mode on/off
 	DShot_cmd_silent_mode_on_off                    = 31, // KISS silent Mode on/off
 	DShot_cmd_signal_line_telemetry_disable         = 32,

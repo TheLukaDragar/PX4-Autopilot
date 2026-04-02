@@ -595,11 +595,34 @@ void DShot::handle_vehicle_commands()
 				case 4: _current_command.command = dshot_command_t::DShot_cmd_spin_direction_1; break;
 
 				case 5: _current_command.command = dshot_command_t::DShot_cmd_spin_direction_2; break;
+
+				case 22: _current_command.command = dshot_command_t::DShot_cmd_tone1; break;
+
+				case 23: _current_command.command = dshot_command_t::DShot_cmd_tone2; break;
+
+				case 24: _current_command.command = dshot_command_t::DShot_cmd_tone3; break;
+
+				case 25: _current_command.command = dshot_command_t::DShot_cmd_tone4; break;
+
+				case 26: _current_command.command = dshot_command_t::DShot_cmd_tone5; break;
+
+				case 27: _current_command.command = dshot_command_t::DShot_cmd_tone6; break;
+
+				case 28: _current_command.command = dshot_command_t::DShot_cmd_tone7; break;
+
+				case 29: _current_command.command = dshot_command_t::DShot_cmd_tone8; break;
 				}
 
 				if (_current_command.command == dshot_command_t::DShot_cmd_motor_stop) {
 					PX4_WARN("unknown command: %i", type);
-
+				} else if (_current_command.command == dshot_command_t::DShot_cmd_tone1 || _current_command.command == dshot_command_t::DShot_cmd_tone2 || _current_command.command == dshot_command_t::DShot_cmd_tone3 ||
+					 _current_command.command == dshot_command_t::DShot_cmd_tone4 || _current_command.command == dshot_command_t::DShot_cmd_tone5 ||
+					 _current_command.command == dshot_command_t::DShot_cmd_tone6 || _current_command.command == dshot_command_t::DShot_cmd_tone7 ||
+					 _current_command.command == dshot_command_t::DShot_cmd_tone8) {
+					command_ack.result = vehicle_command_ack_s::VEHICLE_CMD_RESULT_ACCEPTED;
+					_current_command.motor_mask = 1 << index;
+					_current_command.num_repetitions = 1;
+					_current_command.save = false;
 				} else {
 					command_ack.result = vehicle_command_ack_s::VEHICLE_CMD_RESULT_ACCEPTED;
 					_current_command.motor_mask = 1 << index;

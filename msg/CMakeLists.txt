@@ -71,6 +71,7 @@ set(msg_files
 	DistanceSensorModeChangeRequest.msg
 	DronecanNodeStatus.msg
 	Ekf2Timestamps.msg
+	EscBeepControl.msg
 	EscReport.msg
 	EscStatus.msg
 	EstimatorAidSource1d.msg

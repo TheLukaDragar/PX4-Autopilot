@@ -4,6 +4,9 @@
 #
 #####
 publications:
+  - topic: /fmu/out/vehicle_imu
+    type: px4_msgs::msg::VehicleImu
+    rate_limit: 1000.
 
   - topic: /fmu/out/register_ext_component_reply
     type: px4_msgs::msg::RegisterExtComponentReply
@@ -174,6 +177,9 @@ subscriptions:
 
   - topic: /fmu/in/vehicle_constraints
     type: px4_msgs::msg::VehicleConstraints
+
+  - topic: /fmu/in/esc_beep_control
+    type: px4_msgs::msg::EscBeepControl
 
 
   - topic: /fmu/in/register_ext_component_request
