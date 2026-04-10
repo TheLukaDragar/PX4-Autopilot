@@ -516,7 +516,7 @@ void MulticopterPositionControl::Run()
 				// we are not flying yet and need to avoid any corrections
 				_setpoint = PositionControl::empty_trajectory_setpoint;
 				_setpoint.timestamp = vehicle_local_position.timestamp_sample;
-				Vector3f(0.f, 0.f, 100.f).copyTo(_setpoint.acceleration); // High downwards acceleration to make sure there's no thrust
+				Vector3f(0.f, 0.f, _param_mpc_gnd_con_acc.get()).copyTo(_setpoint.acceleration); // High downwards acceleration to make sure there's no thrust
 
 				// prevent any integrator windup
 				_control.resetIntegral();

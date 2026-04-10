@@ -356,6 +356,15 @@ struct msp_rendor_rssi_t {
 	char str[4]; // 100%
 } __attribute__((packed));
 
+/** Betaflight `osdElementCrosshairs` — `osd_symbols.h` SYM_AH_CENTER_LINE/CENTER/CENTER_LINE_RIGHT as raw font bytes. */
+struct msp_rendor_crosshairs_t {
+	uint8_t subCommand;   // MSP_DP_WRITE_STRING (3)
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t attr;         // DisplayPort font/attr byte (Betaflight `writeString` buf[3])
+	char sym[3];          // 0x72, 0x73, 0x74
+} __attribute__((packed));
+
 
 // MSP_ARMING_CONFIG reply
 struct msp_arming_config_t {
@@ -444,7 +453,7 @@ struct msp_rendor_latitude_t {
 	uint8_t iconAttrs = 0x00;
 	uint8_t iconIndex = 0x89; //LAT icon
 
-	char str[11]; // -00.0000000
+	char str[12]; // "00.000000N" or "-00.000000S" (11 chars + NUL)
 } __attribute__((packed));
 
 
@@ -455,7 +464,7 @@ struct msp_rendor_longitude_t {
 	uint8_t iconAttrs = 0x00;
 	uint8_t iconIndex = 0x98; //LON icon
 
-	char str[12]; // -000.0000000
+	char str[13]; // "000.000000E" or "-000.000000W" (12 chars + NUL)
 } __attribute__((packed));
 
 struct msp_rendor_satellites_used_t {
@@ -479,6 +488,61 @@ struct msp_rendor_esc_tmp_t {
 	char str[6]; // " 99C" or "100C"
 } __attribute__((packed));
 
+/** Estimator horizontal ground speed (km/h), DisplayPort string (separate from BF GPS speed / MSP_RAW_GPS). */
+struct msp_rendor_est_speed_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	uint8_t iconIndex = 0x00;
+
+	char str[10]; // e.g. "54" or "162" (integer km/h), or " --"
+} __attribute__((packed));
+
+/** Main battery remaining [%], same source as QGC (remaining / volt_based_soc). */
+struct msp_rendor_batt_pct_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	uint8_t iconIndex = 0x00;
+
+	char str[8]; // e.g. "87%" or " --"
+} __attribute__((packed));
+
+/** mAh drawn — BF SYM_MAH (0x07) prefix, "1234" text. */
+struct msp_rendor_mah_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	uint8_t iconIndex = 0x07; // SYM_MAH
+
+	char str[6]; // e.g. "1234"
+} __attribute__((packed));
+
+/** Current draw — BF SYM_AMP (0x9A) prefix, "12.3A" text. */
+struct msp_rendor_current_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	uint8_t iconIndex = 0x9A; // SYM_AMP
+
+	char str[7]; // e.g. "12.3A"
+} __attribute__((packed));
+
+/** Vertical speed (vario) — BF SYM_ARROW_SMALL_UP/DOWN (0x75/0x76) prefix, "1.2" text (m/s). */
+struct msp_rendor_vario_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	uint8_t iconIndex; // 0x75 up / 0x76 down at runtime
+
+	char str[7]; // e.g. "1.2" m/s
+} __attribute__((packed));
+
 
 // MSP_COMP_GPS reply
 struct msp_comp_gps_t {
@@ -492,9 +556,9 @@ struct msp_rendor_distanceToHome_t {
 	uint8_t screenYPosition;
 	uint8_t screenXPosition;
 	uint8_t iconAttrs = 0x00; //
-	uint8_t iconIndex = 0x71; //distanceToHome icon
+	uint8_t iconIndex = 0x11; // SYM_HOMEFLAG
 
-	char str[6]; // 65536
+	char str[8]; // "1234m" or "65.5km"
 } __attribute__((packed));
 
 

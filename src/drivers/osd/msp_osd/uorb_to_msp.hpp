@@ -87,14 +87,30 @@ msp_analog_t construct_ANALOG(const battery_status_s &battery_status, const inpu
 
 msp_rendor_rssi_t construct_rendor_RSSI(const input_rc_s &input_rc);
 
+/** Crosshair glyphs at Betaflight packed OSD grid position (same encoding as `osd_crosshairs_pos`). */
+msp_rendor_crosshairs_t construct_rendor_CROSSHAIRS(uint16_t grid_pos);
+
 // construct an MSP_BATTERY_STATE struct
 msp_battery_state_t construct_BATTERY_STATE(const battery_status_s &battery_status);
 
 msp_rendor_battery_state_t construct_rendor_BATTERY_STATE(const battery_status_s &battery_status);
 
-// construct an MSP_RAW_GPS struct
+/** mAh drawn DisplayPort text (SYM_MAH prefix + integer mAh). */
+msp_rendor_mah_t construct_rendor_MAH(const battery_status_s &battery_status);
+
+/** Current draw DisplayPort text (SYM_AMP prefix + A with 1 decimal). */
+msp_rendor_current_t construct_rendor_CURRENT(const battery_status_s &battery_status);
+
+/** Vertical speed (vario) DisplayPort text (up/down arrow prefix + m/s). */
+msp_rendor_vario_t construct_rendor_VARIO(const vehicle_local_position_s &vehicle_local_position);
+
+// construct an MSP_RAW_GPS struct (ground speed: GPS receiver, else airspeed — BF GPS speed element)
 msp_raw_gps_t construct_RAW_GPS(const sensor_gps_s &vehicle_gps_position,
 				const airspeed_validated_s &airspeed_validated);
+
+msp_rendor_est_speed_t construct_rendor_EST_SPEED(const vehicle_local_position_s &vehicle_local_position);
+
+msp_rendor_batt_pct_t construct_rendor_BATT_PCT(const battery_status_s &battery_status);
 
 // construct an MSP_COMP_GPS struct
 msp_comp_gps_t construct_COMP_GPS(const home_position_s &home_position,

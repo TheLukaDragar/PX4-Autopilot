@@ -98,7 +98,9 @@ enum SymbolIndex : uint8_t {
 	CROSSHAIRS		= 18,
 	AVG_CELL_VOLTAGE	= 19,
 	HORIZON_SIDEBARS	= 20,
-	POWER			= 21
+	POWER			= 21,
+	EST_SPEED		= 22,	// fused horizontal speed (km/h) via DisplayPort (separate from GPS_SPEED / MSP_RAW_GPS)
+	BATT_REMAIN_PCT		= 23,	// main battery remaining % (QGC-style)
 };
 
 class MspOsd : public ModuleBase, public ModuleParams, public px4::ScheduledWorkItem
@@ -132,6 +134,9 @@ private:
 	// update a single display element in the display
 	void Send(const unsigned int message_type, const void *payload);
 	void Send(const unsigned int message_type, const void *payload, int32_t payload_size);
+
+	/** MSP DisplayPort with short delay — VTX UART often drops back-to-back packets if sent in one burst. */
+	void sendDisplayPort(const void *payload, int32_t payload_size);
 
 	// receive vtx data
 	void Receive();

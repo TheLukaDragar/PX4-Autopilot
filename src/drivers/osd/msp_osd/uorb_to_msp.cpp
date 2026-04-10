@@ -37,6 +37,8 @@
  */
 
 // includes for mathematical manipulation
+#include <climits>
+#include <cmath>
 #include <drivers/drv_hrt.h>
 #include <lib/geo/geo.h>
 #include <lib/mathlib/mathlib.h>
@@ -51,6 +53,18 @@ using namespace time_literals;
 
 namespace msp_osd
 {
+
+// Betaflight osd.h OSD_X / OSD_Y (character grid from packed uint16_t position)
+static inline uint8_t osd_grid_x_bf(uint16_t pos)
+{
+	return (uint8_t)((pos & 31u) | ((pos & (1u << 10)) >> 5u));
+}
+
+static inline uint8_t osd_grid_y_bf(uint16_t pos)
+{
+	return (uint8_t)((pos >> 5) & 31u);
+}
+
 typedef enum {
 	MSP_DP_HEARTBEAT = 0,         // Release the display after clearing and updating
 	MSP_DP_RELEASE = 1,         // Release the display after clearing and updating
@@ -220,6 +234,20 @@ msp_rendor_rssi_t construct_rendor_RSSI(const input_rc_s &input_rc)
 	return rssi;
 }
 
+msp_rendor_crosshairs_t construct_rendor_CROSSHAIRS(uint16_t grid_pos)
+{
+	msp_rendor_crosshairs_t crosshairs{};
+	crosshairs.subCommand = MSP_DP_WRITE_STRING;
+	crosshairs.screenYPosition = osd_grid_y_bf(grid_pos);
+	crosshairs.screenXPosition = osd_grid_x_bf(grid_pos);
+	crosshairs.attr = 0;
+	// Betaflight src/main/osd/osd_elements.c osdElementCrosshairs + osd_symbols.h
+	crosshairs.sym[0] = (char)0x72; // SYM_AH_CENTER_LINE
+	crosshairs.sym[1] = (char)0x73; // SYM_AH_CENTER
+	crosshairs.sym[2] = (char)0x74; // SYM_AH_CENTER_LINE_RIGHT
+	return crosshairs;
+}
+
 msp_battery_state_t construct_BATTERY_STATE(const battery_status_s &battery_status)
 {
 	// initialize result
@@ -252,25 +280,83 @@ msp_rendor_battery_state_t construct_rendor_BATTERY_STATE(const battery_status_s
 	battery_state.subCommand = MSP_DP_WRITE_STRING; // 3 write string. fixed
 	battery_state.screenYPosition = 0x04;
 	battery_state.screenXPosition = 0x02;
-	battery_state.iconAttrs = 0x00;
 
-	float sigle_cell_v = battery_status.voltage_v / battery_status.cell_count;
+	const float cell_v = battery_status.cell_count > 0
+			     ? battery_status.voltage_v / battery_status.cell_count
+			     : battery_status.voltage_v;
 
-	if (sigle_cell_v > 4.0f) {
-		battery_state.iconIndex = 0x91; // Full battery Icon
+	// Betaflight: BATTERY_WARNING → severity 1, BATTERY_CRITICAL → severity 2
+	if (cell_v < 3.2f) {
+		battery_state.iconAttrs = 2; // DISPLAYPORT_SEVERITY_CRITICAL
 
-	} else if ((sigle_cell_v <= 4.0f) && (sigle_cell_v > 3.5f)) {
-		battery_state.iconIndex = 0x93; // Half battery Icon
-
-	} else if ((sigle_cell_v <= 3.5f) && (sigle_cell_v > 3.2f)) {
-		battery_state.iconIndex = 0x95; // Empty battery Icon
+	} else if (cell_v < 3.5f) {
+		battery_state.iconAttrs = 1; // DISPLAYPORT_SEVERITY_WARNING
 
 	} else {
-		battery_state.iconIndex = 0x96; // Dead battery Icon
+		battery_state.iconAttrs = 0;
 	}
 
-	snprintf(&battery_state.str[0], sizeof(battery_state.str), "%.1fV", (double)sigle_cell_v);
+	if (cell_v > 4.0f) {
+		battery_state.iconIndex = 0x91; // SYM_BATT_5 (full)
+
+	} else if (cell_v > 3.5f) {
+		battery_state.iconIndex = 0x93; // SYM_BATT_3 (half)
+
+	} else if (cell_v > 3.2f) {
+		battery_state.iconIndex = 0x95; // SYM_BATT_1 (low)
+
+	} else {
+		battery_state.iconIndex = 0x96; // SYM_BATT_EMPTY
+	}
+
+	snprintf(&battery_state.str[0], sizeof(battery_state.str), "%.1fV", (double)cell_v);
 	return battery_state;
+}
+
+msp_rendor_mah_t construct_rendor_MAH(const battery_status_s &battery_status)
+{
+	msp_rendor_mah_t m{};
+	m.screenYPosition = 0x0C; // row 12
+	m.screenXPosition = 0x13; // col 19
+
+	snprintf(m.str, sizeof(m.str), "%4d", (int)battery_status.discharged_mah);
+	return m;
+}
+
+msp_rendor_current_t construct_rendor_CURRENT(const battery_status_s &battery_status)
+{
+	msp_rendor_current_t m{};
+	m.screenYPosition = 0x05; // row 5
+	m.screenXPosition = 0x02; // col 2
+
+	if (!battery_status.connected || !PX4_ISFINITE(battery_status.current_a)) {
+		snprintf(m.str, sizeof(m.str), " --A");
+
+	} else {
+		snprintf(m.str, sizeof(m.str), "%.1fA", (double)battery_status.current_a);
+	}
+
+	return m;
+}
+
+msp_rendor_vario_t construct_rendor_VARIO(const vehicle_local_position_s &vehicle_local_position)
+{
+	msp_rendor_vario_t m{};
+	m.screenYPosition = 0x06; // row 6
+	m.screenXPosition = 0x16; // col 22
+
+	if (!vehicle_local_position.v_z_valid || !PX4_ISFINITE(vehicle_local_position.vz)) {
+		m.iconIndex = 0x75; // SYM_ARROW_SMALL_UP (placeholder)
+		snprintf(m.str, sizeof(m.str), " --");
+
+	} else {
+		// NED: vz positive = descending; negate for climb rate
+		const float climb_ms = -vehicle_local_position.vz;
+		m.iconIndex = (climb_ms >= 0.0f) ? 0x75 : 0x76; // up / down
+		snprintf(m.str, sizeof(m.str), "%.1f", (double)fabsf(climb_ms));
+	}
+
+	return m;
 }
 
 
@@ -300,8 +386,6 @@ msp_raw_gps_t construct_RAW_GPS(const sensor_gps_s &vehicle_gps_position,
 		raw_gps.groundCourse = 0; // centidegrees
 	}
 
-	raw_gps.groundCourse = 0; // centidegrees
-
 	if (vehicle_gps_position.fix_type == 0
 	    || vehicle_gps_position.fix_type == 1) {
 		raw_gps.fixType = MSP_GPS_NO_FIX;
@@ -319,14 +403,28 @@ msp_raw_gps_t construct_RAW_GPS(const sensor_gps_s &vehicle_gps_position,
 	//raw_gps.hdop = vehicle_gps_position_struct.hdop
 	raw_gps.numSat = vehicle_gps_position.satellites_used;
 
-	if (airspeed_validated.airspeed_source >= airspeed_validated_s::SOURCE_GROUND_MINUS_WIND
-	    && PX4_ISFINITE(airspeed_validated.indicated_airspeed_m_s)
-	    && airspeed_validated.indicated_airspeed_m_s > 0.f) {
-		raw_gps.groundSpeed = airspeed_validated.indicated_airspeed_m_s * 100;
+	// BF "GPS speed" element: receiver ground speed, else pitot (cm/s)
+	float speed_m_s = 0.f;
 
-	} else {
-		raw_gps.groundSpeed = 0;
+	if (vehicle_gps_position.fix_type >= 2 && PX4_ISFINITE(vehicle_gps_position.vel_m_s)) {
+		speed_m_s = vehicle_gps_position.vel_m_s;
+
+	} else if (airspeed_validated.airspeed_source >= airspeed_validated_s::SOURCE_GROUND_MINUS_WIND
+		   && PX4_ISFINITE(airspeed_validated.indicated_airspeed_m_s)
+		   && airspeed_validated.indicated_airspeed_m_s > 0.f) {
+		speed_m_s = airspeed_validated.indicated_airspeed_m_s;
 	}
+
+	long gs_cms = lroundf(speed_m_s * 100.f);
+
+	if (gs_cms > INT16_MAX) {
+		gs_cms = INT16_MAX;
+
+	} else if (gs_cms < INT16_MIN) {
+		gs_cms = INT16_MIN;
+	}
+
+	raw_gps.groundSpeed = static_cast<int16_t>(gs_cms);
 
 	return raw_gps;
 }
@@ -339,10 +437,12 @@ msp_rendor_latitude_t construct_rendor_GPS_LAT(const sensor_gps_s &vehicle_gps_p
 	lat.screenXPosition = 0x29;
 
 	if (vehicle_gps_position.fix_type >= 2) {
-		snprintf(&lat.str[0], sizeof(lat.str), "%.6f", vehicle_gps_position.latitude_deg);
+		const double v = fabs(vehicle_gps_position.latitude_deg);
+		const char ns = vehicle_gps_position.latitude_deg >= 0.0 ? 'N' : 'S';
+		snprintf(&lat.str[0], sizeof(lat.str), "%.6f%c", v, ns);
 
 	} else {
-		snprintf(&lat.str[0], sizeof(lat.str), "%.6f", 0.0);
+		snprintf(&lat.str[0], sizeof(lat.str), "0.000000N");
 	}
 
 	return lat;
@@ -356,10 +456,12 @@ msp_rendor_longitude_t construct_rendor_GPS_LON(const sensor_gps_s &vehicle_gps_
 	lon.screenXPosition = 0x29;
 
 	if (vehicle_gps_position.fix_type >= 2) {
-		snprintf(&lon.str[0], sizeof(lon.str), "%.6f", vehicle_gps_position.longitude_deg);
+		const double v = fabs(vehicle_gps_position.longitude_deg);
+		const char ew = vehicle_gps_position.longitude_deg >= 0.0 ? 'E' : 'W';
+		snprintf(&lon.str[0], sizeof(lon.str), "%.6f%c", v, ew);
 
 	} else {
-		snprintf(&lon.str[0], sizeof(lon.str), "%.6f", -0.0);
+		snprintf(&lon.str[0], sizeof(lon.str), "0.000000E");
 	}
 
 	return lon;
@@ -373,7 +475,14 @@ msp_rendor_satellites_used_t construct_rendor_GPS_NUM(const sensor_gps_s &vehicl
 	num.screenXPosition = 0x29;
 
 	memset(&num.str[0], 0, sizeof(num.str));
-	snprintf(&num.str[0], sizeof(num.str), "%d", vehicle_gps_position.satellites_used);
+
+	if (vehicle_gps_position.fix_type < 2) {
+		// Betaflight shows "NC" when GPS is unhealthy
+		snprintf(&num.str[0], sizeof(num.str), "NC");
+
+	} else {
+		snprintf(&num.str[0], sizeof(num.str), "%d", vehicle_gps_position.satellites_used);
+	}
 
 	return num;
 }
@@ -423,22 +532,25 @@ msp_rendor_distanceToHome_t construct_rendor_distanceToHome(const home_position_
 	distance.screenYPosition = 0x08;
 	distance.screenXPosition = 0x02;
 
-	int16_t dist_i = 0;
+	float dist_m = 0.0f;
 
 	if (home_position.valid_hpos
 	    && home_position.valid_lpos
 	    && (hrt_elapsed_time(&vehicle_global_position.timestamp) < 1_s)) {
 
-		float distance_to_home = get_distance_to_next_waypoint(vehicle_global_position.lat,
-					 vehicle_global_position.lon,
-					 home_position.lat, home_position.lon);
-
-		dist_i = (int16_t)distance_to_home; // meters
-
+		dist_m = get_distance_to_next_waypoint(vehicle_global_position.lat,
+						       vehicle_global_position.lon,
+						       home_position.lat, home_position.lon);
 	}
 
 	memset(&distance.str[0], 0, sizeof(distance.str));
-	snprintf(&distance.str[0], sizeof(distance.str), "%d", dist_i); // 65536
+
+	if (dist_m < 1000.0f) {
+		snprintf(&distance.str[0], sizeof(distance.str), "%dm", (int)dist_m);
+
+	} else {
+		snprintf(&distance.str[0], sizeof(distance.str), "%.1fkm", (double)(dist_m / 1000.0f));
+	}
 
 	return distance;
 }
@@ -477,11 +589,12 @@ msp_rendor_pitch_t  construct_rendor_PITCH(const vehicle_attitude_s &vehicle_att
 
 	// convert from quaternion to RPY
 	matrix::Eulerf euler_attitude(matrix::Quatf(vehicle_attitude.q));
-	double pitch_deg = (double)math::degrees(euler_attitude.theta());
-	// attitude.roll = math::degrees(euler_attitude.phi()) * 10;
+	const double pitch_deg = (double)math::degrees(euler_attitude.theta());
 
 	memset(&pit.str[0], 0, sizeof(pit.str));
-	snprintf(&pit.str[0], sizeof(pit.str), "%.1f", pitch_deg);
+	// Betaflight: sign char + zero-padded 2-digit integer + 1 decimal, e.g. "-12.3" or " 05.0"
+	snprintf(&pit.str[0], sizeof(pit.str), "%c%04.1f",
+		 pitch_deg < 0.0 ? '-' : ' ', fabs(pitch_deg));
 
 	return pit;
 }
@@ -496,11 +609,11 @@ msp_rendor_roll_t  construct_rendor_ROLL(const vehicle_attitude_s &vehicle_attit
 
 	// convert from quaternion to RPY
 	matrix::Eulerf euler_attitude(matrix::Quatf(vehicle_attitude.q));
-	// double pitch = (double)math::degrees(euler_attitude.theta());
-	double roll_deg = (double)math::degrees(euler_attitude.phi());
+	const double roll_deg = (double)math::degrees(euler_attitude.phi());
 
 	memset(&roll.str[0], 0, sizeof(roll.str));
-	snprintf(&roll.str[0], sizeof(roll.str), "%.1f", roll_deg);
+	snprintf(&roll.str[0], sizeof(roll.str), "%c%04.1f",
+		 roll_deg < 0.0 ? '-' : ' ', fabs(roll_deg));
 
 	return roll;
 }
@@ -578,6 +691,59 @@ msp_rendor_esc_tmp_t construct_rendor_ESC_TMP(const esc_status_s &esc_status)
 	}
 
 	return esc_tmp;
+}
+
+msp_rendor_batt_pct_t construct_rendor_BATT_PCT(const battery_status_s &battery_status)
+{
+	msp_rendor_batt_pct_t m {};
+
+	m.screenYPosition = 0x04;
+	m.screenXPosition = 0x0E;
+
+	if (!battery_status.connected) {
+		snprintf(m.str, sizeof(m.str), " --");
+
+	} else if (PX4_ISFINITE(battery_status.remaining) && battery_status.remaining >= 0.f) {
+		float pct = battery_status.remaining * 100.f;
+
+		if (pct > 100.f) {
+			pct = 100.f;
+		}
+
+		snprintf(m.str, sizeof(m.str), "%.0f%%", (double)pct);
+
+	} else if (PX4_ISFINITE(battery_status.volt_based_soc_estimate) && battery_status.volt_based_soc_estimate >= 0.f) {
+		float pct = battery_status.volt_based_soc_estimate * 100.f;
+
+		if (pct > 100.f) {
+			pct = 100.f;
+		}
+
+		snprintf(m.str, sizeof(m.str), "%.0f%%", (double)pct);
+
+	} else {
+		snprintf(m.str, sizeof(m.str), " --");
+	}
+
+	return m;
+}
+
+msp_rendor_est_speed_t construct_rendor_EST_SPEED(const vehicle_local_position_s &vehicle_local_position)
+{
+	msp_rendor_est_speed_t est {};
+
+	est.screenYPosition = 0x04;
+	est.screenXPosition = 0x0C;
+
+	if (vehicle_local_position.v_xy_valid) {
+		const float kmh = hypotf(vehicle_local_position.vx, vehicle_local_position.vy) * 3.6f;
+		snprintf(est.str, sizeof(est.str), "%.0f", (double)kmh);
+
+	} else {
+		snprintf(est.str, sizeof(est.str), " --");
+	}
+
+	return est;
 }
 
 msp_esc_sensor_data_dji_t construct_ESC_SENSOR_DATA()

@@ -36,6 +36,9 @@
  *    A relatively low-hanging fruit would be figuring out which display elements require
  *    information from what UORB topics and disable if the information isn't displayed.
  * 	(this is complicated by the fact that it's not a one-to-one mapping...)
+ *  - Betaflight spreads MSP DisplayPort writes across the OSD state machine; we send many
+ *    packets per Run(). Digital VTX firmware often has small UART buffers — use
+ *    sendDisplayPort() (inter-packet delay) so multiple WRITE_STRING commands are not dropped.
  */
 
 #include "msp_osd.hpp"
@@ -52,6 +55,7 @@
 #include <px4_platform_common/getopt.h>
 #include <px4_platform_common/log.h>
 #include <px4_platform_common/posix.h>
+#include <px4_platform_common/time.h>
 
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/sensor_combined.h>
@@ -68,6 +72,9 @@
 #include "MspV1.hpp"
 
 ModuleBase::Descriptor MspOsd::desc{task_spawn, custom_command, print_usage};
+
+/** Pause after each MSP DisplayPort frame so Walksnail/Avatar-class VTX can drain the UART. */
+static constexpr useconds_t kDisplayPortInterPacketDelayUs = 800;
 
 //OSD elements positions
 //in betaflight configurator set OSD elements to your desired positions and in CLI type "set osd" to retreieve the numbers.
@@ -103,6 +110,8 @@ const uint16_t osd_altitude_pos = 2416;
 const uint16_t osd_rssi_value_pos = 2445;
 const uint16_t osd_avg_cell_voltage_pos = 2446;
 const uint16_t osd_esc_tmp_pos = 2447;
+const uint16_t osd_est_speed_pos = 2448; // DisplayPort est. ground speed (row with ESC / mAh)
+const uint16_t osd_batt_pct_pos = 2443; // main battery remaining % (QGC-style)
 const uint16_t osd_mah_drawn_pos = 2449;
 
 // Bottom Row 3
@@ -114,7 +123,7 @@ const uint16_t osd_main_batt_voltage_pos = 2073;
 const uint16_t osd_current_draw_pos = 2103;
 
 
-const uint16_t osd_numerical_vario_pos = LOCATION_HIDDEN;
+const uint16_t osd_numerical_vario_pos = 2381; // row 10, col 13 — left of centre, below GPS
 
 #define OSD_GRID_COL_MAX (59) // From betaflight-configurator OSD tab
 #define OSD_GRID_ROW_MAX (21) // From betaflight-configurator OSD tab
@@ -158,7 +167,7 @@ bool MspOsd::init()
 
 void MspOsd::SendConfig()
 {
-	msp_osd_config_t msp_osd_config;
+	msp_osd_config_t msp_osd_config{};
 
 	msp_osd_config.units = 0;
 	msp_osd_config.osd_item_count = 56;
@@ -201,8 +210,9 @@ void MspOsd::SendConfig()
 	// possibly available, but not currently used
 	msp_osd_config.osd_flymode_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_esc_tmp_pos = enabled(SymbolIndex::ESC_TMP) ? osd_esc_tmp_pos : LOCATION_HIDDEN;
-	msp_osd_config.osd_pitch_angle_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_roll_angle_pos = 			LOCATION_HIDDEN;
+	msp_osd_config.osd_flight_dist_pos = enabled(SymbolIndex::EST_SPEED) ? osd_est_speed_pos : LOCATION_HIDDEN;
+	msp_osd_config.osd_pitch_angle_pos = enabled(SymbolIndex::PITCH_ANGLE) ? (uint16_t)2445 : LOCATION_HIDDEN;
+	msp_osd_config.osd_roll_angle_pos  = enabled(SymbolIndex::ROLL_ANGLE)  ? (uint16_t)2477 : LOCATION_HIDDEN;
 	msp_osd_config.osd_horizon_sidebars_pos = 		LOCATION_HIDDEN;
 
 	// Not implemented or not available
@@ -216,7 +226,7 @@ void MspOsd::SendConfig()
 	msp_osd_config.osd_yaw_pids_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_pidrate_profile_pos =		LOCATION_HIDDEN;
 	msp_osd_config.osd_warnings_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_debug_pos = 				LOCATION_HIDDEN;
+	msp_osd_config.osd_debug_pos = enabled(SymbolIndex::BATT_REMAIN_PCT) ? osd_batt_pct_pos : LOCATION_HIDDEN;
 	msp_osd_config.osd_main_batt_usage_pos = 		LOCATION_HIDDEN;
 	msp_osd_config.osd_numerical_heading_pos = 		LOCATION_HIDDEN;
 	msp_osd_config.osd_compass_bar_pos = 			LOCATION_HIDDEN;
@@ -231,7 +241,6 @@ void MspOsd::SendConfig()
 	msp_osd_config.osd_log_status_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_flip_arrow_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_link_quality_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_flight_dist_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_stick_overlay_left_pos = 		LOCATION_HIDDEN;
 	msp_osd_config.osd_stick_overlay_right_pos = 		LOCATION_HIDDEN;
 	msp_osd_config.osd_display_name_pos = 			LOCATION_HIDDEN;
@@ -308,11 +317,21 @@ void MspOsd::Run()
 		return;
 	}
 
+	// Layout for Configurator / VTX (element positions). Was previously never sent.
+	SendConfig();
+
 	uint8_t subcmd = MSP_DP_HEARTBEAT;
-	this->Send(MSP_CMD_DISPLAYPORT, &subcmd, 1);
+	this->sendDisplayPort(&subcmd, 1);
 
 	subcmd = MSP_DP_CLEAR_SCREEN;
-	this->Send(MSP_CMD_DISPLAYPORT, &subcmd, 1);
+	this->sendDisplayPort(&subcmd, 1);
+
+	// Betaflight draws crosshairs via DisplayPort WRITE_STRING (3 font chars), not MSP_OSD_CONFIG alone.
+	if (enabled(SymbolIndex::CROSSHAIRS)) {
+		const uint16_t grid_pos = osd_crosshairs_pos - 32 * _param_osd_ch_height.get();
+		const auto xh = msp_osd::construct_rendor_CROSSHAIRS(grid_pos);
+		this->sendDisplayPort(&xh, sizeof(xh));
+	}
 
 	// update display message
 	{
@@ -340,7 +359,7 @@ void MspOsd::Run()
 		msg[index++] = 0;		// Icon attr
 		msg[index++] = 0x03; // Icon index >
 		memcpy(&msg[index++], &display_message, sizeof(msp_name_t));
-		this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msg));
+		this->sendDisplayPort(&msg, sizeof(msg));
 	}
 
 	// MSP_FC_VARIANT
@@ -355,7 +374,7 @@ void MspOsd::Run()
 			input_rc_s input_rc{};
 			_input_rc_sub.copy(&input_rc);
 			const auto msg = msp_osd::construct_rendor_RSSI(input_rc);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_rssi_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_rssi_t));
 		}
 	}
 
@@ -368,7 +387,22 @@ void MspOsd::Run()
 		this->Send(MSP_BATTERY_STATE, &msg_original);
 
 		const auto msg = msp_osd::construct_rendor_BATTERY_STATE(battery_status);
-		this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_battery_state_t));
+		this->sendDisplayPort(&msg, sizeof(msp_rendor_battery_state_t));
+
+		if (enabled(SymbolIndex::BATT_REMAIN_PCT)) {
+			const auto pct_msg = msp_osd::construct_rendor_BATT_PCT(battery_status);
+			this->sendDisplayPort(&pct_msg, sizeof(msp_rendor_batt_pct_t));
+		}
+
+		if (enabled(SymbolIndex::MAH_DRAWN)) {
+			const auto mah_msg = msp_osd::construct_rendor_MAH(battery_status);
+			this->sendDisplayPort(&mah_msg, sizeof(msp_rendor_mah_t));
+		}
+
+		if (enabled(SymbolIndex::CURRENT_DRAW)) {
+			const auto cur_msg = msp_osd::construct_rendor_CURRENT(battery_status);
+			this->sendDisplayPort(&cur_msg, sizeof(msp_rendor_current_t));
+		}
 
 	}
 
@@ -377,27 +411,43 @@ void MspOsd::Run()
 		esc_status_s esc_status{};
 		_esc_status_sub.copy(&esc_status);
 		const auto msg = msp_osd::construct_rendor_ESC_TMP(esc_status);
-		this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_esc_tmp_t));
+		this->sendDisplayPort(&msg, sizeof(msp_rendor_esc_tmp_t));
 	}
 
-	// MSP_RAW_GPS
+	// Fused horizontal ground speed (km/h), DisplayPort — separate from GPS_SPEED / MSP_RAW_GPS
+	if (enabled(SymbolIndex::EST_SPEED)) {
+		vehicle_local_position_s vehicle_local_position{};
+		_vehicle_local_position_sub.copy(&vehicle_local_position);
+		const auto msg = msp_osd::construct_rendor_EST_SPEED(vehicle_local_position);
+		this->sendDisplayPort(&msg, sizeof(msp_rendor_est_speed_t));
+	}
+
+	// MSP_RAW_GPS (DisplayPort strings + MSP_RAW_GPS for BF GPS speed when enabled)
 	{
 		sensor_gps_s vehicle_gps_position{};
 		_vehicle_gps_position_sub.copy(&vehicle_gps_position);
 
 		if (enabled(SymbolIndex::GPS_LAT)) {
 			const auto msg = msp_osd::construct_rendor_GPS_LAT(vehicle_gps_position);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_latitude_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_latitude_t));
 		}
 
 		if (enabled(SymbolIndex::GPS_LON)) {
 			const auto msg = msp_osd::construct_rendor_GPS_LON(vehicle_gps_position);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_longitude_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_longitude_t));
 		}
 
 		if (enabled(SymbolIndex::GPS_SATS)) {
 			const auto msg = msp_osd::construct_rendor_GPS_NUM(vehicle_gps_position);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_satellites_used_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_satellites_used_t));
+		}
+
+		if (enabled(SymbolIndex::GPS_SPEED)) {
+			airspeed_validated_s airspeed_validated{};
+			_airspeed_validated_sub.copy(&airspeed_validated);
+
+			const auto msg = msp_osd::construct_RAW_GPS(vehicle_gps_position, airspeed_validated);
+			this->Send(MSP_RAW_GPS, &msg, sizeof(msg));
 		}
 	}
 
@@ -412,7 +462,7 @@ void MspOsd::Run()
 		if (enabled(SymbolIndex::HOME_DIST)) {
 			const auto msg =  msp_osd::construct_rendor_distanceToHome(home_position, vehicle_global_position);
 
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_distanceToHome_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_distanceToHome_t));
 		}
 	}
 
@@ -421,13 +471,14 @@ void MspOsd::Run()
 		vehicle_attitude_s vehicle_attitude{};
 		_vehicle_attitude_sub.copy(&vehicle_attitude);
 
-		{
+		if (enabled(SymbolIndex::PITCH_ANGLE)) {
 			const auto msg = msp_osd::construct_rendor_PITCH(vehicle_attitude);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_pitch_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_pitch_t));
 		}
-		{
+
+		if (enabled(SymbolIndex::ROLL_ANGLE)) {
 			const auto msg = msp_osd::construct_rendor_ROLL(vehicle_attitude);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_roll_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_roll_t));
 		}
 	}
 
@@ -443,8 +494,16 @@ void MspOsd::Run()
 		if (enabled(SymbolIndex::ALTITUDE)) {
 			const auto msg = msp_osd::construct_Rendor_ALTITUDE(vehicle_gps_position, vehicle_local_position);
 
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_altitude_t));
+			this->sendDisplayPort(&msg, sizeof(msp_altitude_t));
 		}
+	}
+
+	// Vario (vertical speed) — vehicle_local_position.vz, NED sign corrected
+	if (enabled(SymbolIndex::NUMERICAL_VARIO)) {
+		vehicle_local_position_s vehicle_local_position{};
+		_vehicle_local_position_sub.copy(&vehicle_local_position);
+		const auto vario_msg = msp_osd::construct_rendor_VARIO(vehicle_local_position);
+		this->sendDisplayPort(&vario_msg, sizeof(msp_rendor_vario_t));
 	}
 
 	// MSP_MOTOR_TELEMETRY
@@ -478,7 +537,7 @@ void MspOsd::Run()
 	}
 
 	subcmd = MSP_DP_DRAW_SCREEN;
-	this->Send(MSP_CMD_DISPLAYPORT, &subcmd, 1);
+	this->sendDisplayPort(&subcmd, 1);
 }
 
 void MspOsd::Send(const unsigned int message_type, const void *payload)
@@ -498,6 +557,12 @@ void MspOsd::Send(const unsigned int message_type, const void *payload, int32_t 
 	} else {
 		_performance_data.unsuccessful_sends++;
 	}
+}
+
+void MspOsd::sendDisplayPort(const void *payload, int32_t payload_size)
+{
+	Send(MSP_CMD_DISPLAYPORT, payload, payload_size);
+	px4_usleep(kDisplayPortInterPacketDelayUs);
 }
 
 void MspOsd::Receive()
