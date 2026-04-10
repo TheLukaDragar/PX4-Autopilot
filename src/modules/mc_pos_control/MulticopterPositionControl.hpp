@@ -163,6 +163,7 @@ private:
 		(ParamFloat<px4::params::MPC_TKO_RAMP_T>)   _param_mpc_tko_ramp_t,   /**< time constant for smooth takeoff ramp */
 		(ParamFloat<px4::params::MPC_TKO_SPEED>)    _param_mpc_tko_speed,
 		(ParamFloat<px4::params::MPC_LAND_SPEED>)   _param_mpc_land_speed,
+		(ParamFloat<px4::params::MPC_GND_CON_ACC>) _param_mpc_gnd_con_acc,
 
 		(ParamFloat<px4::params::MPC_VEL_MANUAL>)   _param_mpc_vel_manual,
 		(ParamFloat<px4::params::MPC_VEL_MAN_BACK>) _param_mpc_vel_man_back,

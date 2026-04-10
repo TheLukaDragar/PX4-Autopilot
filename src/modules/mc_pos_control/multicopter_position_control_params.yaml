@@ -76,3 +76,18 @@ parameters:
       max: 50
       decimal: 1
       increment: 0.5
+    MPC_GND_CON_ACC:
+      description:
+        short: Downward acceleration force applied after ground contact
+        long: |-
+          Downward acceleration setpoint when ground contact is detected during flight.
+          When ground contatct is detected, the position controller will apply a downward acceleration to ensure the vehicle stays on the ground.
+          The downward acceleration makes the vehicle lower the thrust, if a high value is set, the thrust will be reduced to a state where the vehicle if unstable will fall.
+          The thrust will then stay at the reduced level.
+      type: float
+      default: 100.0
+      unit: m/s^2
+      min: 0.0
+      max: 100.0
+      decimal: 1
+      increment: 1.0
