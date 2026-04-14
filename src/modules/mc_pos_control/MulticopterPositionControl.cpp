@@ -501,6 +501,7 @@ void MulticopterPositionControl::Run()
 
 			const bool not_taken_off             = (_takeoff.getTakeoffState() < TakeoffState::rampup);
 			const bool flying                    = (_takeoff.getTakeoffState() >= TakeoffState::flight);
+			const bool have_taken_off_since_arming = _takeoff.haveTakenOffSinceArming();
 			const bool flying_but_ground_contact = (flying && _vehicle_land_detected.ground_contact);
 
 			if (!flying) {
@@ -513,12 +514,19 @@ void MulticopterPositionControl::Run()
 			}
 
 			if (not_taken_off || flying_but_ground_contact) {
-				// we are not flying yet and need to avoid any corrections
 				_setpoint = PositionControl::empty_trajectory_setpoint;
 				_setpoint.timestamp = vehicle_local_position.timestamp_sample;
-				Vector3f(0.f, 0.f, _param_mpc_gnd_con_acc.get()).copyTo(_setpoint.acceleration); // High downwards acceleration to make sure there's no thrust
 
-				// prevent any integrator windup
+				float down_force = 100.f; // High downwards acceleration to make sure there's no thrust
+
+				// the param check is for the code so it can be used with lampy and speedo, on the lampy you wouldn't change the parameter.
+				// have taken off since arming looks if it was flying or not, resets on disarming, maybe problem because you can't descend and touch the ground
+				// and takeoff again, you can but it will use the param instead of 100f.
+				if (have_taken_off_since_arming && _param_mpc_gnd_con_acc.get() < 100.f) {
+					down_force = _param_mpc_gnd_con_acc.get();
+				}
+
+				Vector3f(0.f, 0.f, down_force).copyTo(_setpoint.acceleration);
 				_control.resetIntegral();
 			}
 
