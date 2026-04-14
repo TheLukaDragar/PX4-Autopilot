@@ -89,9 +89,10 @@ public:
 	float updateRamp(const float dt, const float takeoff_desired_vz);
 
 	TakeoffState getTakeoffState() { return _takeoff_state; }
-
+	bool haveTakenOffSinceArming() { return _have_taken_off_since_arming; }
 private:
 	TakeoffState _takeoff_state = TakeoffState::disarmed;
+	bool _have_taken_off_since_arming{false};
 
 	systemlib::Hysteresis _spoolup_time_hysteresis{false}; ///< becomes true COM_SPOOLUP_TIME seconds after the vehicle was armed
 
