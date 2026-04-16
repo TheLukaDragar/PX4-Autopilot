@@ -76,8 +76,6 @@ ControlAllocator::ControlAllocator() :
 	}
 
 	parameters_updated();
-
-	_slew_limited_ice_shedding_output.setSlewRate(ICE_SHEDDING_MAX_SLEWRATE);
 }
 
 ControlAllocator::~ControlAllocator()
@@ -619,9 +617,9 @@ ControlAllocator::handle_stopped_motors(const hrt_abstime now)
 
 	// Apply ice shedding, which applies _only_ to stopped motors
 	const bool any_stopped_motor_failed = 0 != (stopped_motors_due_to_effectiveness & (_handled_motor_failure_bitmask | _motor_stop_mask));
-	const float ice_shedding_output = get_ice_shedding_output(now, any_stopped_motor_failed);
+	const float ice_shedding_output = get_ice_shedding_output(now);
 
-	if (ice_shedding_output > FLT_EPSILON) {
+	if (ice_shedding_output > FLT_EPSILON && !any_stopped_motor_failed) {
 		for (int motors_idx = 0; motors_idx < _num_actuators[allocation_index] && motors_idx < actuator_motors_s::NUM_CONTROLS; motors_idx++) {
 			if (stopped_motors & 1u << motors_idx) {
 				_control_allocation[allocation_index]->_actuator_sp(motors_idx) = ice_shedding_output;
@@ -684,7 +682,7 @@ ControlAllocator::publish_control_allocator_status(int matrix_index)
 }
 
 float
-ControlAllocator::get_ice_shedding_output(hrt_abstime now, bool any_stopped_motor_failed)
+ControlAllocator::get_ice_shedding_output(hrt_abstime now)
 {
 	const float period_sec = _param_ice_shedding_period.get();
 
@@ -694,26 +692,18 @@ ControlAllocator::get_ice_shedding_output(hrt_abstime now, bool any_stopped_moto
 	// If any stopped motor has failed, the feature will create much more
 	// torque than in the nominal case, and becomes pointless anyway as we
 	// cannot go back to multicopter
-	const bool apply_shedding = _is_vtol && in_forward_flight && !any_stopped_motor_failed;
+	const bool apply_shedding = _is_vtol && in_forward_flight;
 
 	if (feature_disabled_by_param || !apply_shedding) {
-		// Bypass slew limit and immediately set zero, to not
-		// interfere with backtransition in any way
-		_slew_limited_ice_shedding_output.setForcedValue(0.0f);
+		return 0.0f;
 
 	} else {
-		// Raw square wave output
+		// Square wave output
 		const float elapsed_in_period = fmodf(static_cast<float>(now) / 1_s, period_sec);
-		const float raw_ice_shedding_output = elapsed_in_period < ICE_SHEDDING_ON_SEC ? ICE_SHEDDING_OUTPUT : 0.0f;
+		const float ice_shedding_output = elapsed_in_period < ICE_SHEDDING_ON_SEC ? ICE_SHEDDING_OUTPUT : 0.0f;
 
-		// Apply slew rate limit
-		const float dt = static_cast<float>(now - _last_ice_shedding_update) / 1_s;
-		_slew_limited_ice_shedding_output.update(raw_ice_shedding_output, dt);
+		return ice_shedding_output;
 	}
-
-	_last_ice_shedding_update = now;
-
-	return _slew_limited_ice_shedding_output.getState();
 }
 
 void

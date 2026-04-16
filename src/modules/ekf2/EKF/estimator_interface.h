@@ -89,7 +89,7 @@ public:
 	void setIMUData(const imuSample &imu_sample);
 
 #if defined(CONFIG_EKF2_GNSS)
-	void setGpsData(const gnssSample &gnss_sample, const bool pps_compensation = false);
+	void setGpsData(const gnssSample &gnss_sample);
 
 	const gnssSample &get_gps_sample_delayed() const { return _gps_sample_delayed; }
 
@@ -155,9 +155,7 @@ public:
 	// return a address to the parameters struct
 	// in order to give access to the application
 	parameters *getParamHandle() { return &_params; }
-
 	FusionControl *getFusionControlHandle() { return &_fc; }
-	const FusionControl *getFusionControlHandle() const { return &_fc; }
 
 	// set vehicle landed status data
 	void set_in_air_status(bool in_air)
@@ -310,9 +308,6 @@ public:
 	const filter_control_status_u &control_status_prev() const { return _control_status_prev; }
 	const decltype(filter_control_status_u::flags) &control_status_prev_flags() const { return _control_status_prev.flags; }
 
-	void enableControlStatusAuxGpos() { _control_status.flags.aux_gpos = true; }
-	void disableControlStatusAuxGpos() { _control_status.flags.aux_gpos = false; }
-
 	// get EKF internal fault status
 	const fault_status_u &fault_status() const { return _fault_status; }
 	const decltype(fault_status_u::flags) &fault_status_flags() const { return _fault_status.flags; }
@@ -342,8 +337,7 @@ protected:
 	virtual bool init(uint64_t timestamp) = 0;
 
 	parameters _params{};		// filter parameters
-
-	FusionControl _fc{};		///< runtime fusion enablement (owned by EKF core, read by EKF2)
+	FusionControl _fc{};
 
 	/*
 	 OBS_BUFFER_LENGTH defines how many observations (non-IMU measurements) we can buffer
@@ -464,13 +458,12 @@ protected:
 #if defined(CONFIG_EKF2_AUXVEL)
 	TimestampedRingBuffer<auxVelSample> *_auxvel_buffer {nullptr};
 #endif // CONFIG_EKF2_AUXVEL
+	TimestampedRingBuffer<systemFlagUpdate> *_system_flag_buffer {nullptr};
 
 #if defined(CONFIG_EKF2_RANGING_BEACON)
 	TimestampedRingBuffer<rangingBeaconSample> *_ranging_beacon_buffer {nullptr};
 	uint64_t _time_last_ranging_beacon_buffer_push{0};
 #endif // CONFIG_EKF2_RANGING_BEACON
-
-	TimestampedRingBuffer<systemFlagUpdate> *_system_flag_buffer {nullptr};
 
 #if defined(CONFIG_EKF2_BAROMETER)
 	TimestampedRingBuffer<baroSample> *_baro_buffer {nullptr};

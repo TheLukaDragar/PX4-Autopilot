@@ -162,10 +162,8 @@ void EstimatorInterface::setMagData(const magSample &mag_sample)
 #endif // CONFIG_EKF2_MAGNETOMETER
 
 #if defined(CONFIG_EKF2_GNSS)
-void EstimatorInterface::setGpsData(const gnssSample &gnss_sample, const bool pps_compensation)
+void EstimatorInterface::setGpsData(const gnssSample &gnss_sample)
 {
-	(void)pps_compensation;
-
 	if (!_initialised) {
 		return;
 	}
