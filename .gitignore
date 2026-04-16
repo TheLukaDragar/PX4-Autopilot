@@ -112,3 +112,10 @@ keys/
 
 # metadata
 _emscripten_sdk/
+
+# Local / fork-only trees (not PX4 submodules; keep out of index)
+/px4-ros2-interface-lib/
+/speedo_position_publisher/
+/sqrtvins/
+/lampy_px4_position_publisher/
+/flight_review/
