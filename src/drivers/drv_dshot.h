@@ -61,6 +61,25 @@ enum {
 	DSHOT_CMD_MAX_THROTTLE = 2047
 };
 
+#ifdef __cplusplus
+/**
+ * DShot special commands for ESC configuration (values match DSHOT_CMD_* above).
+ */
+enum class dshot_command_t : uint16_t {
+	DShot_cmd_motor_stop = DSHOT_CMD_MOTOR_STOP,
+	DShot_cmd_beacon1 = DSHOT_CMD_BEEP1,
+	DShot_cmd_beacon2 = 2,
+	DShot_cmd_beacon3 = 3,
+	DShot_cmd_beacon4 = 4,
+	DShot_cmd_beacon5 = 5,
+	DShot_cmd_spin_direction_1 = DSHOT_CMD_SPIN_DIRECTION_1,
+	DShot_cmd_spin_direction_2 = DSHOT_CMD_SPIN_DIRECTION_2,
+	DShot_cmd_3d_mode_off = DSHOT_CMD_3D_MODE_OFF,
+	DShot_cmd_3d_mode_on = DSHOT_CMD_3D_MODE_ON,
+	DShot_cmd_save_settings = DSHOT_CMD_SAVE_SETTINGS,
+};
+#endif /* __cplusplus */
+
 // Extended DShot Telemetry
 enum {
 	DSHOT_EDT_ERPM = 0x00,

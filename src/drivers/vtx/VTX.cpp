@@ -41,11 +41,8 @@
 
 using namespace time_literals;
 
-<<<<<<< HEAD
 ModuleBase::Descriptor VTX::desc{task_spawn, custom_command, print_usage};
 
-=======
->>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 VTX::VTX(const char *device) :
 	ModuleParams(nullptr),
 	ScheduledWorkItem(MODULE_NAME, px4::serial_port_to_wq(device)),
@@ -104,11 +101,7 @@ void VTX::Run()
 	static constexpr auto _INTERVAL{50_ms};
 
 	if (should_exit()) {
-<<<<<<< HEAD
 		exit_and_cleanup(desc);
-=======
-		exit_and_cleanup();
->>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 		return;
 	}
 
@@ -347,11 +340,7 @@ void VTX::handle_uorb()
 int VTX::custom_command(int argc, char *argv[])
 {
 	if (!strcmp(argv[0], "start")) {
-<<<<<<< HEAD
 		if (is_running(desc)) {
-=======
-		if (is_running()) {
->>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 			return print_usage("already running");
 		}
 
@@ -362,11 +351,7 @@ int VTX::custom_command(int argc, char *argv[])
 		}
 	}
 
-<<<<<<< HEAD
 	if (!is_running(desc)) {
-=======
-	if (!is_running()) {
->>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 		return print_usage("not running");
 	}
 
@@ -410,13 +395,8 @@ int VTX::task_spawn(int argc, char *argv[])
 			return PX4_ERROR;
 		}
 
-<<<<<<< HEAD
 		desc.object.store(instance);
 		desc.task_id = task_id_is_work_queue;
-=======
-		_object.store(instance);
-		_task_id = task_id_is_work_queue;
->>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 
 		instance->ScheduleNow();
 
@@ -500,9 +480,5 @@ Supported protocols are:
 
 extern "C" __EXPORT int vtx_main(int argc, char *argv[])
 {
-<<<<<<< HEAD
 	return ModuleBase::main(VTX::desc, argc, argv);
-=======
-	return VTX::main(argc, argv);
->>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 }

@@ -619,9 +619,9 @@ ControlAllocator::handle_stopped_motors(const hrt_abstime now)
 
 	// Apply ice shedding, which applies _only_ to stopped motors
 	const bool any_stopped_motor_failed = 0 != (stopped_motors_due_to_effectiveness & (_handled_motor_failure_bitmask | _motor_stop_mask));
-	const float ice_shedding_output = get_ice_shedding_output(now);
+	const float ice_shedding_output = get_ice_shedding_output(now, any_stopped_motor_failed);
 
-	if (ice_shedding_output > FLT_EPSILON && !any_stopped_motor_failed) {
+	if (ice_shedding_output > FLT_EPSILON) {
 		for (int motors_idx = 0; motors_idx < _num_actuators[allocation_index] && motors_idx < actuator_motors_s::NUM_CONTROLS; motors_idx++) {
 			if (stopped_motors & 1u << motors_idx) {
 				_control_allocation[allocation_index]->_actuator_sp(motors_idx) = ice_shedding_output;
@@ -684,11 +684,7 @@ ControlAllocator::publish_control_allocator_status(int matrix_index)
 }
 
 float
-<<<<<<< HEAD
-ControlAllocator::get_ice_shedding_output(hrt_abstime now)
-=======
 ControlAllocator::get_ice_shedding_output(hrt_abstime now, bool any_stopped_motor_failed)
->>>>>>> cb2225a646 (ControlAllocator: Periodically spin MC motors to shed ice (#26322))
 {
 	const float period_sec = _param_ice_shedding_period.get();
 
@@ -698,20 +694,6 @@ ControlAllocator::get_ice_shedding_output(hrt_abstime now, bool any_stopped_moto
 	// If any stopped motor has failed, the feature will create much more
 	// torque than in the nominal case, and becomes pointless anyway as we
 	// cannot go back to multicopter
-<<<<<<< HEAD
-	const bool apply_shedding = _is_vtol && in_forward_flight;
-
-	if (feature_disabled_by_param || !apply_shedding) {
-		return 0.0f;
-
-	} else {
-		// Square wave output
-		const float elapsed_in_period = fmodf(static_cast<float>(now) / 1_s, period_sec);
-		const float ice_shedding_output = elapsed_in_period < ICE_SHEDDING_ON_SEC ? ICE_SHEDDING_OUTPUT : 0.0f;
-
-		return ice_shedding_output;
-	}
-=======
 	const bool apply_shedding = _is_vtol && in_forward_flight && !any_stopped_motor_failed;
 
 	if (feature_disabled_by_param || !apply_shedding) {
@@ -732,7 +714,6 @@ ControlAllocator::get_ice_shedding_output(hrt_abstime now, bool any_stopped_moto
 	_last_ice_shedding_update = now;
 
 	return _slew_limited_ice_shedding_output.getState();
->>>>>>> cb2225a646 (ControlAllocator: Periodically spin MC motors to shed ice (#26322))
 }
 
 void
@@ -755,19 +736,6 @@ ControlAllocator::publish_actuator_controls()
 	int actuator_idx = 0;
 	int actuator_idx_matrix[ActuatorEffectiveness::MAX_NUM_MATRICES] {};
 
-<<<<<<< HEAD
-=======
-	const uint32_t stopped_motors_due_to_effectiveness = _actuator_effectiveness->getStoppedMotors();
-
-	const uint32_t stopped_motors = stopped_motors_due_to_effectiveness
-					| _handled_motor_failure_bitmask
-					| _motor_stop_mask;
-
-	const bool any_stopped_motor_failed = 0 != (stopped_motors_due_to_effectiveness & (_handled_motor_failure_bitmask | _motor_stop_mask));
-
-	const float ice_shedding_output = get_ice_shedding_output(actuator_motors.timestamp, any_stopped_motor_failed);
-
->>>>>>> cb2225a646 (ControlAllocator: Periodically spin MC motors to shed ice (#26322))
 	// motors
 	int motors_idx;
 
@@ -775,18 +743,6 @@ ControlAllocator::publish_actuator_controls()
 		int selected_matrix = _control_allocation_selection_indexes[actuator_idx];
 		float actuator_sp = _control_allocation[selected_matrix]->getActuatorSetpoint()(actuator_idx_matrix[selected_matrix]);
 		actuator_motors.control[motors_idx] = PX4_ISFINITE(actuator_sp) ? actuator_sp : NAN;
-<<<<<<< HEAD
-=======
-
-		if (stopped_motors & (1u << motors_idx)) {
-			actuator_motors.control[motors_idx] = NAN;
-
-			if (ice_shedding_output > FLT_EPSILON) {
-				actuator_motors.control[motors_idx] = ice_shedding_output;
-			}
-		}
-
->>>>>>> cb2225a646 (ControlAllocator: Periodically spin MC motors to shed ice (#26322))
 		++actuator_idx_matrix[selected_matrix];
 		++actuator_idx;
 	}

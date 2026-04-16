@@ -2044,7 +2044,7 @@ void Commander::run()
 			_vehicle_status.timestamp = hrt_absolute_time();
 			_vehicle_status_pub.publish(_vehicle_status);
 
-			_failure_detector.publishStatus(_health_and_arming_checks.getEscArmStatus(), _health_and_arming_checks.getMotorFailureMask());
+			_failure_detector.publishStatus();
 		}
 
 		checkWorkerThread();

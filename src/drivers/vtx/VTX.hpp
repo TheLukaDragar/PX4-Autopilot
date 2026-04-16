@@ -56,19 +56,12 @@
 /**
  * @author Niklas Hauser <niklas@auterion.com>
  */
-<<<<<<< HEAD
 class VTX : public ModuleBase, public ModuleParams, public px4::ScheduledWorkItem
 {
 public:
 
 	static Descriptor desc;
 
-=======
-class VTX : public ModuleBase<VTX>, public ModuleParams, public px4::ScheduledWorkItem
-{
-public:
-
->>>>>>> 8efe98207a ([vtx] Add VTX driver with Tramp and SmartAudio support)
 	VTX(const char *device);
 	virtual ~VTX();
 

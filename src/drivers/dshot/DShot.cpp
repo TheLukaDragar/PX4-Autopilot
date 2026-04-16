@@ -33,10 +33,14 @@
 
 #include "DShot.h"
 
+#include <cmath>
+
 #include <parameters/param.h>
 #include <px4_arch/io_timer.h>
 
 #include <px4_platform_common/sem.hpp>
+
+ModuleBase::Descriptor DShot::desc{task_spawn, custom_command, print_usage};
 
 char DShot::_telemetry_device[] {};
 bool DShot::_telemetry_swap_rxtx{false};
@@ -62,6 +66,7 @@ DShot::~DShot()
 	perf_free(_bdshot_rpm_perf);
 	perf_free(_dshot_telem_perf);
 
+	_serial_telemetry_enabled = false;
 	delete _telemetry;
 }
 
@@ -82,8 +87,8 @@ int DShot::task_spawn(int argc, char *argv[])
 	DShot *instance = new DShot();
 
 	if (instance) {
-		_object.store(instance);
-		_task_id = task_id_is_work_queue;
+		desc.object.store(instance);
+		desc.task_id = task_id_is_work_queue;
 
 		if (instance->init() == PX4_OK) {
 			return PX4_OK;
@@ -94,8 +99,8 @@ int DShot::task_spawn(int argc, char *argv[])
 	}
 
 	delete instance;
-	_object.store(nullptr);
-	_task_id = -1;
+	desc.object.store(nullptr);
+	desc.task_id = -1;
 
 	return PX4_ERROR;
 }
@@ -105,6 +110,7 @@ void DShot::enable_dshot_outputs(const bool enabled)
 	if (enabled && !_outputs_initialized) {
 		unsigned int dshot_frequency = 0;
 		uint32_t dshot_frequency_param = 0;
+		uint32_t bdshot_channel_mask = 0;
 
 		for (int timer = 0; timer < MAX_IO_TIMERS; ++timer) {
 			uint32_t channels = io_timer_get_group(timer);
@@ -120,21 +126,30 @@ void DShot::enable_dshot_outputs(const bool enabled)
 			param_t handle = param_find(param_name);
 			param_get(handle, &tim_config);
 			unsigned int dshot_frequency_request = 0;
+			bool timer_is_bdshot = false;
 
-			if (tim_config == -5) {
+			/* Actuator timer protocol: see pwm_out/module.yaml (-8..-3) */
+			if (tim_config == -8 || tim_config == -5) {
 				dshot_frequency_request = DSHOT150;
+				timer_is_bdshot = (tim_config == -8);
 
-			} else if (tim_config == -4) {
+			} else if (tim_config == -7 || tim_config == -4) {
 				dshot_frequency_request = DSHOT300;
+				timer_is_bdshot = (tim_config == -7);
 
-			} else if (tim_config == -3) {
+			} else if (tim_config == -6 || tim_config == -3) {
 				dshot_frequency_request = DSHOT600;
+				timer_is_bdshot = (tim_config == -6);
 
 			} else {
 				_output_mask &= ~channels; // don't use for dshot
 			}
 
 			if (dshot_frequency_request != 0) {
+				if (timer_is_bdshot) {
+					bdshot_channel_mask |= channels;
+				}
+
 				if (dshot_frequency != 0 && dshot_frequency != dshot_frequency_request) {
 					PX4_WARN("Only supporting a single frequency, adjusting param %s", param_name);
 					param_set_no_notification(handle, &dshot_frequency_param);
@@ -146,9 +161,9 @@ void DShot::enable_dshot_outputs(const bool enabled)
 			}
 		}
 
-		_bidirectional_dshot_enabled = _param_bidirectional_enable.get();
+		_bidirectional_dshot_enabled = (bdshot_channel_mask != 0);
 
-		int ret = up_dshot_init(_output_mask, dshot_frequency, _bidirectional_dshot_enabled);
+		int ret = up_dshot_init(_output_mask, bdshot_channel_mask, dshot_frequency, _param_dshot_bidir_edt.get());
 
 		if (ret < 0) {
 			PX4_ERR("up_dshot_init failed (%i)", ret);
@@ -205,18 +220,22 @@ void DShot::init_telemetry(const char *device, bool swap_rxtx)
 		}
 	}
 
-	if (device != NULL) {
-		int ret = _telemetry->init(device, swap_rxtx);
+	if (device != nullptr) {
+		const int ret = _telemetry->init(device, swap_rxtx);
 
 		if (ret != 0) {
 			PX4_ERR("telemetry init failed (%i)", ret);
+
+		} else {
+			_serial_telemetry_enabled = true;
+			_serial_telem_delay_until = hrt_absolute_time();
 		}
 	}
 
 	update_num_motors();
 }
 
-int DShot::handle_new_telemetry_data(const int telemetry_index, const DShotTelemetry::EscData &data, bool ignore_rpm)
+int DShot::handle_new_telemetry_data(const int telemetry_index, const EscData &data, bool ignore_rpm)
 {
 	int ret = 0;
 	// fill in new motor data
@@ -229,9 +248,10 @@ int DShot::handle_new_telemetry_data(const int telemetry_index, const DShotTelem
 
 		if (!ignore_rpm) {
 			// If we also have bidirectional dshot, we use rpm and timestamps from there.
-			esc_status.esc[telemetry_index].timestamp       = data.time;
-			esc_status.esc[telemetry_index].esc_rpm         = (static_cast<int>(data.erpm) * 100) /
-					(_param_mot_pole_count.get() / 2);
+			const unsigned pol_idx = math::min(telemetry_index, 11);
+			const int32_t pole_pairs = math::max(static_cast<int32_t>(_motor_pole_count[pol_idx] / 2), static_cast<int32_t>(1));
+			esc_status.esc[telemetry_index].timestamp       = data.timestamp;
+			esc_status.esc[telemetry_index].esc_rpm         = (static_cast<int>(data.erpm) * 100) / pole_pairs;
 		}
 
 		esc_status.esc[telemetry_index].esc_voltage     = static_cast<float>(data.voltage) * 0.01f;
@@ -289,7 +309,7 @@ void DShot::publish_esc_status(void)
 	if (_bidirectional_dshot_enabled) {
 		for (unsigned i = 0; i < _num_outputs; i++) {
 			if (_mixing_output.isFunctionSet(i)) {
-				if (up_bdshot_channel_status(i)) {
+				if (up_bdshot_channel_online(i) > 0) {
 					esc_status.esc_online_flags |= 1 << i;
 
 				} else {
@@ -324,9 +344,15 @@ int DShot::handle_new_bdshot_erpm(void)
 	esc_status.esc_connectiontype = esc_status_s::ESC_CONNECTION_TYPE_DSHOT;
 	esc_status.esc_armed_flags = _outputs_on;
 
-	// We wait until all are ready.
-	if (up_bdshot_num_erpm_ready() < _num_motors) {
-		return 0;
+	// Wait until BDShot eRPM is available for every used motor output (per-channel ready bits).
+	{
+		const uint16_t ready_mask = up_bdshot_get_ready_mask();
+
+		for (unsigned i = 0; i < _num_outputs; i++) {
+			if (_mixing_output.isFunctionSet(i) && ((ready_mask & (1u << i)) == 0)) {
+				return 0;
+			}
+		}
 	}
 
 	for (unsigned i = 0; i < _num_outputs; i++) {
@@ -335,7 +361,9 @@ int DShot::handle_new_bdshot_erpm(void)
 				num_erpms++;
 				esc_status.esc_online_flags |= 1 << telemetry_index;
 				esc_status.esc[telemetry_index].timestamp = hrt_absolute_time();
-				esc_status.esc[telemetry_index].esc_rpm = (erpm * 100) / (_param_mot_pole_count.get() / 2);
+				const unsigned pol_idx = math::min(telemetry_index, 11);
+				const int32_t pole_pairs = math::max(static_cast<int32_t>(_motor_pole_count[pol_idx] / 2), static_cast<int32_t>(1));
+				esc_status.esc[telemetry_index].esc_rpm = (erpm * 100) / pole_pairs;
 				esc_status.esc[telemetry_index].actuator_function = _actuator_functions[telemetry_index];
 			}
 
@@ -385,32 +413,37 @@ void DShot::mixerChanged()
 	update_num_motors();
 }
 
-bool DShot::updateOutputs(uint16_t outputs[MAX_ACTUATORS],
+bool DShot::updateOutputs(float outputs[MAX_ACTUATORS],
 			  unsigned num_outputs, unsigned num_control_groups_updated)
 {
 	if (!_outputs_on) {
 		return false;
 	}
 
-	int requested_telemetry_index = -1;
-
-	if (_telemetry) {
-		requested_telemetry_index = _telemetry->getRequestMotorIndex();
-	}
-
 	int telemetry_index = 0;
 
 	for (int i = 0; i < (int)num_outputs; i++) {
 
-		uint16_t output = outputs[i];
+		uint16_t output = static_cast<uint16_t>(lroundf(outputs[i]));
+
+		const bool set_telemetry_bit = _telemetry && _serial_telemetry_enabled
+					       && (telemetry_index == _telemetry_motor_index)
+					       && _telemetry->telemetryResponseFinished()
+					       && _telemetry->commandResponseFinished()
+					       && (hrt_absolute_time() > _serial_telem_delay_until);
+
+		if (set_telemetry_bit) {
+			_telemetry->startTelemetryRequest();
+		}
 
 		if (output == DSHOT_DISARM_VALUE) {
 
 			if (_current_command.valid() && (_current_command.motor_mask & (1 << i))) {
-				up_dshot_motor_command(i, _current_command.command, true);
+				up_dshot_motor_command(i, static_cast<uint16_t>(_current_command.command), true);
 
 			} else {
-				up_dshot_motor_command(i, DShot_cmd_motor_stop, telemetry_index == requested_telemetry_index);
+				up_dshot_motor_command(i, static_cast<uint16_t>(dshot_command_t::DShot_cmd_motor_stop),
+						       set_telemetry_bit);
 			}
 
 		} else {
@@ -420,7 +453,7 @@ bool DShot::updateOutputs(uint16_t outputs[MAX_ACTUATORS],
 			}
 
 			up_dshot_motor_data_set(i, math::min(output, static_cast<uint16_t>(DSHOT_MAX_THROTTLE)),
-						telemetry_index == requested_telemetry_index);
+						set_telemetry_bit);
 		}
 
 		telemetry_index += _mixing_output.isFunctionSet(i);
@@ -473,13 +506,96 @@ uint16_t DShot::convert_output_to_3d_scaling(uint16_t output)
 	return output;
 }
 
+bool DShot::set_next_telemetry_index()
+{
+	if (_num_motors <= 0) {
+		_telemetry_motor_index = -1;
+		_telemetry_requested_mask = 0;
+		return true;
+	}
+
+	const uint16_t active_motor_mask = static_cast<uint16_t>((1u << _num_motors) - 1u);
+
+	const int start = (_telemetry_motor_index < 0) ? 0 : (_telemetry_motor_index + 1) % DSHOT_MAX_MOTORS;
+	int motor = start;
+
+	do {
+		if ((active_motor_mask & (1 << motor)) && ((_telemetry_requested_mask & (1 << motor)) == 0)) {
+			_telemetry_motor_index = motor;
+			_telemetry_requested_mask |= (1 << motor);
+			return false;
+		}
+
+		motor = (motor + 1) % DSHOT_MAX_MOTORS;
+	} while (motor != start);
+
+	_telemetry_motor_index = -1;
+	_telemetry_requested_mask = 0;
+	return true;
+}
+
+bool DShot::process_serial_telemetry()
+{
+	if (!_telemetry || !_serial_telemetry_enabled) {
+		return false;
+	}
+
+	if (!_telemetry->commandResponseFinished()) {
+		if (_telemetry->commandResponseStarted()) {
+			_telemetry->parseCommandResponse();
+		}
+
+		return false;
+	}
+
+	if (_telemetry_motor_index < 0) {
+		set_next_telemetry_index();
+		return false;
+	}
+
+	const int motor_index = _telemetry_motor_index;
+	EscData esc{};
+	esc.source = TelemetrySource::Serial;
+	esc.motor_index = motor_index;
+
+	switch (_telemetry->parseTelemetryPacket(&esc)) {
+	case TelemetryStatus::NotStarted:
+	case TelemetryStatus::NotReady:
+		return false;
+
+	case TelemetryStatus::Ready: {
+		const int need_publish = handle_new_telemetry_data(motor_index, esc, _bidirectional_dshot_enabled);
+		set_next_telemetry_index();
+		return need_publish != 0;
+	}
+
+	case TelemetryStatus::Timeout: {
+		const int need_publish = handle_new_telemetry_data(motor_index, esc, _bidirectional_dshot_enabled);
+		set_next_telemetry_index();
+		return need_publish != 0;
+	}
+
+	case TelemetryStatus::ParseError: {
+		const int need_publish = handle_new_telemetry_data(motor_index, esc, _bidirectional_dshot_enabled);
+		_serial_telem_delay_until = hrt_absolute_time() + 1_s;
+		set_next_telemetry_index();
+		return need_publish != 0;
+	}
+
+	default:
+		break;
+	}
+
+	return false;
+}
+
 void DShot::Run()
 {
 	if (should_exit()) {
 		ScheduleClear();
 		_mixing_output.unregister();
 
-		exit_and_cleanup();
+		exit_and_cleanup(desc);
 		return;
 	}
 
@@ -494,17 +610,12 @@ void DShot::Run()
 		enable_dshot_outputs(outputs_on);
 	}
 
-	if (_telemetry) {
-		const int telem_update = _telemetry->update(_num_motors);
+	if (_telemetry && _serial_telemetry_enabled) {
+		const bool need_to_publish = process_serial_telemetry();
 
-		if (telem_update >= 0) {
-			const int need_to_publish = handle_new_telemetry_data(telem_update, _telemetry->latestESCData(),
-						    _bidirectional_dshot_enabled);
-
-			// We don't want to publish twice, once by telemetry and once by bidirectional dishot.
-			if (!_bidirectional_dshot_enabled && need_to_publish) {
-				publish_esc_status();
-			}
+		// We don't want to publish twice, once by telemetry and once by bidirectional dshot.
+		if (!_bidirectional_dshot_enabled && need_to_publish) {
+			publish_esc_status();
 		}
 	}
 
@@ -644,6 +755,18 @@ void DShot::update_params()
 		param_get(h, &_esc_temp_over);
 	}
 
+	for (unsigned i = 0; i < sizeof(_motor_pole_count) / sizeof(_motor_pole_count[0]); ++i) {
+		char name[20];
+		snprintf(name, sizeof(name), "DSHOT_MOT_POL%u", i + 1);
+		h = param_find(name);
+
+		if (h != PARAM_INVALID) {
+			int32_t v = 14;
+			param_get(h, &v);
+			_motor_pole_count[i] = math::constrain(v, int32_t{2}, int32_t{400});
+		}
+	}
+
 	// we use a minimum value of 1, since 0 is for disarmed
 	_mixing_output.setAllMinValues(math::constrain(static_cast<int>((_param_dshot_min.get() *
 				       static_cast<float>(DSHOT_MAX_THROTTLE))),
@@ -706,30 +829,30 @@ int DShot::custom_command(int argc, char *argv[])
 	};
 
 	constexpr VerbCommand commands[] = {
-		{"reverse", DShot_cmd_spin_direction_2, 10},
-		{"normal", DShot_cmd_spin_direction_1, 10},
-		{"save", DShot_cmd_save_settings, 10},
-		{"3d_on", DShot_cmd_3d_mode_on, 10},
-		{"3d_off", DShot_cmd_3d_mode_off, 10},
-		{"beep1", DShot_cmd_beacon1, 1},
-		{"beep2", DShot_cmd_beacon2, 1},
-		{"beep3", DShot_cmd_beacon3, 1},
-		{"beep4", DShot_cmd_beacon4, 1},
-		{"beep5", DShot_cmd_beacon5, 1},
+		{"reverse", dshot_command_t::DShot_cmd_spin_direction_2, 10},
+		{"normal", dshot_command_t::DShot_cmd_spin_direction_1, 10},
+		{"save", dshot_command_t::DShot_cmd_save_settings, 10},
+		{"3d_on", dshot_command_t::DShot_cmd_3d_mode_on, 10},
+		{"3d_off", dshot_command_t::DShot_cmd_3d_mode_off, 10},
+		{"beep1", dshot_command_t::DShot_cmd_beacon1, 1},
+		{"beep2", dshot_command_t::DShot_cmd_beacon2, 1},
+		{"beep3", dshot_command_t::DShot_cmd_beacon3, 1},
+		{"beep4", dshot_command_t::DShot_cmd_beacon4, 1},
+		{"beep5", dshot_command_t::DShot_cmd_beacon5, 1},
 	};
 
 	for (unsigned i = 0; i < sizeof(commands) / sizeof(commands[0]); ++i) {
 		if (!strcmp(verb, commands[i].name)) {
-			if (!is_running()) {
+			if (!is_running(desc)) {
 				PX4_ERR("module not running");
 				return -1;
 			}
 
-			return get_instance()->send_command_thread_safe(commands[i].command, commands[i].num_repetitions, motor_index);
+			return get_instance<DShot>(desc)->send_command_thread_safe(commands[i].command, commands[i].num_repetitions, motor_index);
 		}
 	}
 
-	if (!is_running()) {
+	if (!is_running(desc)) {
 		int ret = DShot::task_spawn(argc, argv);
 
 		if (ret) {
@@ -827,5 +950,5 @@ After saving, the reversed direction will be regarded as the normal one. So to r
 
 extern "C" __EXPORT int dshot_main(int argc, char *argv[])
 {
-	return DShot::main(argc, argv);
+	return ModuleBase::main(DShot::desc, argc, argv);
 }

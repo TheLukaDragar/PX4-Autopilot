@@ -33,6 +33,7 @@
 #pragma once
 
 #include <drivers/drv_dshot.h>
+#include <drivers/drv_hrt.h>
 #include <lib/mixer_module/mixer_module.hpp>
 #include <px4_platform_common/getopt.h>
 #include <px4_platform_common/module.h>
@@ -57,9 +58,11 @@ static constexpr int DSHOT_DISARM_VALUE = 0;
 static constexpr int DSHOT_MIN_THROTTLE = 1;
 static constexpr int DSHOT_MAX_THROTTLE = 1999;
 
-class DShot final : public ModuleBase<DShot>, public OutputModuleInterface
+class DShot final : public ModuleBase, public OutputModuleInterface
 {
 public:
+	static Descriptor desc;
+
 	DShot();
 	~DShot() override;
 
@@ -88,9 +91,9 @@ public:
 	/** @see ModuleBase */
 	static int task_spawn(int argc, char *argv[]);
 
-	bool telemetry_enabled() const { return _telemetry != nullptr; }
+	bool telemetry_enabled() const { return _serial_telemetry_enabled; }
 
-	bool updateOutputs(uint16_t outputs[MAX_ACTUATORS],
+	bool updateOutputs(float outputs[MAX_ACTUATORS],
 			   unsigned num_outputs, unsigned num_control_groups_updated) override;
 
 private:
@@ -123,7 +126,10 @@ private:
 
 	void init_telemetry(const char *device, bool swap_rxtx);
 
-	int handle_new_telemetry_data(const int telemetry_index, const DShotTelemetry::EscData &data, bool ignore_rpm);
+	bool process_serial_telemetry();
+	bool set_next_telemetry_index();
+
+	int handle_new_telemetry_data(const int telemetry_index, const EscData &data, bool ignore_rpm);
 
 	void publish_esc_status(void);
 
@@ -143,6 +149,11 @@ private:
 	uint32_t _reversible_outputs{};
 
 	DShotTelemetry *_telemetry{nullptr};
+
+	bool _serial_telemetry_enabled{false};
+	int _telemetry_motor_index{-1};
+	uint16_t _telemetry_requested_mask{0};
+	hrt_abstime _serial_telem_delay_until{0};
 
 	uORB::PublicationMultiData<esc_status_s> esc_status_pub{ORB_ID(esc_status)};
 
@@ -176,12 +187,14 @@ private:
 	int32_t _esc_temp_warn{0};
 	int32_t _esc_temp_over{0};
 
+	/** Per-motor magnetic pole counts (`DSHOT_MOT_POL1`–`DSHOT_MOT_POL12`), refreshed in update_params(). */
+	int32_t _motor_pole_count[12] {14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14};
+
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::DSHOT_MIN>)    _param_dshot_min,
 		(ParamBool<px4::params::DSHOT_3D_ENABLE>) _param_dshot_3d_enable,
 		(ParamInt<px4::params::DSHOT_3D_DEAD_H>) _param_dshot_3d_dead_h,
 		(ParamInt<px4::params::DSHOT_3D_DEAD_L>) _param_dshot_3d_dead_l,
-		(ParamInt<px4::params::MOT_POLE_COUNT>) _param_mot_pole_count,
-		(ParamBool<px4::params::DSHOT_BIDIR_EN>) _param_bidirectional_enable
+		(ParamBool<px4::params::DSHOT_BIDIR_EDT>) _param_dshot_bidir_edt
 	)
 };

@@ -39,6 +39,10 @@
 
 AuxGlobalPosition::AuxGlobalPosition() : ModuleParams(nullptr)
 {
+	for (int i = 0; i < MAX_AGP_IDS; i++) {
+		_instance_slot_map[i] = -1;
+	}
+
 	for (int slot = 0; slot < MAX_AGP_IDS; slot++) {
 		_id_param_values[slot] = getAgpParamInt32("ID", slot);
 
