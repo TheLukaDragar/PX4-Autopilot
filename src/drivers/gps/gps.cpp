@@ -129,11 +129,11 @@ public:
 		Count
 	};
 
-	static Descriptor desc;
-
 	GPS(const char *path, gps_driver_mode_t mode, GPSHelper::Interface interface, Instance instance,
 	    unsigned configured_baudrate);
 	~GPS() override;
+
+	static Descriptor desc;
 
 	/** @see ModuleBase */
 	static int task_spawn(int argc, char *argv[]);
@@ -153,7 +153,7 @@ public:
 	static int print_usage(const char *reason = nullptr);
 
 	/**
-	 * task spawn trampoline for the main GPS
+	 * task spawn trampoline for the primary GPS
 	 */
 	static int run_trampoline(int argc, char *argv[]);
 
@@ -307,10 +307,9 @@ private:
 	static constexpr int SET_CLOCK_DRIFT_TIME_S{5};			///< RTC drift time when time synchronization is needed (in seconds)
 };
 
-ModuleBase::Descriptor GPS::desc{task_spawn, custom_command, print_usage};
-
 px4::atomic_bool GPS::_is_gps_main_advertised{false};
 px4::atomic<GPS *> GPS::_secondary_instance{nullptr};
+ModuleBase::Descriptor GPS::desc{task_spawn, custom_command, print_usage};
 
 /*
  * Driver 'main' command.
@@ -327,9 +326,13 @@ GPS::GPS(const char *path, gps_driver_mode_t mode, GPSHelper::Interface interfac
 	_instance(instance)
 {
 	/* store port name */
-	strncpy(_port, path, sizeof(_port) - 1);
-	/* enforce null termination */
-	_port[sizeof(_port) - 1] = '\0';
+	if (path != nullptr) {
+		strncpy(_port, path, sizeof(_port) - 1);
+		_port[sizeof(_port) - 1] = '\0';
+
+	} else {
+		_port[0] = '\0';
+	}
 
 	_sensor_gps.heading = NAN;
 	_sensor_gps.heading_offset = NAN;
@@ -971,9 +974,9 @@ GPS::run()
 
 				_helper = new GPSDriverUBX(_interface, &GPS::callback, this, &_sensor_gps, _p_report_sat_info, settings);
 
-			set_device_type(DRV_GPS_DEVTYPE_UBX);
-			break;
-		}
+				set_device_type(DRV_GPS_DEVTYPE_UBX);
+				break;
+			}
 
 #ifndef CONSTRAINED_FLASH
 
@@ -1512,7 +1515,7 @@ int GPS::task_spawn(int argc, char *argv[], Instance instance)
 {
 	px4_main_t entry_point;
 	if (instance == Instance::Main) {
-		entry_point = (px4_main_t)&GPS::run_trampoline;
+		entry_point = (px4_main_t)&run_trampoline;
 	} else {
 		entry_point = (px4_main_t)&run_trampoline_secondary;
 	}
