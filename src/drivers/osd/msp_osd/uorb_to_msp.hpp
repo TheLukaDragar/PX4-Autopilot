@@ -108,9 +108,12 @@ msp_rendor_vario_t construct_rendor_VARIO(const vehicle_local_position_s &vehicl
 msp_raw_gps_t construct_RAW_GPS(const sensor_gps_s &vehicle_gps_position,
 				const airspeed_validated_s &airspeed_validated);
 
-msp_rendor_est_speed_t construct_rendor_EST_SPEED(const vehicle_local_position_s &vehicle_local_position);
+/** @param grid_pos Packed BF position (e.g. osd_est_speed_pos); must match osd_flight_dist_pos in MSP_OSD_CONFIG. */
+msp_rendor_est_speed_t construct_rendor_EST_SPEED(const vehicle_local_position_s &vehicle_local_position,
+		uint16_t grid_pos);
 
-msp_rendor_batt_pct_t construct_rendor_BATT_PCT(const battery_status_s &battery_status);
+/** @param grid_pos Betaflight packed OSD position (e.g. osd_batt_pct_pos); must match MSP_OSD_CONFIG osd_debug_pos. */
+msp_rendor_batt_pct_t construct_rendor_BATT_PCT(const battery_status_s &battery_status, uint16_t grid_pos);
 
 // construct an MSP_COMP_GPS struct
 msp_comp_gps_t construct_COMP_GPS(const home_position_s &home_position,
@@ -140,7 +143,8 @@ msp_rendor_altitude_t construct_Rendor_ALTITUDE(const sensor_gps_s &vehicle_gps_
 msp_rendor_distanceToHome_t construct_rendor_distanceToHome(const home_position_s &home_position,
 		const vehicle_global_position_s &vehicle_global_position);
 
-msp_rendor_esc_tmp_t construct_rendor_ESC_TMP(const esc_status_s &esc_status);
+/** @param grid_pos Packed BF position (e.g. osd_esc_tmp_pos); must match MSP_OSD_CONFIG. */
+msp_rendor_esc_tmp_t construct_rendor_ESC_TMP(const esc_status_s &esc_status, uint16_t grid_pos);
 
 // construct an MSP_ESC_SENSOR_DATA struct
 msp_esc_sensor_data_dji_t construct_ESC_SENSOR_DATA();

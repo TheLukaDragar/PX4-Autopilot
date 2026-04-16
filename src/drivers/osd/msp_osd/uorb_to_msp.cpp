@@ -343,7 +343,7 @@ msp_rendor_vario_t construct_rendor_VARIO(const vehicle_local_position_s &vehicl
 {
 	msp_rendor_vario_t m{};
 	m.screenYPosition = 0x06; // row 6
-	m.screenXPosition = 0x16; // col 22
+	m.screenXPosition = 0x17; // col 23 — with est speed
 
 	if (!vehicle_local_position.v_z_valid || !PX4_ISFINITE(vehicle_local_position.vz)) {
 		m.iconIndex = 0x75; // SYM_ARROW_SMALL_UP (placeholder)
@@ -665,12 +665,12 @@ msp_rendor_altitude_t construct_Rendor_ALTITUDE(const sensor_gps_s &vehicle_gps_
 	return altitude;
 }
 
-msp_rendor_esc_tmp_t construct_rendor_ESC_TMP(const esc_status_s &esc_status)
+msp_rendor_esc_tmp_t construct_rendor_ESC_TMP(const esc_status_s &esc_status, uint16_t grid_pos)
 {
-	msp_rendor_esc_tmp_t esc_tmp;
+	msp_rendor_esc_tmp_t esc_tmp{};
 
-	esc_tmp.screenYPosition = 0x04;
-	esc_tmp.screenXPosition = 0x0A;
+	esc_tmp.screenYPosition = osd_grid_y_bf(grid_pos);
+	esc_tmp.screenXPosition = osd_grid_x_bf(grid_pos);
 
 	float max_temp = -INFINITY;
 	bool any_valid = false;
@@ -693,24 +693,47 @@ msp_rendor_esc_tmp_t construct_rendor_ESC_TMP(const esc_status_s &esc_status)
 	return esc_tmp;
 }
 
-msp_rendor_batt_pct_t construct_rendor_BATT_PCT(const battery_status_s &battery_status)
+msp_rendor_batt_pct_t construct_rendor_BATT_PCT(const battery_status_s &battery_status, uint16_t grid_pos)
 {
 	msp_rendor_batt_pct_t m {};
 
-	m.screenYPosition = 0x04;
-	m.screenXPosition = 0x0E;
+	m.screenYPosition = osd_grid_y_bf(grid_pos);
+	m.screenXPosition = osd_grid_x_bf(grid_pos);
 
 	if (!battery_status.connected) {
+		m.iconIndex = 0x96; // SYM_BATT_EMPTY
 		snprintf(m.str, sizeof(m.str), " --");
+		return m;
+	}
 
-	} else if (PX4_ISFINITE(battery_status.remaining) && battery_status.remaining >= 0.f) {
+	const float cell_v = battery_status.cell_count > 0
+			     ? battery_status.voltage_v / (float)battery_status.cell_count
+			     : battery_status.voltage_v;
+
+	// Same SYM_BATT_* bar icons as construct_rendor_BATTERY_STATE (0x97 "MAIN_BATT" renders wrong on some fonts).
+	if (cell_v > 4.0f) {
+		m.iconIndex = 0x91; // SYM_BATT_5
+
+	} else if (cell_v > 3.5f) {
+		m.iconIndex = 0x93; // SYM_BATT_3
+
+	} else if (cell_v > 3.2f) {
+		m.iconIndex = 0x95; // SYM_BATT_1
+
+	} else {
+		m.iconIndex = 0x96; // SYM_BATT_EMPTY
+	}
+
+	if (PX4_ISFINITE(battery_status.remaining) && battery_status.remaining >= 0.f) {
 		float pct = battery_status.remaining * 100.f;
 
 		if (pct > 100.f) {
 			pct = 100.f;
 		}
 
-		snprintf(m.str, sizeof(m.str), "%.0f%%", (double)pct);
+		const int ip = math::constrain((int)roundf(pct), 0, 100);
+		// Integer only — '%' (0x25) is not a reliable glyph on some MSP DisplayPort fonts and can blank the line.
+		snprintf(m.str, sizeof(m.str), "%d", ip);
 
 	} else if (PX4_ISFINITE(battery_status.volt_based_soc_estimate) && battery_status.volt_based_soc_estimate >= 0.f) {
 		float pct = battery_status.volt_based_soc_estimate * 100.f;
@@ -719,21 +742,25 @@ msp_rendor_batt_pct_t construct_rendor_BATT_PCT(const battery_status_s &battery_
 			pct = 100.f;
 		}
 
-		snprintf(m.str, sizeof(m.str), "%.0f%%", (double)pct);
+		const int ip = math::constrain((int)roundf(pct), 0, 100);
+		snprintf(m.str, sizeof(m.str), "%d", ip);
 
 	} else {
+		m.iconIndex = 0x96;
 		snprintf(m.str, sizeof(m.str), " --");
 	}
 
 	return m;
 }
 
-msp_rendor_est_speed_t construct_rendor_EST_SPEED(const vehicle_local_position_s &vehicle_local_position)
+
+msp_rendor_est_speed_t construct_rendor_EST_SPEED(const vehicle_local_position_s &vehicle_local_position,
+		uint16_t grid_pos)
 {
 	msp_rendor_est_speed_t est {};
 
-	est.screenYPosition = 0x04;
-	est.screenXPosition = 0x0C;
+	est.screenYPosition = osd_grid_y_bf(grid_pos);
+	est.screenXPosition = osd_grid_x_bf(grid_pos);
 
 	if (vehicle_local_position.v_xy_valid) {
 		const float kmh = hypotf(vehicle_local_position.vx, vehicle_local_position.vy) * 3.6f;

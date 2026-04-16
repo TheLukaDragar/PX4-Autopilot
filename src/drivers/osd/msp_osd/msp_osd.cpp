@@ -68,6 +68,7 @@
 #include <uORB/topics/esc_status.h>
 
 #include <lib/geo/geo.h>
+#include <lib/mathlib/mathlib.h>
 
 #include "MspV1.hpp"
 
@@ -109,21 +110,24 @@ const uint16_t osd_altitude_pos = 2416;
 // Bottom Row 2
 const uint16_t osd_rssi_value_pos = 2445;
 const uint16_t osd_avg_cell_voltage_pos = 2446;
-const uint16_t osd_esc_tmp_pos = 2447;
-const uint16_t osd_est_speed_pos = 2448; // DisplayPort est. ground speed (row with ESC / mAh)
-const uint16_t osd_batt_pct_pos = 2443; // main battery remaining % (QGC-style)
+const uint16_t osd_esc_tmp_pos = 1515; // OSD_POS(43,15) — lower than 1451 (43,13) so ESC temp stays visible
+// OSD_POS(23,5): above crosshair; 1 right of col 22
+const uint16_t osd_est_speed_pos = 183;
+const uint16_t osd_batt_pct_pos = 2447; // main battery remaining % — swapped with ESC temp (was 2443)
 const uint16_t osd_mah_drawn_pos = 2449;
 
 // Bottom Row 3
 const uint16_t osd_craft_name_pos = 2480;
-const uint16_t osd_crosshairs_pos = 2319;
+// Betaflight OSD_POS(x,y) for 3-char crosshair (SYM 0x72–0x74). Keep left edge x so x+2 < 30 — OSD_POS(31,10)
+// placed glyphs in cols 31–33 and disappeared on SD / 30-char-wide canvases.
+const uint16_t osd_crosshairs_pos = 344; // OSD_POS(24,10) — one row down vs 312; cols 24–26
 
 // Right
 const uint16_t osd_main_batt_voltage_pos = 2073;
 const uint16_t osd_current_draw_pos = 2103;
 
 
-const uint16_t osd_numerical_vario_pos = 2381; // row 10, col 13 — left of centre, below GPS
+const uint16_t osd_numerical_vario_pos = 215; // OSD_POS(23,6) — with est speed
 
 #define OSD_GRID_COL_MAX (59) // From betaflight-configurator OSD tab
 #define OSD_GRID_ROW_MAX (21) // From betaflight-configurator OSD tab
@@ -328,7 +332,9 @@ void MspOsd::Run()
 
 	// Betaflight draws crosshairs via DisplayPort WRITE_STRING (3 font chars), not MSP_OSD_CONFIG alone.
 	if (enabled(SymbolIndex::CROSSHAIRS)) {
-		const uint16_t grid_pos = osd_crosshairs_pos - 32 * _param_osd_ch_height.get();
+		const int32_t raw = (int32_t)osd_crosshairs_pos - 32 * (int32_t)_param_osd_ch_height.get();
+		// Betaflight OSD packed positions are 11-bit (max 0x7FF); avoid uint16_t underflow when CH_HEIGHT is large.
+		const uint16_t grid_pos = (uint16_t)math::constrain(raw, (int32_t)0, (int32_t)0x7FF);
 		const auto xh = msp_osd::construct_rendor_CROSSHAIRS(grid_pos);
 		this->sendDisplayPort(&xh, sizeof(xh));
 	}
@@ -390,7 +396,7 @@ void MspOsd::Run()
 		this->sendDisplayPort(&msg, sizeof(msp_rendor_battery_state_t));
 
 		if (enabled(SymbolIndex::BATT_REMAIN_PCT)) {
-			const auto pct_msg = msp_osd::construct_rendor_BATT_PCT(battery_status);
+			const auto pct_msg = msp_osd::construct_rendor_BATT_PCT(battery_status, osd_batt_pct_pos);
 			this->sendDisplayPort(&pct_msg, sizeof(msp_rendor_batt_pct_t));
 		}
 
@@ -410,7 +416,7 @@ void MspOsd::Run()
 	if (enabled(SymbolIndex::ESC_TMP)) {
 		esc_status_s esc_status{};
 		_esc_status_sub.copy(&esc_status);
-		const auto msg = msp_osd::construct_rendor_ESC_TMP(esc_status);
+		const auto msg = msp_osd::construct_rendor_ESC_TMP(esc_status, osd_esc_tmp_pos);
 		this->sendDisplayPort(&msg, sizeof(msp_rendor_esc_tmp_t));
 	}
 
@@ -418,7 +424,7 @@ void MspOsd::Run()
 	if (enabled(SymbolIndex::EST_SPEED)) {
 		vehicle_local_position_s vehicle_local_position{};
 		_vehicle_local_position_sub.copy(&vehicle_local_position);
-		const auto msg = msp_osd::construct_rendor_EST_SPEED(vehicle_local_position);
+		const auto msg = msp_osd::construct_rendor_EST_SPEED(vehicle_local_position, osd_est_speed_pos);
 		this->sendDisplayPort(&msg, sizeof(msp_rendor_est_speed_t));
 	}
 

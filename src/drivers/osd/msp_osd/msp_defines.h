@@ -483,7 +483,8 @@ struct msp_rendor_esc_tmp_t {
 	uint8_t screenYPosition;
 	uint8_t screenXPosition;
 	uint8_t iconAttrs = 0x00;
-	uint8_t iconIndex = 0x00; // no icon
+	/** Betaflight SYM_TEMPERATURE (osd_symbols.h) — prefix like pitch/roll SYM. */
+	uint8_t iconIndex = 0x7A;
 
 	char str[6]; // " 99C" or "100C"
 } __attribute__((packed));
@@ -494,7 +495,8 @@ struct msp_rendor_est_speed_t {
 	uint8_t screenYPosition;
 	uint8_t screenXPosition;
 	uint8_t iconAttrs = 0x00;
-	uint8_t iconIndex = 0x00;
+	/** Betaflight SYM_SPEED — prefix before km/h digits. */
+	uint8_t iconIndex = 0x70;
 
 	char str[10]; // e.g. "54" or "162" (integer km/h), or " --"
 } __attribute__((packed));
@@ -505,9 +507,10 @@ struct msp_rendor_batt_pct_t {
 	uint8_t screenYPosition;
 	uint8_t screenXPosition;
 	uint8_t iconAttrs = 0x00;
-	uint8_t iconIndex = 0x00;
+	/** Betaflight SYM_BATT_* — use 0x91–0x96 (not 0x97 MAIN_BATT: maps wrong e.g. skull on some fonts). */
+	uint8_t iconIndex = 0x91;
 
-	char str[8]; // e.g. "87%" or " --"
+	char str[8]; // e.g. "100" / "87" / " --" (no ASCII '%' — glyph 0x25 unreliable on some VTX)
 } __attribute__((packed));
 
 /** mAh drawn — BF SYM_MAH (0x07) prefix, "1234" text. */
