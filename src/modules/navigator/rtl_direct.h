@@ -107,7 +107,7 @@ public:
 	void setReturnAltMin(bool min) { _enforce_rtl_alt = min; }
 	void setRtlAlt(float alt) {_rtl_alt = alt;};
 
-	void setRtlPosition(const PositionYawSetpoint &rtl_position, const loiter_point_s &loiter_pos);
+	void setRtlPosition(const PositionYawSetpoint &position, const loiter_point_s &loiter_pos);
 
 	bool isLanding() { return (_rtl_state != RTLState::IDLE) && (_rtl_state >= RTLState::LOITER_DOWN);};
 
