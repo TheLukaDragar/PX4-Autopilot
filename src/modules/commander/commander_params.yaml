@@ -521,6 +521,28 @@ parameters:
           This param is specific for ESCs reporting status. It shall be used only if ESCs support telemetry.
       type: boolean
       default: 0
+    COM_ESC_TMP_WARN:
+      description:
+        short: ESC temperature warning threshold
+        long: |-
+          Temperature warning threshold in degrees Celsius for ESC telemetry sources
+          that report ESC temperature. Set 0 to disable warning threshold checks.
+      type: int32
+      unit: celcius
+      default: 0
+      min: 0
+      max: 200
+    COM_ESC_TMP_OVER:
+      description:
+        short: ESC over-temperature threshold
+        long: |-
+          Over-temperature threshold in degrees Celsius for ESC telemetry sources
+          that report ESC temperature. Set 0 to disable critical threshold checks.
+      type: int32
+      unit: celcius
+      default: 0
+      min: 0
+      max: 200
     COM_PREARM_MODE:
       description:
         short: Condition to enter prearmed mode

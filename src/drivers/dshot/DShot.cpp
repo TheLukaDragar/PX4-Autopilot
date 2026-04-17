@@ -71,6 +71,9 @@ DShot::~DShot()
 
 int DShot::init()
 {
+	_param_esc_tmp_warn = param_find("COM_ESC_TMP_WARN");
+	_param_esc_tmp_over = param_find("COM_ESC_TMP_OVER");
+
 	update_params();
 
 	if (initialize_dshot()) {
@@ -728,6 +731,7 @@ void DShot::consume_esc_data(const EscData &esc)
 		_esc_status.esc[motor_index].esc_voltage = esc.voltage;
 		_esc_status.esc[motor_index].esc_current = esc.current;
 		_esc_status.esc[motor_index].esc_temperature = esc.temperature;
+		update_temperature_failures(motor_index);
 
 	} else if (esc.source == TelemetrySource::BDShot) {
 		_esc_status.esc[motor_index].timestamp = esc.timestamp;
@@ -739,7 +743,28 @@ void DShot::consume_esc_data(const EscData &esc)
 			_esc_status.esc[motor_index].esc_voltage = esc.voltage;
 			_esc_status.esc[motor_index].esc_current = esc.current;
 			_esc_status.esc[motor_index].esc_temperature = esc.temperature;
+			update_temperature_failures(motor_index);
 		}
+	}
+}
+
+void DShot::update_temperature_failures(int motor_index)
+{
+	if (!math::isInRange(motor_index, 0, DSHOT_MAX_MOTORS - 1)) {
+		return;
+	}
+
+	uint16_t &failures = _esc_status.esc[motor_index].failures;
+	failures &= ~((1 << esc_report_s::FAILURE_WARN_ESC_TEMPERATURE)
+		      | (1 << esc_report_s::FAILURE_OVER_ESC_TEMPERATURE));
+
+	const float temperature = _esc_status.esc[motor_index].esc_temperature;
+
+	if (_esc_tmp_over > 0 && PX4_ISFINITE(temperature) && temperature > static_cast<float>(_esc_tmp_over)) {
+		failures |= (1 << esc_report_s::FAILURE_OVER_ESC_TEMPERATURE);
+
+	} else if (_esc_tmp_warn > 0 && PX4_ISFINITE(temperature) && temperature > static_cast<float>(_esc_tmp_warn)) {
+		failures |= (1 << esc_report_s::FAILURE_WARN_ESC_TEMPERATURE);
 	}
 }
 
@@ -918,6 +943,14 @@ void DShot::update_params()
 	_3d_dead_h = _param_dshot_3d_dead_h.get();
 	_dshot_min = _param_dshot_min.get();
 	_esc_type = _param_dshot_esc_type.get();
+
+	if (_param_esc_tmp_warn != PARAM_INVALID) {
+		param_get(_param_esc_tmp_warn, &_esc_tmp_warn);
+	}
+
+	if (_param_esc_tmp_over != PARAM_INVALID) {
+		param_get(_param_esc_tmp_over, &_esc_tmp_over);
+	}
 
 	// Calculate minimum DShot output as percent of throttle and constrain.
 	float min_value = _dshot_min * (float)DSHOT_MAX_THROTTLE;
