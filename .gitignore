@@ -119,3 +119,4 @@ _emscripten_sdk/
 /sqrtvins/
 /lampy_px4_position_publisher/
 /flight_review/
+/ROMFS/px4fmu_common/init.d-posix/airframes/speedosim.params
