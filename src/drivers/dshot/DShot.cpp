@@ -883,6 +883,18 @@ void DShot::handle_configure_actuator(const vehicle_command_s &command)
 			_current_command.save = true;
 			break;
 
+		case DSHOT_CMD_TONE1:
+		case DSHOT_CMD_TONE2:
+		case DSHOT_CMD_TONE3:
+		case DSHOT_CMD_TONE4:
+		case DSHOT_CMD_TONE5:
+		case DSHOT_CMD_TONE6:
+		case DSHOT_CMD_TONE7:
+		case DSHOT_CMD_TONE8:
+			_current_command.command = (uint16_t)type;
+			_current_command.num_repetitions = 10; // DShot spec: commands need ~10 repeats to register
+			break;
+
 		default:
 			PX4_WARN("unknown command: %i", type);
 			break;

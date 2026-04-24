@@ -182,6 +182,8 @@ subscriptions:
   - topic: /fmu/in/vehicle_constraints
     type: px4_msgs::msg::VehicleConstraints
 
+  - topic: /fmu/in/esc_beep_control
+    type: px4_msgs::msg::EscBeepControl
 
   - topic: /fmu/in/register_ext_component_request
     type: px4_msgs::msg::RegisterExtComponentRequest
