@@ -170,6 +170,7 @@ void SendTopicsSubs::reset() {
 		if (fds[idx].fd >= 0) {
 			orb_unsubscribe(fds[idx].fd);
 			fds[idx].fd = -1;
+			fds[idx].events = 0;  // force re-subscribe on reconnect (init() skips when events != 0)
 		}
 
 		// Clean up callbacks
