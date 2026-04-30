@@ -334,6 +334,9 @@ void ModeManagement::checkNewRegistrations(UpdateRequest &update_request)
 
 		reply.timestamp = hrt_absolute_time();
 		_register_ext_component_reply_pub.publish(reply);
+		
+		// Publish updated list of registered modes
+		publishRegisteredModes();
 	}
 }
 
@@ -355,6 +358,8 @@ void ModeManagement::checkUnregistrations(uint8_t user_intended_nav_state, Updat
 		if (request.mode_id != -1) {
 			if (_modes.removeExternalMode(request.mode_id, request.name)) {
 				removeModeExecutor(request.mode_executor_id);
+				// Publish updated list of registered modes
+				publishRegisteredModes();
 				// else: if the mode was already removed (due to a timeout), the executor was also removed already
 			}
 
@@ -401,6 +406,8 @@ void ModeManagement::update(bool armed, uint8_t user_intended_nav_state, UpdateR
 					_external_checks.removeRegistration(mode.arming_check_registration_id, i);
 					removeModeExecutor(mode.mode_executor_registration_id);
 					_modes.removeExternalMode(i, mode.name);
+					// Publish updated list of registered modes
+					publishRegisteredModes();
 				}
 			}
 		}
@@ -686,6 +693,37 @@ bool ModeManagement::currentModeAcceptsOffboardSetpoints(uint8_t nav_state) cons
 	}
 
 	return false;
+}
+
+void ModeManagement::publishRegisteredModes()
+{
+	const hrt_abstime now = hrt_absolute_time();
+
+	// Publish each external mode slot
+	for (int i = Modes::FIRST_EXTERNAL_NAV_STATE; i <= Modes::LAST_EXTERNAL_NAV_STATE; ++i) {
+		registered_modes_s msg{};
+		msg.timestamp = now;
+		msg.nav_state = i;
+		msg.executor_in_charge = _mode_executor_in_charge;
+		
+		if (_modes.valid(i)) {
+			const Modes::Mode &mode = _modes.mode(i);
+			msg.valid = true;
+			strncpy(msg.mode_name, mode.name, sizeof(msg.mode_name) - 1);
+			msg.mode_name[sizeof(msg.mode_name) - 1] = '\0';
+			
+			// Check if mode is user selectable by checking can_set_nav_states_mask
+			uint32_t valid_mask, can_set_mask;
+			getModeStatus(valid_mask, can_set_mask);
+			msg.not_user_selectable = !(can_set_mask & (1u << i));
+		} else {
+			msg.valid = false;
+			msg.mode_name[0] = '\0';
+			msg.not_user_selectable = true;
+		}
+		
+		_registered_modes_pub.publish(msg);
+	}
 }
 
 #endif /* CONSTRAINED_FLASH */
