@@ -18,7 +18,7 @@ publications:
 
   - topic: /fmu/out/registered_modes
     type: px4_msgs::msg::RegisteredModes
-    rate_limit: 1.
+    rate_limit: 10.
 
   - topic: /fmu/out/battery_status
     type: px4_msgs::msg::BatteryStatus

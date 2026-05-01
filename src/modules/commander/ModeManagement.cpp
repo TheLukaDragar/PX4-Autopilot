@@ -697,33 +697,35 @@ bool ModeManagement::currentModeAcceptsOffboardSetpoints(uint8_t nav_state) cons
 
 void ModeManagement::publishRegisteredModes()
 {
-	const hrt_abstime now = hrt_absolute_time();
+	registered_modes_s msg{};
+	msg.timestamp = hrt_absolute_time();
+	msg.executor_in_charge = _mode_executor_in_charge;
 
-	// Publish each external mode slot
-	for (int i = Modes::FIRST_EXTERNAL_NAV_STATE; i <= Modes::LAST_EXTERNAL_NAV_STATE; ++i) {
-		registered_modes_s msg{};
-		msg.timestamp = now;
-		msg.nav_state = i;
-		msg.executor_in_charge = _mode_executor_in_charge;
+	uint32_t valid_mask, can_set_mask;
+	getModeStatus(valid_mask, can_set_mask);
+
+	// Populate arrays for all 8 external mode slots
+	for (int i = 0; i < 8; ++i) {
+		const uint8_t nav_state = Modes::FIRST_EXTERNAL_NAV_STATE + i;
+		msg.nav_state[i] = nav_state;
 		
-		if (_modes.valid(i)) {
-			const Modes::Mode &mode = _modes.mode(i);
-			msg.valid = true;
-			strncpy(msg.mode_name, mode.name, sizeof(msg.mode_name) - 1);
-			msg.mode_name[sizeof(msg.mode_name) - 1] = '\0';
-			
-			// Check if mode is user selectable by checking can_set_nav_states_mask
-			uint32_t valid_mask, can_set_mask;
-			getModeStatus(valid_mask, can_set_mask);
-			msg.not_user_selectable = !(can_set_mask & (1u << i));
+		// mode_name is flattened: mode_name[i * 25] through mode_name[i * 25 + 24]
+		const int name_offset = i * 25;
+		
+		if (_modes.valid(nav_state)) {
+			const Modes::Mode &mode = _modes.mode(nav_state);
+			msg.valid[i] = true;
+			strncpy(&msg.mode_name[name_offset], mode.name, 24);
+			msg.mode_name[name_offset + 24] = '\0';
+			msg.not_user_selectable[i] = !(can_set_mask & (1u << nav_state));
 		} else {
-			msg.valid = false;
-			msg.mode_name[0] = '\0';
-			msg.not_user_selectable = true;
+			msg.valid[i] = false;
+			msg.mode_name[name_offset] = '\0';
+			msg.not_user_selectable[i] = true;
 		}
-		
-		_registered_modes_pub.publish(msg);
 	}
+	
+	_registered_modes_pub.publish(msg);
 }
 
 #endif /* CONSTRAINED_FLASH */
