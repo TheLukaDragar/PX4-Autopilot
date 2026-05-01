@@ -126,8 +126,16 @@ bool CRSFTelemetry::send_flight_mode()
 {
 	vehicle_status_s vehicle_status;
 
-	if (!_vehicle_status_sub.update(&vehicle_status)) {
+	// Use copy() so we always send telemetry for the current mode, not only on new `vehicle_status` samples.
+	if (!_vehicle_status_sub.copy(&vehicle_status)) {
 		return false;
+	}
+
+	// Clear sticky external name when leaving external nav states
+	if (vehicle_status.nav_state < vehicle_status_s::NAVIGATION_STATE_EXTERNAL1
+	    || vehicle_status.nav_state > vehicle_status_s::NAVIGATION_STATE_EXTERNAL8) {
+		_last_external_nav_state = 255;
+		_last_external_flight_mode[0] = '\0';
 	}
 
 	const char *flight_mode = "(unknown)";
@@ -142,7 +150,7 @@ bool CRSFTelemetry::send_flight_mode()
 		break;
 
 	case vehicle_status_s::NAVIGATION_STATE_ALTITUDE_CRUISE:
-		flight_mode = "1Altitude Cruise";
+		flight_mode = "Altitude Cruise";
 		break;
 
 	case vehicle_status_s::NAVIGATION_STATE_POSCTL:
@@ -190,11 +198,9 @@ bool CRSFTelemetry::send_flight_mode()
 	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL6:
 	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL7:
 	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL8: {
-		// Update cache if new data is available
 		registered_modes_s registered_modes;
-		
+
 		if (_registered_modes_sub.copy(&registered_modes)) {
-			// Update all cached mode names
 			for (int i = 0; i < 8; i++) {
 				if (registered_modes.valid[i]) {
 					const int name_offset = i * 25;
@@ -205,12 +211,18 @@ bool CRSFTelemetry::send_flight_mode()
 				}
 			}
 		}
-		
-		// Look up mode name from cache based on nav_state
-		int mode_index = vehicle_status.nav_state - vehicle_status_s::NAVIGATION_STATE_EXTERNAL1;
-		
+
+		const int mode_index = vehicle_status.nav_state - vehicle_status_s::NAVIGATION_STATE_EXTERNAL1;
+
 		if (mode_index >= 0 && mode_index < 8 && _external_mode_names[mode_index][0] != '\0') {
 			flight_mode = _external_mode_names[mode_index];
+			strncpy(_last_external_flight_mode, flight_mode, sizeof(_last_external_flight_mode) - 1);
+			_last_external_flight_mode[sizeof(_last_external_flight_mode) - 1] = '\0';
+			_last_external_nav_state = vehicle_status.nav_state;
+
+		} else if (vehicle_status.nav_state == _last_external_nav_state && _last_external_flight_mode[0] != '\0') {
+			// Brief gaps in `registered_modes` or uORB should not flash "(unknown)" on the handset.
+			flight_mode = _last_external_flight_mode;
 		}
 
 		break;
