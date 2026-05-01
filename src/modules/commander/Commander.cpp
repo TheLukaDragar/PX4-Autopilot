@@ -2044,6 +2044,9 @@ void Commander::run()
 			_vehicle_status.timestamp = hrt_absolute_time();
 			_vehicle_status_pub.publish(_vehicle_status);
 
+			// Publish registered modes periodically so late-joining subscribers get the state
+			_mode_management.publishRegisteredModes();
+
 			_failure_detector.publishStatus(_health_and_arming_checks.getEscArmStatus(), _health_and_arming_checks.getMotorFailureMask());
 		}
 

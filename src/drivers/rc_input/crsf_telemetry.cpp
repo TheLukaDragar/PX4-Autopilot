@@ -142,7 +142,7 @@ bool CRSFTelemetry::send_flight_mode()
 		break;
 
 	case vehicle_status_s::NAVIGATION_STATE_ALTITUDE_CRUISE:
-		flight_mode = "Altitude Cruise";
+		flight_mode = "1Altitude Cruise";
 		break;
 
 	case vehicle_status_s::NAVIGATION_STATE_POSCTL:
@@ -181,6 +181,40 @@ bool CRSFTelemetry::send_flight_mode()
 	case vehicle_status_s::NAVIGATION_STATE_STAB:
 		flight_mode = "Stabilized";
 		break;
+
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL1:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL2:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL3:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL4:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL5:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL6:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL7:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL8: {
+		// Update cache if new data is available
+		registered_modes_s registered_modes;
+		
+		if (_registered_modes_sub.copy(&registered_modes)) {
+			// Update all cached mode names
+			for (int i = 0; i < 8; i++) {
+				if (registered_modes.valid[i]) {
+					const int name_offset = i * 25;
+					strncpy(_external_mode_names[i], &registered_modes.mode_name[name_offset], 25);
+					_external_mode_names[i][25] = '\0';
+				} else {
+					_external_mode_names[i][0] = '\0';
+				}
+			}
+		}
+		
+		// Look up mode name from cache based on nav_state
+		int mode_index = vehicle_status.nav_state - vehicle_status_s::NAVIGATION_STATE_EXTERNAL1;
+		
+		if (mode_index >= 0 && mode_index < 8 && _external_mode_names[mode_index][0] != '\0') {
+			flight_mode = _external_mode_names[mode_index];
+		}
+
+		break;
+	}
 	}
 
 	return crsf_send_telemetry_flight_mode(_uart_fd, flight_mode);
