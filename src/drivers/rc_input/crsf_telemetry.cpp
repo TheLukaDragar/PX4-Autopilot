@@ -181,6 +181,39 @@ bool CRSFTelemetry::send_flight_mode()
 	case vehicle_status_s::NAVIGATION_STATE_STAB:
 		flight_mode = "Stabilized";
 		break;
+
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL1:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL2:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL3:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL4:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL5:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL6:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL7:
+	case vehicle_status_s::NAVIGATION_STATE_EXTERNAL8: {
+		// Try to get the registered mode name
+		registered_modes_s registered_modes;
+
+		if (_registered_modes_sub.copy(&registered_modes)) {
+			// Find the matching mode in the arrays
+			for (int i = 0; i < 8; i++) {
+				if (registered_modes.nav_state[i] == vehicle_status.nav_state && registered_modes.valid[i]) {
+					// Extract mode name from flattened array
+					static char mode_name_buf[26];
+					const int name_offset = i * 25;
+					strncpy(mode_name_buf, &registered_modes.mode_name[name_offset], 25);
+					mode_name_buf[25] = '\0';
+
+					if (mode_name_buf[0] != '\0') {
+						flight_mode = mode_name_buf;
+					}
+
+					break;
+				}
+			}
+		}
+
+		break;
+	}
 	}
 
 	return crsf_send_telemetry_flight_mode(_uart_fd, flight_mode);

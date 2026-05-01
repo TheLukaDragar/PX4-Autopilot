@@ -44,6 +44,7 @@
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/topics/sensor_gps.h>
 #include <uORB/topics/vehicle_status.h>
+#include <uORB/topics/registered_modes.h>
 #include <drivers/drv_hrt.h>
 
 #include <matrix/math.hpp>
@@ -82,6 +83,7 @@ private:
 	uORB::Subscription _battery_status_sub{ORB_ID(battery_status)};
 	uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
+	uORB::Subscription _registered_modes_sub{ORB_ID(registered_modes)};
 
 	hrt_abstime _last_update{0};
 
