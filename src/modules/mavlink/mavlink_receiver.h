@@ -115,6 +115,13 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/velocity_limits.h>
 #include <uORB/topics/aux_global_position.h>
+#if defined(MAVLINK_MSG_ID_ESC_EEPROM)
+#include <uORB/topics/esc_eeprom_write.h>
+#include <uORB/topics/esc_status.h>
+#endif
+#if defined(MAVLINK_MSG_ID_RANGING_BEACON)
+#include <uORB/topics/ranging_beacon.h>
+#endif
 
 #if !defined(CONSTRAINED_FLASH)
 # include <uORB/topics/debug_array.h>
@@ -210,6 +217,9 @@ private:
 #if defined(MAVLINK_MSG_ID_SET_VELOCITY_LIMITS) // For now only defined if development.xml is used
 	void handle_message_set_velocity_limits(mavlink_message_t *msg);
 #endif
+#if defined(MAVLINK_MSG_ID_ESC_EEPROM)
+	void handle_message_esc_eeprom(mavlink_message_t *msg);
+#endif
 	void handle_message_vision_position_estimate(mavlink_message_t *msg);
 	void handle_message_gimbal_manager_set_attitude(mavlink_message_t *msg);
 	void handle_message_gimbal_manager_set_manual_control(mavlink_message_t *msg);
@@ -217,6 +227,9 @@ private:
 	void handle_message_gimbal_device_attitude_status(mavlink_message_t *msg);
 #if defined(MAVLINK_MSG_ID_GLOBAL_POSITION_SENSOR)
 	void handle_message_global_position_sensor(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_RANGING_BEACON)
+	void handle_message_ranging_beacon(mavlink_message_t *msg);
 #endif
 #if !defined(CONSTRAINED_FLASH)
 	void handle_message_debug(mavlink_message_t *msg);
@@ -326,6 +339,9 @@ private:
 	uORB::Publication<offboard_control_mode_s>		_offboard_control_mode_pub{ORB_ID(offboard_control_mode)};
 	uORB::Publication<onboard_computer_status_s>		_onboard_computer_status_pub{ORB_ID(onboard_computer_status)};
 	uORB::Publication<velocity_limits_s>			_velocity_limits_pub{ORB_ID(velocity_limits)};
+#if defined(MAVLINK_MSG_ID_ESC_EEPROM)
+	uORB::Publication<esc_eeprom_write_s>			_esc_eeprom_write_pub{ORB_ID(esc_eeprom_write)};
+#endif
 	uORB::Publication<open_drone_id_operator_id_s>		_open_drone_id_operator_id_pub{ORB_ID(open_drone_id_operator_id)};
 	uORB::Publication<open_drone_id_self_id_s>		_open_drone_id_self_id_pub{ORB_ID(open_drone_id_self_id)};
 	uORB::Publication<open_drone_id_system_s>		_open_drone_id_system_pub{ORB_ID(open_drone_id_system)};
@@ -350,6 +366,9 @@ private:
 	// ORB publications (multi)
 	uORB::PublicationMulti<distance_sensor_s>		_distance_sensor_pub{ORB_ID(distance_sensor)};
 	uORB::PublicationMulti<aux_global_position_s>		_aux_global_position_pub{ORB_ID(aux_global_position)};
+#if defined(MAVLINK_MSG_ID_RANGING_BEACON)
+	uORB::PublicationMulti<ranging_beacon_s>		_ranging_beacon_pub{ORB_ID(ranging_beacon)};
+#endif
 	uORB::PublicationMulti<gps_inject_data_s>		_gps_inject_data_pub{ORB_ID(gps_inject_data)};
 	uORB::PublicationMulti<input_rc_s>			_rc_pub{ORB_ID(input_rc)};
 	uORB::PublicationMulti<manual_control_setpoint_s>	_manual_control_input_pub{ORB_ID(manual_control_input)};

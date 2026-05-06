@@ -73,7 +73,7 @@ param set-default MC_PITCHRATE_D 0.005
 param set-default MC_PITCHRATE_FF 0.0
 param set-default MC_PITCHRATE_I 0.3
 param set-default MC_PITCHRATE_K 1.75
-param set-default MC_PITCHRATE_MAX 220.0
+param set-default MC_PITCHRATE_MAX 500.0
 param set-default MC_PITCHRATE_P 0.15
 param set-default MC_PITCH_P 7.0
 param set-default MC_PR_INT_LIM 0.3
@@ -81,7 +81,7 @@ param set-default MC_ROLLRATE_D 0.005
 param set-default MC_ROLLRATE_FF 0.0
 param set-default MC_ROLLRATE_I 0.3
 param set-default MC_ROLLRATE_K 1.75
-param set-default MC_ROLLRATE_MAX 220.0
+param set-default MC_ROLLRATE_MAX 500.0
 param set-default MC_ROLLRATE_P 0.15
 param set-default MC_ROLL_P 7.0
 param set-default MC_RR_INT_LIM 0.3
@@ -89,7 +89,7 @@ param set-default MC_YAWRATE_D 0.0
 param set-default MC_YAWRATE_FF 0.0
 param set-default MC_YAWRATE_I 0.0
 param set-default MC_YAWRATE_K 0.3
-param set-default MC_YAWRATE_MAX 360.0
+param set-default MC_YAWRATE_MAX 400.0
 param set-default MC_YAWRATE_P 0.2
 param set-default MC_YAW_P 3.0
 param set-default MC_YAW_TQ_CUTOFF 2.0
@@ -114,7 +114,7 @@ param set-default MPC_LAND_RADIUS -1.0
 param set-default MPC_LAND_RC_HELP 0
 param set-default MPC_LAND_SPEED 0.7
 param set-default MPC_MANTHR_MIN 0.08
-param set-default MPC_MAN_TILT_MAX 40.0
+param set-default MPC_MAN_TILT_MAX 89.0
 param set-default MPC_MAN_Y_MAX 150.0
 param set-default MPC_MAN_Y_TAU 0.08
 param set-default MPC_POS_MODE 4
@@ -123,14 +123,14 @@ param set-default MPC_THR_HOVER 0.21
 param set-default MPC_THR_MAX 1.0
 param set-default MPC_THR_MIN 0.12
 param set-default MPC_THR_XY_MARG 0.3
-param set-default MPC_TILTMAX_AIR 45.0
+param set-default MPC_TILTMAX_AIR 89.0
 param set-default MPC_TILTMAX_LND 12.0
 # Fast takeoff ramp / climb for sim (see multicopter_takeoff_land_params).
 param set-default MPC_TKO_RAMP_T 0.5
 param set-default MPC_TKO_SPEED 5.0
 param set-default MPC_VELD_LP 5.0
 param set-default MPC_VEL_LP 0.0
-param set-default MPC_VEL_MANUAL 10.0
+param set-default MPC_VEL_MANUAL 100.0
 param set-default MPC_VEL_MAN_BACK -1.0
 param set-default MPC_VEL_MAN_SIDE -1.0
 param set-default MPC_VEL_NF_BW 5.0
@@ -144,7 +144,7 @@ param set-default MPC_XY_TRAJ_P 0.5
 param set-default MPC_XY_VEL_ALL -10.0
 param set-default MPC_XY_VEL_D_ACC 0.1
 param set-default MPC_XY_VEL_I_ACC 1.0
-param set-default MPC_XY_VEL_MAX 12.0
+param set-default MPC_XY_VEL_MAX 100.0
 param set-default MPC_YAWRAUTO_ACC 20.0
 param set-default MPC_YAWRAUTO_MAX 60.0
 param set-default MPC_YAW_MODE 0
@@ -153,11 +153,11 @@ param set-default MPC_Z_VEL_ALL -3.0
 param set-default MPC_Z_VEL_D_ACC 0.05
 param set-default MPC_Z_VEL_I_ACC 2.4
 # Z_VEL_MAX_* raised for sim tracking; Z_VEL_MAX_DN above typical offboard descent cap.
-param set-default MPC_Z_VEL_MAX_DN 1.5
-param set-default MPC_Z_VEL_MAX_UP 3.0
+param set-default MPC_Z_VEL_MAX_DN 3.0
+param set-default MPC_Z_VEL_MAX_UP 100.0
 param set-default MPC_Z_VEL_P_ACC 10.0
-param set-default MPC_Z_V_AUTO_DN 1.5
-param set-default MPC_Z_V_AUTO_UP 3.0
+param set-default MPC_Z_V_AUTO_DN 3.0
+param set-default MPC_Z_V_AUTO_UP 100.0
 # SITL: shorter post-arm idle window (increase for real hardware / prop checks).
 param set-default COM_SPOOLUP_TIME 0.5
 # Keep PX4 on simulation time (HIL timestamps)
