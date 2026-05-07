@@ -47,17 +47,17 @@ publications:
     type: px4_msgs::msg::PositionSetpointTriplet
     rate_limit: 5.
 
-  - topic: /fmu/out/sensor_combined
-    type: px4_msgs::msg::SensorCombined
-    rate_limit: 200.
+  # - topic: /fmu/out/sensor_combined
+  #   type: px4_msgs::msg::SensorCombined
+  #   rate_limit: 200.
 
-  - topic: /fmu/out/sensor_accel
-    type: px4_msgs::msg::SensorAccel
-    rate_limit: 200.
+  # - topic: /fmu/out/sensor_accel
+  #   type: px4_msgs::msg::SensorAccel
+  #   rate_limit: 200.
 
-  - topic: /fmu/out/sensor_gyro
-    type: px4_msgs::msg::SensorGyro
-    rate_limit: 200.
+  # - topic: /fmu/out/sensor_gyro
+  #   type: px4_msgs::msg::SensorGyro
+  #   rate_limit: 200.
 
   # - topic: /fmu/out/sensor_accel_fifo
   #   type: px4_msgs::msg::SensorAccelFifo
@@ -74,8 +74,8 @@ publications:
   - topic: /fmu/out/transponder_report
     type: px4_msgs::msg::TransponderReport
 
-  - topic: /fmu/out/vehicle_angular_velocity
-    type: px4_msgs::msg::VehicleAngularVelocity
+  # - topic: /fmu/out/vehicle_angular_velocity
+  #   type: px4_msgs::msg::VehicleAngularVelocity
 
   - topic: /fmu/out/vehicle_land_detected
     type: px4_msgs::msg::VehicleLandDetected
@@ -91,6 +91,7 @@ publications:
 
   - topic: /fmu/out/vehicle_command_ack
     type: px4_msgs::msg::VehicleCommandAck
+    
 
   - topic: /fmu/out/vehicle_global_position
     type: px4_msgs::msg::VehicleGlobalPosition
@@ -147,9 +148,9 @@ publications:
     type: px4_msgs::msg::DistanceSensor
     rate_limit: 10.
 
-  - topic: /fmu/out/vehicle_imu
-    type: px4_msgs::msg::VehicleImu
-    event_driven: true
+  # - topic: /fmu/out/vehicle_imu
+  #   type: px4_msgs::msg::VehicleImu
+  #   rate_limit: 200.
 
   - topic: /fmu/out/esc_status
     type: px4_msgs::msg::EscStatus

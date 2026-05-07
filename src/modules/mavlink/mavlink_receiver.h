@@ -94,6 +94,9 @@
 #include <uORB/topics/custom_ping.h>
 #endif
 #include <uORB/topics/position_setpoint_triplet.h>
+#if defined(MAVLINK_MSG_ID_RANGING_BEACON)
+#include <uORB/topics/ranging_beacon.h>
+#endif // MAVLINK_MSG_ID_RANGING_BEACON
 #include <uORB/topics/radio_status.h>
 #include <uORB/topics/rc_channels.h>
 #include <uORB/topics/sensor_baro.h>
@@ -196,6 +199,9 @@ private:
 	void handle_message_open_drone_id_operator_id(mavlink_message_t *msg);
 	void handle_message_open_drone_id_self_id(mavlink_message_t *msg);
 	void handle_message_open_drone_id_system(mavlink_message_t *msg);
+#if defined(MAVLINK_MSG_ID_RANGING_BEACON)
+	void handle_message_ranging_beacon(mavlink_message_t *msg);
+#endif // MAVLINK_MSG_ID_RANGING_BEACON
 	void handle_message_optical_flow_rad(mavlink_message_t *msg);
 	void handle_message_ping(mavlink_message_t *msg);
 #if defined(MAVLINK_MSG_ID_CUSTOM_PING)
@@ -346,6 +352,9 @@ private:
 	uORB::Publication<open_drone_id_self_id_s>		_open_drone_id_self_id_pub{ORB_ID(open_drone_id_self_id)};
 	uORB::Publication<open_drone_id_system_s>		_open_drone_id_system_pub{ORB_ID(open_drone_id_system)};
 	uORB::Publication<generator_status_s>			_generator_status_pub{ORB_ID(generator_status)};
+#if defined(MAVLINK_MSG_ID_RANGING_BEACON)
+	uORB::Publication<ranging_beacon_s>			_ranging_beacon_pub{ORB_ID(ranging_beacon)};
+#endif // MAVLINK_MSG_ID_RANGING_BEACON
 	uORB::Publication<vehicle_attitude_s>			_attitude_pub{ORB_ID(vehicle_attitude)};
 	uORB::Publication<vehicle_attitude_setpoint_s>		_att_sp_pub{ORB_ID(vehicle_attitude_setpoint)};
 	uORB::Publication<vehicle_attitude_setpoint_s>		_mc_virtual_att_sp_pub{ORB_ID(mc_virtual_attitude_setpoint)};
