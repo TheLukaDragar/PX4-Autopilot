@@ -1,3 +1,6 @@
+# Self-hosted: for this fork, jobs use labels self-hosted + Linux + X64 (see runs-on).
+# Other forks: set repo variable PX4_CI_SELF_HOSTED=true (optional: PX4_SELF_HOSTED_LABELS JSON array).
+# Push to px4_msgs requires secret GH_SYNC_TOKEN (PAT with contents:write on PX4_MSGS_REPO) plus GH_SYNC_USER / GH_SYNC_EMAIL.
 name: Sync ROS 2 messages to px4_msgs
 on:
   push:
@@ -17,12 +20,25 @@ permissions:
 jobs:
   sync_to_px4_msgs:
     if: github.repository == 'PX4/PX4-Autopilot' || github.repository == 'TheLukaDragar/PX4-Autopilot'
-    runs-on: [runs-on,runner=4cpu-linux-x64,image=ubuntu22-full-x64,"run-id=${{ github.run_id }}",spot=false]
+    runs-on: >-
+      ${{
+        (github.repository == 'TheLukaDragar/PX4-Autopilot' || vars.PX4_CI_SELF_HOSTED == 'true')
+        && fromJSON(vars.PX4_SELF_HOSTED_LABELS || '["self-hosted","Linux","X64"]')
+        || fromJSON(format('["runs-on","runner=4cpu-linux-x64","image=ubuntu22-full-x64","run-id={0}","spot=false"]', github.run_id))
+      }}
     env:
       PX4_MSGS_REPO: TheLukaDragar/px4_msgs
     steps:
       - name: Checkout PX4 repo
         uses: actions/checkout@v6
+
+      - name: Check px4_msgs push token
+        if: >-
+          (github.repository == 'TheLukaDragar/PX4-Autopilot' || vars.PX4_CI_SELF_HOSTED == 'true')
+          && secrets.GH_SYNC_TOKEN == '' && secrets.PX4BUILDBOT_PERSONAL_ACCESS_TOKEN == ''
+        run: |
+          echo '::error::Add repository secret GH_SYNC_TOKEN (PAT with push access to ${{ env.PX4_MSGS_REPO }}).'
+          exit 1
 
       - name: Setup git credentials
         run: |
