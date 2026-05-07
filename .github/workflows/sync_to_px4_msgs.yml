@@ -65,14 +65,24 @@ jobs:
 
       - name: Copy ROS 2 messages
         run: |
+          set -euo pipefail
+          # Same layout as PX4/PX4-Autopilot: PX4 keeps msg/ and msg/versioned/ separate; the
+          # px4_msgs ROS repo publishes a *flat* msg/ tree (official PX4/px4_msgs has no msg/versioned/).
           rm -f px4_msgs/msg/*.msg
           rm -f px4_msgs/msg/versioned/*.msg
           rm -f px4_msgs/srv/*.srv
           rm -f px4_msgs/srv/versioned/*.srv
           cp msg/*.msg px4_msgs/msg/
-          cp msg/versioned/*.msg px4_msgs/msg/ || true
+          shopt -s nullglob
+          v=(msg/versioned/*.msg)
+          if ((${#v[@]})); then
+            cp "${v[@]}" px4_msgs/msg/
+          fi
           cp srv/*.srv px4_msgs/srv/
-          cp srv/versioned/*.srv px4_msgs/srv/ || true
+          sv=(srv/versioned/*.srv)
+          if ((${#sv[@]})); then
+            cp "${sv[@]}" px4_msgs/srv/
+          fi
 
       - name: Commit and push changes
         run: |
