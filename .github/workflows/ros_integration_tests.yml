@@ -39,6 +39,9 @@ jobs:
     - name: Git Ownership Workaround
       run: git config --system --add safe.directory '*'
 
+    - name: Sync git submodules (upstream: rely on CMake check_submodules; explicit for CI MAVLink HEAD)
+      run: git submodule sync --recursive && git submodule update --init --recursive --jobs 8
+
     - name: Update ROS Keys
       run: |
         sudo rm /etc/apt/sources.list.d/ros2.list && \

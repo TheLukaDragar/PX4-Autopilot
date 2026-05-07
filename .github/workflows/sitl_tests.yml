@@ -54,6 +54,9 @@ jobs:
       - name: Configure Git Safe Directory
         run: git config --system --add safe.directory '*'
 
+      - name: Sync git submodules (mavlink HEAD for px_update_git_header)
+        run: git submodule sync --recursive && git submodule update --init --recursive --jobs 8
+
       - uses: ./.github/actions/setup-ccache
         id: ccache
         with:

@@ -61,6 +61,9 @@ jobs:
           fetch-depth: 1
           submodules: recursive
 
+      - name: Sync git submodules (mavlink HEAD for px_update_git_header)
+        run: git config --system --add safe.directory '*' && git submodule sync --recursive && git submodule update --init --recursive --jobs 8
+
       - name: Use AWS regional apt mirror
         if: startsWith(runner.name, 'runs-on--')
         run: ./Tools/ci/use_aws_apt_mirror.sh
