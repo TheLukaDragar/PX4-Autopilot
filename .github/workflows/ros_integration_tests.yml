@@ -1,7 +1,5 @@
-# NOTE: this workflow is now running on Dronecode / PX4 AWS account.
-# - If you want to keep the tests running in GitHub Actions you need to uncomment the "runs-on: ubuntu-latest" lines
-#   and comment the "runs-on: [runs-on,runner=..." lines.
-# - If you would like to duplicate this setup try setting up "RunsOn" on your own AWS account try https://runs-on.com
+# Self-hosted: TheLukaDragar/PX4-Autopilot or PX4_CI_SELF_HOSTED=true; PX4_SELF_HOSTED_LABELS.
+# No runs-on/action in this workflow.
 
 name: ROS Integration Tests
 
@@ -23,7 +21,12 @@ concurrency:
 
 jobs:
   build:
-    runs-on: [runs-on,runner=4cpu-linux-x64,image=ubuntu22-full-x64,"run-id=${{ github.run_id }}",spot=false]
+    runs-on: >-
+      ${{
+        (github.repository == 'TheLukaDragar/PX4-Autopilot' || vars.PX4_CI_SELF_HOSTED == 'true')
+        && fromJSON(vars.PX4_SELF_HOSTED_LABELS || '["self-hosted","Linux","X64"]')
+        || fromJSON(format('["runs-on","runner=4cpu-linux-x64","image=ubuntu22-full-x64","run-id={0}","spot=false"]', github.run_id))
+      }}
     container:
       image: px4io/px4-dev-ros2-galactic:2021-09-08
       options: --privileged --ulimit core=-1 --security-opt seccomp=unconfined
