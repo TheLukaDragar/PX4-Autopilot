@@ -57,6 +57,9 @@ jobs:
           git config --global --add safe.directory $(realpath .)
 
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          submodules: recursive
 
       - name: Use AWS regional apt mirror
         if: startsWith(runner.name, 'runs-on--')
