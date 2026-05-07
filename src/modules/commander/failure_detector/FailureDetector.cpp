@@ -46,9 +46,6 @@ using namespace time_literals;
 FailureDetector::FailureDetector(ModuleParams *parent) :
 	ModuleParams(parent)
 {
-	_landing_tipover_hysteresis.set_hysteresis_time_from(false, 100_ms);
-	_ground_contact_hysteresis.set_hysteresis_time_from(false, 0);
-	_ground_contact_hysteresis.set_hysteresis_time_from(true, 3_s);
 }
 
 void FailureDetector::updateParams()
@@ -287,6 +284,10 @@ void FailureDetector::updateLandingTipoverStatus(const vehicle_status_s &vehicle
 {
 	const hrt_abstime now = hrt_absolute_time();
 
+	_ground_contact_hysteresis.set_hysteresis_time_from(false, 0);
+	_ground_contact_hysteresis.set_hysteresis_time_from(true, (hrt_abstime)(1_s * _param_fd_gnd_c_tf.get()));
+	_landing_tipover_hysteresis.set_hysteresis_time_from(false, (hrt_abstime)(1_s * _param_fd_tip_ttri.get()));
+
 	const float threshold = _param_fd_land_tilt.get();
 	if (threshold < FLT_EPSILON) {
 		_landing_tipover_hysteresis.set_state_and_update(false, now);
@@ -308,7 +309,6 @@ void FailureDetector::updateLandingTipoverStatus(const vehicle_status_s &vehicle
 	_ground_contact_hysteresis.set_state_and_update(_has_ground_contact, now);
 
 	if (!in_landing_phase || !_ground_contact_hysteresis.get_state()) {
-		_is_tipped_over = false;
 		_landing_tipover_hysteresis.set_state_and_update(false, now);
 		_ground_contact_hysteresis.set_state_and_update(false, now);
 		_failure_detector_status.flags.landing_tipover = false;

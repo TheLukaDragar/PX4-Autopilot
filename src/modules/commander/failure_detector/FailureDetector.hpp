@@ -111,7 +111,6 @@ private:
 	systemlib::Hysteresis _landing_tipover_hysteresis{false};
 	systemlib::Hysteresis _ground_contact_hysteresis{false};
 	bool _has_ground_contact{false};
-	bool _is_tipped_over{false};
 
 	float _alt_loss_ref_z{NAN}; // ratcheting NED-z reference for altitude loss detection
 	uint8_t _alt_loss_z_reset_counter{0}; // tracks EKF z resets to avoid false altitude loss triggers
@@ -144,6 +143,8 @@ private:
 		(ParamInt<px4::params::FD_IMB_PROP_THR>) _param_fd_imb_prop_thr,
 		(ParamFloat<px4::params::FD_ALT_LOSS>) _param_fd_alt_loss,
 		(ParamFloat<px4::params::FD_ALT_LOSS_T>) _param_fd_alt_loss_ttri,
-		(ParamFloat<px4::params::FD_LAND_TILT>) _param_fd_land_tilt
+		(ParamFloat<px4::params::FD_LAND_TILT>) _param_fd_land_tilt,
+		(ParamFloat<px4::params::FD_GND_C_TF>) _param_fd_gnd_c_tf,
+		(ParamFloat<px4::params::FD_TIP_TTRI>) _param_fd_tip_ttri
 	)
 };
