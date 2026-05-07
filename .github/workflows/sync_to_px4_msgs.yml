@@ -1,6 +1,8 @@
 # Self-hosted: for this fork, jobs use labels self-hosted + Linux + X64 (see runs-on).
 # Other forks: set repo variable PX4_CI_SELF_HOSTED=true (optional: PX4_SELF_HOSTED_LABELS JSON array).
-# Push to px4_msgs requires secret GH_SYNC_TOKEN (PAT with contents:write on PX4_MSGS_REPO) plus GH_SYNC_USER / GH_SYNC_EMAIL.
+# Push requires secret GH_SYNC_TOKEN: classic PAT with `repo`, or fine-grained PAT with
+# **Contents: Read-and-write** on the px4_msgs repository (PX4-Autopilot access alone is not enough).
+# Never use workflows' default `GITHUB_TOKEN` for `git push`; it cannot write to px4_msgs.
 name: Sync ROS 2 messages to px4_msgs
 on:
   push:
@@ -74,10 +76,19 @@ jobs:
 
       - name: Commit and push changes
         run: |
+          set -euo pipefail
           cd px4_msgs
+          git add -A
           git status
-          git add .
-          git commit -a -m "Update to PX4 ${{ github.sha }}" || true
-          git push origin ${{ github.ref_name }} || true
+          if git diff --staged --quiet; then
+            echo 'No ROS 2 message changes to publish (tree matches PX4 snapshot).'
+            exit 0
+          fi
+
+          git commit -m "Update to PX4 ${{ github.sha }}"
+          if ! git push origin "${{ github.ref_name }}"; then
+            echo "::error::git push failed (HTTP 403). PAT cannot write to ${{ env.PX4_MSGS_REPO }}. Use secret GH_SYNC_TOKEN with classic repo scope or fine-grained Contents Read/Write on that repository."
+            exit 1
+          fi
           cd ..
           rm -rf px4_msgs
