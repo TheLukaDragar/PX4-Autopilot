@@ -77,6 +77,7 @@ ModuleBase::Descriptor MspOsd::desc{task_spawn, custom_command, print_usage};
 /** Pause after each MSP DisplayPort frame so Walksnail/Avatar-class VTX can drain the UART. */
 static constexpr useconds_t kDisplayPortInterPacketDelayUs = 800;
 
+
 //OSD elements positions
 //in betaflight configurator set OSD elements to your desired positions and in CLI type "set osd" to retreieve the numbers.
 //234 -> not visible. Horizontally 2048-2074(spacing 1), vertically 2048-2528(spacing 32). 26 characters X 15 lines
@@ -164,7 +165,7 @@ MspOsd::~MspOsd()
 
 bool MspOsd::init()
 {
-	ScheduleOnInterval(100_ms);
+	ScheduleOnInterval(50_ms); // 20 Hz — safe with 1-2 boxes + full telemetry
 
 	return true;
 }
@@ -258,6 +259,7 @@ void MspOsd::SendConfig()
 	_msp.Send(MSP_OSD_CONFIG, &msp_osd_config);
 }
 
+
 // extract it to MSPOSD_BF_Run() and MSPOSD_DJIFPV_Run() for compatibility?
 void MspOsd::Run()
 {
@@ -329,6 +331,36 @@ void MspOsd::Run()
 
 	subcmd = MSP_DP_CLEAR_SCREEN;
 	this->sendDisplayPort(&subcmd, 1);
+
+	// Draw target bounding boxes from companion CV pipeline.
+	// Drawn first so VTX RX buffer is empty right after CLEAR_SCREEN — least likely to be dropped.
+	// DRAW_SCREEN at the end is what triggers the visible flip; WRITE_STRING order doesn't matter.
+	{
+		target_bbox_s det{};
+
+		// copy() returns true if the topic has ever been published
+		if (_target_bbox_sub.copy(&det)
+		    && det.count > 0
+		    && (hrt_absolute_time() - det.timestamp) < 500_ms) {
+
+			const uint8_t n = (uint8_t)math::min((int)det.count, 4);
+
+			for (uint8_t i = 0; i < n; i++) {
+				SimBox b{};
+				b.cx           = det.cx[i];
+				b.cy           = det.cy[i];
+				b.hw           = det.w[i] * 0.5f;
+				b.hh           = det.h[i] * 0.5f;
+				// Only use label if the first byte is printable ASCII — the OSD font
+			// maps non-printable bytes (e.g. 0x0A newline) to arrow/symbol glyphs.
+			const char *raw_lbl = &det.label_buf[i * 8];
+			b.label        = ((uint8_t)raw_lbl[0] >= 0x20u && (uint8_t)raw_lbl[0] <= 0x7Eu) ? raw_lbl : nullptr;
+				b.color        = det.color[i];
+				b.corners_only = false;
+				drawBbox(b);
+			}
+		}
+	}
 
 	// Betaflight draws crosshairs via DisplayPort WRITE_STRING (3 font chars), not MSP_OSD_CONFIG alone.
 	if (enabled(SymbolIndex::CROSSHAIRS)) {
@@ -545,6 +577,80 @@ void MspOsd::Run()
 	subcmd = MSP_DP_DRAW_SCREEN;
 	this->sendDisplayPort(&subcmd, 1);
 }
+
+// Draw one bounding box using MSP DisplayPort WRITE_STRING packets.
+// box.color is the MSP attr font-page byte: 0=white 1=green 2=red 3=yellow (VTX-dependent).
+void MspOsd::drawBbox(const SimBox &box)
+{
+	// HD OSD character grid — 53 × 20 typical for Walksnail Avatar / HDZero
+	static constexpr int kGridCols = 52;
+	static constexpr int kGridRows = 19;
+
+	// Map normalised coords → character grid
+	const int cx = math::constrain((int)(box.cx * kGridCols), 0, kGridCols - 1);
+	const int cy = math::constrain((int)(box.cy * kGridRows), 0, kGridRows - 1);
+	const int hw = math::max(2, (int)(box.hw * kGridCols));
+	const int hh = math::max(1, (int)(box.hh * kGridRows));
+
+	const int c0 = math::constrain(cx - hw, 0, kGridCols - 2);
+	const int c1 = math::constrain(cx + hw, c0 + 2, kGridCols - 1);
+	const int r0 = math::constrain(cy - hh, 0, kGridRows - 2);
+	const int r1 = math::constrain(cy + hh, r0 + 2, kGridRows - 1);
+
+	// edge_len: chars from c0 to c1 inclusive, capped at protocol max (30)
+	const int edge_len = math::min(c1 - c0 + 1, 30);
+	const int draw_c1  = c0 + edge_len - 1;
+
+	// Helper: pack and send one WRITE_STRING DisplayPort packet.
+	// attr = box.color (font page → colour on most digital VTX).
+	auto send_str = [&](int row, int col, const char *str, int len) {
+		uint8_t pkt[36];
+		pkt[0] = MSP_DP_WRITE_STRING;
+		pkt[1] = (uint8_t)row;
+		pkt[2] = (uint8_t)col;
+		pkt[3] = box.color & 0x03u;            // bits 0-1 = font page, rest reserved 0
+		const int slen = math::min(len, 30);
+		memcpy(&pkt[4], str, slen);
+		pkt[4 + slen] = 0x00;
+		this->sendDisplayPort(pkt, 4 + slen + 1);
+	};
+
+	// Top edge: "+---...---+"
+	{
+		char edge[31] = {};
+		edge[0] = '+';
+		for (int i = 1; i < edge_len - 1; i++) { edge[i] = '-'; }
+		edge[edge_len - 1] = '+';
+		send_str(r0, c0, edge, edge_len);
+	}
+
+	// Bottom edge: "+---...---+"
+	{
+		char edge[31] = {};
+		edge[0] = '+';
+		for (int i = 1; i < edge_len - 1; i++) { edge[i] = '-'; }
+		edge[edge_len - 1] = '+';
+		send_str(r1, c0, edge, edge_len);
+	}
+
+	if (!box.corners_only) {
+		// Left and right vertical edges — capped at 6 rows to stay within UART budget
+		const int vert_rows = math::min(r1 - r0 - 1, 6);
+
+		for (int i = 0; i < vert_rows; i++) {
+			const int r = r0 + 1 + i;
+			send_str(r, c0,      "|", 1);
+			send_str(r, draw_c1, "|", 1);
+		}
+	}
+
+	// Label centred one row inside the top edge
+	if (box.label && box.label[0] != '\0') {
+		const int label_len = (int)strlen(box.label);
+		send_str(r0 + 1, cx - (label_len / 2), box.label, label_len);
+	}
+}
+
 
 void MspOsd::Send(const unsigned int message_type, const void *payload)
 {

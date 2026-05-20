@@ -91,7 +91,7 @@ publications:
 
   - topic: /fmu/out/vehicle_command_ack
     type: px4_msgs::msg::VehicleCommandAck
-    
+
 
   - topic: /fmu/out/vehicle_global_position
     type: px4_msgs::msg::VehicleGlobalPosition
@@ -148,9 +148,9 @@ publications:
     type: px4_msgs::msg::DistanceSensor
     rate_limit: 10.
 
-  # - topic: /fmu/out/vehicle_imu
-  #   type: px4_msgs::msg::VehicleImu
-  #   rate_limit: 200.
+  - topic: /fmu/out/vehicle_imu
+    type: px4_msgs::msg::VehicleImu
+    rate_limit: 200.
 
   - topic: /fmu/out/esc_status
     type: px4_msgs::msg::EscStatus
@@ -170,6 +170,10 @@ publications:
 
 # Create uORB::Publication
 subscriptions:
+
+  # Target bounding boxes (companion CV → PX4 OSD)
+  - topic: /fmu/in/target_bbox
+    type: px4_msgs::msg::TargetBbox
 
   # Custom Speedo messages (ROS2 -> PX4)
   - topic: /fmu/in/custom_pong
