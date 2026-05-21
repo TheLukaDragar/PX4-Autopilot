@@ -145,6 +145,7 @@ typedef struct {
 // system execution
 #define SCHED_PRIORITY_SLOW_DRIVER		(PX4_WQ_HP_BASE - 35)
 
+#define SCHED_PRIORITY_MIDDLEWARE		(SCHED_PRIORITY_DEFAULT + 10)
 // The navigation system needs to execute regularly but has no realtime needs
 #define SCHED_PRIORITY_NAVIGATION		(SCHED_PRIORITY_DEFAULT + 5)
 //      SCHED_PRIORITY_DEFAULT
