@@ -58,6 +58,10 @@
 	path = src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client
 	url = https://github.com/PX4/Micro-XRCE-DDS-Client.git
 	branch = px4
+[submodule "src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client-v3"]
+	path = src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client-v3
+	url = https://github.com/PX4/Micro-XRCE-DDS-Client.git
+	branch = px4-release/3
 [submodule "src/lib/cdrstream/cyclonedds"]
 	path = src/lib/cdrstream/cyclonedds
 	url = https://github.com/px4/cyclonedds
