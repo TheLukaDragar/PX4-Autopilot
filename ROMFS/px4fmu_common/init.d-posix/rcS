@@ -198,6 +198,10 @@ if [ -n "$PX4_SIM_SPEED_FACTOR" ]; then
 	COM_OF_LOSS_T_LONGER=$(echo "$PX4_SIM_SPEED_FACTOR * 1.0" | bc)
 	echo "COM_OF_LOSS_T set to $COM_OF_LOSS_T_LONGER"
 	param set COM_OF_LOSS_T $COM_OF_LOSS_T_LONGER
+
+	COM_OBC_LOSS_T_LONGER=$(echo "$PX4_SIM_SPEED_FACTOR * 5.0" | bc)
+	echo "COM_OBC_LOSS_T set to $COM_OBC_LOSS_T_LONGER"
+	param set COM_OBC_LOSS_T $COM_OBC_LOSS_T_LONGER
 fi
 
 # Autostart ID
@@ -316,6 +320,10 @@ if [ -n "$PX4_UXRCE_DDS_PORT" ]
 then
 	# Override port if environment variable is defined
 	uxrce_dds_port="$PX4_UXRCE_DDS_PORT"
+fi
+# Override UXRCE_DDS_PTCFG from env (0=default, 1=localhost-only, 2=custom)
+if [ -n "$UXRCE_DDS_PTCFG" ]; then
+	param set UXRCE_DDS_PTCFG $UXRCE_DDS_PTCFG
 fi
 
 uxrce_dds_client start -t udp -p $uxrce_dds_port $uxrce_dds_ns

@@ -57,6 +57,8 @@ set(msg_files
 	CollisionConstraints.msg
 	ControlAllocatorStatus.msg
 	Cpuload.msg
+	CustomPing.msg
+	CustomPong.msg
 	DatamanRequest.msg
 	DatamanResponse.msg
 	DebugArray.msg
@@ -69,6 +71,7 @@ set(msg_files
 	DistanceSensorModeChangeRequest.msg
 	DronecanNodeStatus.msg
 	Ekf2Timestamps.msg
+	EscBeepControl.msg
 	EscEepromRead.msg
 	EscEepromWrite.msg
 	EscReport.msg
@@ -221,9 +224,12 @@ set(msg_files
 	TaskStackInfo.msg
 	TecsStatus.msg
 	TelemetryStatus.msg
+	TfTransform.msg
 	TiltrotorExtraControls.msg
 	TimesyncStatus.msg
+	TrajectoryHeader.msg
 	TrajectorySetpoint6dof.msg
+	TrajectoryWaypoint.msg
 	TransponderReport.msg
 	TuneControl.msg
 	UavcanParameterRequest.msg
@@ -244,6 +250,7 @@ set(msg_files
 	VehicleThrustSetpoint.msg
 	VehicleTorqueSetpoint.msg
 	VelocityLimits.msg
+	TargetBbox.msg
 	Vtx.msg
 	WheelEncoders.msg
 	YawEstimatorStatus.msg
@@ -263,6 +270,7 @@ set(msg_files
 	versioned/LongitudinalControlConfiguration.msg
 	versioned/ManualControlSetpoint.msg
 	versioned/ModeCompleted.msg
+	versioned/RegisteredModes.msg
 	versioned/RaptorInput.msg
 	versioned/RaptorStatus.msg
 	versioned/RegisterExtComponentReply.msg
@@ -285,20 +293,6 @@ set(msg_files
 	versioned/Wind.msg
 )
 list(SORT msg_files)
-
-if(CONFIG_MODULES_VISION_TARGET_ESTIMATOR)
-	list(APPEND msg_files
-		TargetGnss.msg
-		VteInput.msg
-		VtePosition.msg
-		VteOrientation.msg
-		VteAidSource1d.msg
-		VteAidSource3d.msg
-		VteBiasInitStatus.msg
-		FiducialMarkerPosReport.msg
-		FiducialMarkerYawReport.msg
-		PrecLandStatus.msg)
-endif()
 
 px4_list_make_absolute(msg_files ${CMAKE_CURRENT_SOURCE_DIR} ${msg_files})
 
@@ -468,21 +462,7 @@ if(CONFIG_LIB_CDRSTREAM)
 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/idlc)
 	execute_process(COMMAND ${CMAKE_COMMAND} ${PX4_SOURCE_DIR}/src/lib/cdrstream/cyclonedds
 			-DCMAKE_C_COMPILER=/usr/bin/gcc
-			-DCMAKE_C_COMPILER_LAUNCHER=ccache
-			-DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-			-DCMAKE_C_FLAGS=-Wno-maybe-uninitialized\ -Wno-unused-parameter
 			-DBUILD_EXAMPLES=OFF
-			-DENABLE_SSL=OFF
-			-DENABLE_SECURITY=OFF
-			-DBUILD_DDSPERF=OFF
-			-DENABLE_LTO=OFF
-			-DENABLE_LIFESPAN=OFF
-			-DENABLE_DEADLINE_MISSED=OFF
-			-DENABLE_NETWORK_PARTITIONS=oFF
-			-DENABLE_SOURCE_SPECIFIC_MULTICAST=oFF
-			-DENABLE_IPV6=OFF
-			-DENABLE_TYPE_DISCOVERY=OFF
-			-DENABLE_TOPIC_DISCOVERY=oFF
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/idlc
 			RESULT_VARIABLE CMD_ERROR
 			OUTPUT_FILE CMD_OUTPUT )

@@ -24,15 +24,14 @@ import os
 #include <mathlib/mathlib.h>
 #include <uORB/Publication.hpp>
 #include <uORB/PublicationMulti.hpp>
+#include <uORB/SubscriptionCallback.hpp>
 #include <uORB/uORB.h>
 @[for include in type_includes]@
 #include <uORB/ucdr/@(include).h>
 #include <uORB/topics/@(include).h>
 @[end for]@
 
-// Minimum interval (ms) between uORB updates forwarded to DDS (/fmu/out/*).
-// 4ms ~= 250Hz.
-#define UXRCE_DEFAULT_POLL_INTERVAL_MS 4
+#define UXRCE_DEFAULT_POLL_INTERVAL_MS 10
 
 typedef bool (*UcdrSerializeMethod)(const void* data, ucdrBuffer& buf, int64_t time_offset);
 
@@ -69,7 +68,29 @@ struct SendSubscription {
 	uint32_t topic_size;
 	UcdrSerializeMethod ucdr_serialize_method;
 	uint64_t publish_interval_ms;
-	uint8_t orb_instance;
+	bool event_driven;
+};
+
+// Callback for event-driven topics
+class EventDrivenCallback : public uORB::SubscriptionCallback
+{
+public:
+	EventDrivenCallback(void *owner, const orb_metadata *meta) :
+		uORB::SubscriptionCallback(meta), _owner(owner), _callback_count(0) {}
+
+	void call() override {
+		_callback_count++;
+		// Notify owner that event-driven topic updated
+		if (_owner) {
+			px4_sem_post((px4_sem_t*)_owner);
+		}
+	}
+
+	uint32_t get_callback_count() const { return _callback_count; }
+
+private:
+	void *_owner;
+	uint32_t _callback_count;
 };
 
 // Subscribers for messages to send
@@ -83,32 +104,56 @@ struct SendTopicsSubs {
 			  get_message_version<@(pub['simple_base_type'])_s>(),
 			  ucdr_topic_size_@(pub['simple_base_type'])(),
 			  &ucdr_serialize_@(pub['simple_base_type']),
-			  static_cast<uint64_t>((@(pub.get('rate_limit', 0)) > 0) ? (1e3 / @(pub.get('rate_limit', 1e3))) : UXRCE_DEFAULT_POLL_INTERVAL_MS),
-			  @(pub['instance'])
+			  static_cast<uint64_t>(@('true' if pub.get('event_driven', False) else 'false') ? 0 : ((@(pub.get('rate_limit', 0)) > 0) ? (1e3 / @(pub.get('rate_limit', 1e3))) : UXRCE_DEFAULT_POLL_INTERVAL_MS)),
+			  @('true' if pub.get('event_driven', False) else 'false'),
 			},
 @[    end for]@
 	};
 
 	px4_pollfd_struct_t fds[@(len(publications))] {};
+	EventDrivenCallback *callbacks[@(len(publications))] {};
+	px4_sem_t event_sem;
 
 	uint32_t num_payload_sent{};
 
 	bool init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace);
 	void update(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId best_effort_stream_id, uxrObjectId participant_id, const char *client_namespace);
+	void update_event_driven(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId best_effort_stream_id, uxrObjectId participant_id, const char *client_namespace);
 	void reset();
+	bool has_event_driven_topics() const;
+	int get_poll_timeout_ms() const;
+	void print_statistics() const;
 };
 
 bool SendTopicsSubs::init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace) {
 	bool ret = true;
+
+	// Initialize semaphore for event-driven topics
+	px4_sem_init(&event_sem, 0, 0);
+
 	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
-		if (fds[idx].events == 0) {
-			fds[idx].fd = orb_subscribe_multi(send_subscriptions[idx].orb_meta, send_subscriptions[idx].orb_instance);
-			fds[idx].events = POLLIN;
-			orb_set_interval(fds[idx].fd, send_subscriptions[idx].publish_interval_ms);
+		if (send_subscriptions[idx].event_driven) {
+			// Event-driven: only use callback subscription, no poll
+			fds[idx].fd = -1;
+			fds[idx].events = 0;
+
+			callbacks[idx] = new EventDrivenCallback(&event_sem, send_subscriptions[idx].orb_meta);
+			if (callbacks[idx]) {
+				callbacks[idx]->subscribe();
+				callbacks[idx]->registerCallback();
+			}
+		} else {
+			// Rate-limited: only use poll subscription, no callback
+			if (fds[idx].events == 0) {
+				fds[idx].fd = orb_subscribe(send_subscriptions[idx].orb_meta);
+				fds[idx].events = POLLIN;
+				orb_set_interval(fds[idx].fd, send_subscriptions[idx].publish_interval_ms);
+			}
+			callbacks[idx] = nullptr;
 		}
 
 		if (!create_data_writer(session, reliable_out_stream_id, participant_id, static_cast<ORB_ID>(send_subscriptions[idx].orb_meta->o_id), client_namespace, send_subscriptions[idx].topic,
-								   send_subscriptions[idx].message_version, send_subscriptions[idx].orb_instance,
+								   send_subscriptions[idx].message_version, 0,
 								   send_subscriptions[idx].dds_type_name, send_subscriptions[idx].data_writer)) {
 			ret = false;
 		}
@@ -120,10 +165,22 @@ void SendTopicsSubs::reset() {
 	num_payload_sent = 0;
 	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
 		send_subscriptions[idx].data_writer = uxr_object_id(0, UXR_INVALID_ID);
-		orb_unsubscribe(fds[idx].fd);
-		fds[idx].fd = -1;
-		fds[idx].events = 0;  // force re-subscribe on reconnect (init() skips when events != 0)
+
+		// Only unsubscribe valid poll subscriptions
+		if (fds[idx].fd >= 0) {
+			orb_unsubscribe(fds[idx].fd);
+			fds[idx].fd = -1;
+			fds[idx].events = 0;  // force re-subscribe on reconnect (init() skips when events != 0)
+		}
+
+		// Clean up callbacks
+		if (callbacks[idx]) {
+			callbacks[idx]->unregisterCallback();
+			delete callbacks[idx];
+			callbacks[idx] = nullptr;
+		}
 	}
+	px4_sem_destroy(&event_sem);
 };
 
 void SendTopicsSubs::update(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId best_effort_stream_id, uxrObjectId participant_id, const char *client_namespace)
@@ -131,9 +188,13 @@ void SendTopicsSubs::update(uxrSession *session, uxrStreamId reliable_out_stream
 	int64_t time_offset_us = session->time_offset / 1000; // ns -> us
 
 	alignas(sizeof(uint64_t)) char topic_data[max_topic_size];
-	bool needs_flush = false;
 
 	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
+		// Skip event-driven topics (they use callback path, not poll path)
+		if (send_subscriptions[idx].event_driven) {
+			continue;
+		}
+
 		if (fds[idx].revents & POLLIN) {
 			// Topic updated, copy data and send
 			orb_copy(send_subscriptions[idx].orb_meta, fds[idx].fd, &topic_data);
@@ -142,21 +203,10 @@ void SendTopicsSubs::update(uxrSession *session, uxrStreamId reliable_out_stream
 
 				ucdrBuffer ub;
 				uint32_t topic_size = send_subscriptions[idx].topic_size;
-				uint16_t req_id = uxr_prepare_output_stream(session, best_effort_stream_id, send_subscriptions[idx].data_writer, &ub,
-							   topic_size);
-
-				if (req_id == UXR_INVALID_REQUEST_ID) {
-					// The best-effort output buffer can fill up if multiple topics update at once.
-					// Flush once to free space and retry.
-					uxr_flash_output_streams(session);
-					needs_flush = false;
-					req_id = uxr_prepare_output_stream(session, best_effort_stream_id, send_subscriptions[idx].data_writer, &ub,
-									   topic_size);
-				}
-
-				if (req_id != UXR_INVALID_REQUEST_ID) {
+				if (uxr_prepare_output_stream(session, best_effort_stream_id, send_subscriptions[idx].data_writer, &ub, topic_size) != UXR_INVALID_REQUEST_ID) {
 					send_subscriptions[idx].ucdr_serialize_method(&topic_data, ub, time_offset_us);
-					needs_flush = true;
+					// TODO: fill up the MTU and then flush, which reduces the packet overhead
+					uxr_flash_output_streams(session);
 					num_payload_sent += topic_size;
 
 				} else {
@@ -169,9 +219,57 @@ void SendTopicsSubs::update(uxrSession *session, uxrStreamId reliable_out_stream
 
 		}
 	}
+}
 
-	if (needs_flush) {
-		uxr_flash_output_streams(session);
+void SendTopicsSubs::update_event_driven(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId best_effort_stream_id, uxrObjectId participant_id, const char *client_namespace)
+{
+	int64_t time_offset_us = session->time_offset / 1000; // ns -> us
+	alignas(sizeof(uint64_t)) char topic_data[max_topic_size];
+
+	// Process all event-driven topics that have updates
+	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
+		if (send_subscriptions[idx].event_driven && callbacks[idx]) {
+			// Check if there are updates available
+			while (callbacks[idx]->updated()) {
+				if (callbacks[idx]->copy(&topic_data) && send_subscriptions[idx].data_writer.id != UXR_INVALID_ID) {
+					ucdrBuffer ub;
+					uint32_t topic_size = send_subscriptions[idx].topic_size;
+					if (uxr_prepare_output_stream(session, best_effort_stream_id, send_subscriptions[idx].data_writer, &ub, topic_size) != UXR_INVALID_REQUEST_ID) {
+						send_subscriptions[idx].ucdr_serialize_method(&topic_data, ub, time_offset_us);
+						uxr_flash_output_streams(session);
+						num_payload_sent += topic_size;
+					}
+				}
+			}
+		}
+	}
+}
+
+bool SendTopicsSubs::has_event_driven_topics() const
+{
+	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
+		if (send_subscriptions[idx].event_driven) {
+			return true;
+		}
+	}
+	return false;
+}
+
+int SendTopicsSubs::get_poll_timeout_ms() const
+{
+	// If we have event-driven topics, use semaphore timedwait instead of poll timeout
+	// Otherwise use default 10ms poll
+	return has_event_driven_topics() ? 0 : 10;
+}
+
+void SendTopicsSubs::print_statistics() const
+{
+	PX4_INFO("=== Event-Driven Statistics ===");
+	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
+		if (send_subscriptions[idx].event_driven && callbacks[idx]) {
+			PX4_INFO("  %s: %" PRIu32 " callbacks", send_subscriptions[idx].orb_meta->o_name,
+			         callbacks[idx]->get_callback_count());
+		}
 	}
 }
 
@@ -203,13 +301,13 @@ struct RcvTopicsPubs {
 	bool init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace);
 };
 
-@[if subscriptions or subscriptions_multi]@
 static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t request_id, uxrStreamId stream_id,
 		     struct ucdrBuffer *ub, uint16_t length, void *args)
 {
 	RcvTopicsPubs *pubs = (RcvTopicsPubs *)args;
-	pubs->num_payload_received += length;
 	const int64_t time_offset_us = session->time_offset / 1000; // ns -> us
+	(void)time_offset_us; // used in subscription cases, may be unused if only default hits
+	pubs->num_payload_received += length;
 
 	switch (object_id.id) {
 @[    for idx, sub in enumerate(subscriptions)]@
@@ -262,7 +360,6 @@ static void on_topic_update(uxrSession *session, uxrObjectId object_id, uint16_t
 		break;
 	}
 }
-@[end if]@
 
 bool RcvTopicsPubs::init(uxrSession *session, uxrStreamId reliable_out_stream_id, uxrStreamId reliable_in_stream_id, uxrStreamId best_effort_in_stream_id, uxrObjectId participant_id, const char *client_namespace)
 {
@@ -281,9 +378,7 @@ bool RcvTopicsPubs::init(uxrSession *session, uxrStreamId reliable_out_stream_id
 	}
 @[    end for]@
 
-@[    if subscriptions or subscriptions_multi]@
 	uxr_set_topic_callback(session, on_topic_update, this);
-@[    end if]@
 
 	return true;
 }

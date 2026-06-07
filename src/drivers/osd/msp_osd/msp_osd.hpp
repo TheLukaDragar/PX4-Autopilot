@@ -54,6 +54,8 @@
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/vehicle_status.h>
+#include <uORB/topics/esc_status.h>
+#include <uORB/topics/target_bbox.h>
 
 #include "MspV1.hpp"
 #include "MessageDisplay/MessageDisplay.hpp"
@@ -97,7 +99,9 @@ enum SymbolIndex : uint8_t {
 	CROSSHAIRS		= 18,
 	AVG_CELL_VOLTAGE	= 19,
 	HORIZON_SIDEBARS	= 20,
-	POWER			= 21
+	POWER			= 21,
+	EST_SPEED		= 22,	// fused horizontal speed (km/h) via DisplayPort (separate from GPS_SPEED / MSP_RAW_GPS)
+	BATT_REMAIN_PCT		= 23,	// main battery remaining % (QGC-style)
 };
 
 class MspOsd : public ModuleBase, public ModuleParams, public px4::ScheduledWorkItem
@@ -132,6 +136,9 @@ private:
 	void Send(const unsigned int message_type, const void *payload);
 	void Send(const unsigned int message_type, const void *payload, int32_t payload_size);
 
+	/** MSP DisplayPort with short delay — VTX UART often drops back-to-back packets if sent in one burst. */
+	void sendDisplayPort(const void *payload, int32_t payload_size);
+
 	// receive vtx data
 	void Receive();
 
@@ -144,6 +151,20 @@ private:
 
 	// convenience function to check if a given symbol is enabled
 	bool enabled(const SymbolIndex &symbol);
+
+	// One bounding box slot for OSD rendering
+	struct SimBox {
+		float       cx;           // normalised centre x [0, 1]
+		float       cy;           // normalised centre y [0, 1]
+		float       hw;           // normalised half-width
+		float       hh;           // normalised half-height
+		const char *label;        // short null-terminated label (≤ 7 chars)
+		uint8_t     color;        // MSP DisplayPort font page: 0=white 1=green 2=red 3=yellow
+		bool        corners_only; // true = top+bottom only; false = full sides
+	};
+
+	// Draw one bounding box using MSP DisplayPort WRITE_STRING packets
+	void drawBbox(const SimBox &box);
 
 	MspV1 _msp{0};
 	int _msp_fd{-1};
@@ -164,6 +185,8 @@ private:
 	uORB::Subscription _vehicle_gps_position_sub{ORB_ID(vehicle_gps_position)};
 	uORB::Subscription _vehicle_local_position_sub{ORB_ID(vehicle_local_position)};
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
+	uORB::Subscription _esc_status_sub{ORB_ID(esc_status)};
+	uORB::Subscription _target_bbox_sub{ORB_ID(target_bbox)};
 
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
@@ -179,6 +202,7 @@ private:
 		(ParamInt<px4::params::OSD_LOG_LEVEL>) _param_osd_log_level,
 		(ParamInt<px4::params::OSD_RC_STICK>) _param_osd_rc_stick
 	)
+
 
 	// metadata
 	char _device[64] {};

@@ -34,6 +34,7 @@
 
 #include <drivers/drv_dshot.h>
 #include <lib/mixer_module/mixer_module.hpp>
+#include <parameters/param.h>
 #include <px4_platform_common/getopt.h>
 #include <px4_platform_common/module.h>
 #include <uORB/topics/esc_status.h>
@@ -122,6 +123,7 @@ private:
 	bool process_bdshot_telemetry();
 
 	void consume_esc_data(const EscData &data);
+	void update_temperature_failures(int motor_index);
 
 	uint16_t calculate_output_value(uint16_t raw, int index);
 	uint16_t convert_output_to_3d_scaling(uint16_t output);
@@ -194,6 +196,10 @@ private:
 	int _3d_dead_h = 0;
 	float _dshot_min = 0.f;
 	int _esc_type = 0;
+	int32_t _esc_tmp_warn = 0;
+	int32_t _esc_tmp_over = 0;
+	param_t _param_esc_tmp_warn = PARAM_INVALID;
+	param_t _param_esc_tmp_over = PARAM_INVALID;
 
 	// Hardware initialization state
 	bool _hardware_initialized = false;

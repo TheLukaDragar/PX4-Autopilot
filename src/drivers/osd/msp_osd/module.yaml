@@ -31,15 +31,16 @@ parameters:
                 11: RSSI_VALUE
                 12: ALTITUDE
                 13: NUMERICAL_VARIO
-                # the following are reserved but not currently functional
                 14: (unused) FLYMODE
-                15: (unused) ESC_TMP
-                16: (unused) PITCH_ANGLE
-                17: (unused) ROLL_ANGLE
+                15: ESC_TMP
+                16: PITCH_ANGLE
+                17: ROLL_ANGLE
                 18: CROSSHAIRS
                 19: AVG_CELL_VOLTAGE
                 20: (unused) HORIZON_SIDEBARS
                 21: POWER
+                22: EST_SPEED
+                23: BATT_REMAIN_PCT
             default: 16383
 
         # OSD Crosshairs Vertical Position

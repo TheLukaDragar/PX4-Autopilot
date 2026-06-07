@@ -44,9 +44,7 @@ jobs:
           macos-pip-${{ runner.arch }}-
 
     - name: setup
-      run: |
-        ./Tools/setup/macos.sh
-        echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
+      run: ./Tools/setup/macos.sh
 
     - uses: ./.github/actions/setup-ccache
       id: ccache

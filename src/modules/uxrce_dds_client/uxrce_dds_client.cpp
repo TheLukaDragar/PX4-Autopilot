@@ -49,7 +49,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static constexpr char NAMESPACE_PREFIX[] = "uav_";
+static constexpr char NAMESPACE_PREFIX[] = "px4_";
 #define PARTICIPANT_XML_SIZE 512
 static constexpr uint8_t TIMESYNC_MAX_TIMEOUTS = 10;
 
@@ -222,13 +222,30 @@ bool UxrceddsClient::setupSession(uxrSession *session)
 
 	bool got_response = false;
 
-	while (!should_exit() && !got_response) {
+	// Bound the ping wait so a permanently absent agent or wedged transport fd
+	// (USB-CDC / Tegra UART) doesn't spin here forever. Returning false drops
+	// us back to run()'s outer loop, which tears down the transport via
+	// deinit()/init() — the only known recovery for a stuck serial fd.
+	// Budget: MAX_PING_ATTEMPTS * PING_TIMEOUT_MS worst case (~5 s).
+	// See PX4#26022 / PX4#26848.
+	static constexpr unsigned MAX_PING_ATTEMPTS = 10;
+	static constexpr int PING_TIMEOUT_MS = 500;
+	unsigned ping_attempt = 0;
+
+	while (!should_exit() && !got_response && ping_attempt < MAX_PING_ATTEMPTS) {
 		// Sending ping without initing a XRCE session
-		got_response = uxr_ping_agent_attempts(_comm, 1000, 1);
+		got_response = uxr_ping_agent_attempts(_comm, PING_TIMEOUT_MS, 1);
+		ping_attempt++;
+
+		if (!got_response && (ping_attempt == 1 || ping_attempt % 3 == 0)) {
+			PX4_WARN("waiting for agent ping reply (attempt %u/%u)",
+				 ping_attempt, MAX_PING_ATTEMPTS);
+		}
 	}
 
 	if (!got_response) {
-		PX4_ERR("got no ping from agent");
+		PX4_ERR("got no ping from agent after %u attempts; will retry from transport init",
+			ping_attempt);
 		return false;
 	}
 
@@ -378,12 +395,13 @@ bool UxrceddsClient::setupSession(uxrSession *session)
 	}
 
 	// create VehicleCommand replier
-	if (_num_of_repliers < MAX_NUM_REPLIERS) {
-		if (add_replier(new VehicleCommandSrv(session, _reliable_out, reliable_in, _participant_id, _client_namespace,
-						      _num_of_repliers))) {
-			PX4_ERR("replier init failed");
-			return false;
-		}
+	// add_replier() takes ownership and returns true on success / false on
+	// failure (capacity exhausted, nullptr, or alloc fail). It frees the
+	// passed-in pointer on overflow so we don't leak on this path.
+	if (!add_replier(new VehicleCommandSrv(session, _reliable_out, reliable_in, _participant_id, _client_namespace,
+					       _num_of_repliers))) {
+		PX4_ERR("replier init failed (capacity %u exhausted or alloc failed)", MAX_NUM_REPLIERS);
+		return false;
 	}
 
 	_connected = true;
@@ -408,6 +426,11 @@ void UxrceddsClient::deleteSession(uxrSession *session)
 	_connected = false;
 	_last_payload_tx_rate = 0;
 	_timesync.reset_filter();
+
+	// Reset connectivity counters on teardown so any code path reading them
+	// between deleteSession() and the next successful setupSession() sees
+	// clean state. Defense-in-depth for PX4#26022.
+	resetConnectivityCounters();
 }
 
 UxrceddsClient::~UxrceddsClient()
@@ -702,6 +725,9 @@ void UxrceddsClient::run()
 				}
 			}
 
+			// Event-driven /fmu/out publishers (uORB SubscriptionCallback); not covered by px4_poll above.
+			_subs->update_event_driven(&session, _reliable_out, _best_effort_out, _participant_id, _client_namespace);
+
 			// Run session with 0 timeout (non-blocking). Under high inbound traffic the socket RX buffer can
 			// overflow and starve the system; drain a small burst per loop to keep up.
 			for (int i = 0; i < 10; i++) {
@@ -916,13 +942,21 @@ bool UxrceddsClient::setBaudrate(int fd, unsigned baud)
 
 bool UxrceddsClient::add_replier(SrvBase *replier)
 {
-	if (replier == nullptr || _num_of_repliers >= MAX_NUM_REPLIERS) {
-		return true;
+	// Returns true on success, false on failure (standard convention).
+	// On failure we take ownership of `replier` and free it so the caller
+	// can stay simple: `if (!add_replier(new FooSrv(...))) { ... }`.
+	if (replier == nullptr) {
+		return false;
+	}
+
+	if (_num_of_repliers >= MAX_NUM_REPLIERS) {
+		delete replier;
+		return false;
 	}
 
 	_repliers[_num_of_repliers] = replier;
 	_num_of_repliers++;
-	return false;
+	return true;
 }
 
 void UxrceddsClient::process_requests(uxrObjectId object_id, SampleIdentity *sample_id, ucdrBuffer *ub,
@@ -972,7 +1006,7 @@ int UxrceddsClient::task_spawn(int argc, char *argv[])
 {
 	desc.task_id = px4_task_spawn_cmd("uxrce_dds_client",
 					  SCHED_DEFAULT,
-					  SCHED_PRIORITY_DEFAULT,
+					  SCHED_PRIORITY_MIDDLEWARE,
 					  PX4_STACK_ADJUSTED(8000),
 					  (px4_main_t)&run_trampoline,
 					  (char *const *)argv);
@@ -1010,6 +1044,10 @@ int UxrceddsClient::print_status()
 	}
 
 	PX4_INFO("timesync converged: %s", _timesync.sync_converged() ? "true" : "false");
+
+	if (_subs) {
+		_subs->print_statistics();
+	}
 
 	perf_print_counter(_loop_perf);
 	perf_print_counter(_loop_interval_perf);

@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# @name SSRD Lampy — optical flow + range (no GPS)
+#
+# @type Quadrotor Wide
+#
+# @maintainer Custom Configuration
+#
+
+. ${R}etc/init.d-posix/airframes/10016_ssrd_lampy
+
+# ── GPS disabled ──────────────────────────────────────────────────────────────
+param set SYS_HAS_GPS 0
+param set SIM_GPS_USED 0
+param set MAV_USEHILGPS 0
+param set COM_ARM_WO_GPS 1
+param set EKF2_GPS_CTRL 0
+
+# ── Optical flow fusion ───────────────────────────────────────────────────────
+param set EKF2_OF_CTRL 1
+param set EKF2_OF_DELAY 20.0
+param set EKF2_OF_QMIN 1
+param set EKF2_OF_N_MIN 0.15
+param set EKF2_OF_N_MAX 0.50
+param set EKF2_OF_GYR_SRC 0
+# Sensor position in FRD (X fwd, Y right, Z DOWN): camera 2 cm below base_link
+param set EKF2_OF_POS_X 0.084
+param set EKF2_OF_POS_Y 0.0
+param set EKF2_OF_POS_Z 0.032
+
+# ── Range finder as height source ─────────────────────────────────────────────
+param set EKF2_RNG_CTRL 1
+param set EKF2_RNG_DELAY 5.0
+param set EKF2_RNG_NOISE 0.10
+param set EKF2_RNG_POS_X 0.084
+param set EKF2_RNG_POS_Y 0.0
+param set EKF2_RNG_POS_Z 0.032
+param set EKF2_HGT_REF 0           # 0=baro (primary, always valid) — range aids via EKF2_RNG_CTRL=1

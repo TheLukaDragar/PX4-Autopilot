@@ -71,6 +71,9 @@ DShot::~DShot()
 
 int DShot::init()
 {
+	_param_esc_tmp_warn = param_find("COM_ESC_TMP_WARN");
+	_param_esc_tmp_over = param_find("COM_ESC_TMP_OVER");
+
 	update_params();
 
 	if (initialize_dshot()) {
@@ -368,15 +371,7 @@ void DShot::update_motor_outputs(uint16_t outputs[MAX_ACTUATORS], int num_output
 			up_dshot_motor_command(i, DSHOT_CMD_MOTOR_STOP, set_telemetry_bit);
 
 		} else {
-			uint16_t output = calculate_output_value(outputs[i], i);
-
-			// 3D deadzone: send motor stop to avoid MIN_throttle offset in up_dshot_motor_data_set
-			if (output == DSHOT_DISARM_VALUE) {
-				up_dshot_motor_command(i, DSHOT_CMD_MOTOR_STOP, set_telemetry_bit);
-
-			} else {
-				up_dshot_motor_data_set(i, output, set_telemetry_bit);
-			}
+			up_dshot_motor_data_set(i, calculate_output_value(outputs[i], i), set_telemetry_bit);
 		}
 	}
 }
@@ -533,7 +528,7 @@ bool DShot::process_serial_telemetry()
 
 				if (_serial_telem_consecutive_timeouts[motor_index] >= SERIAL_TELEM_SKIP_THRESHOLD) {
 					_serial_telem_skip_mask |= (1 << motor_index);
-					PX4_DEBUG("ESC%d serial telemetry lost, skipping", motor_index + 1);
+					PX4_WARN("ESC%d serial telemetry lost, skipping", motor_index + 1);
 				}
 			}
 
@@ -736,6 +731,7 @@ void DShot::consume_esc_data(const EscData &esc)
 		_esc_status.esc[motor_index].esc_voltage = esc.voltage;
 		_esc_status.esc[motor_index].esc_current = esc.current;
 		_esc_status.esc[motor_index].esc_temperature = esc.temperature;
+		update_temperature_failures(motor_index);
 
 	} else if (esc.source == TelemetrySource::BDShot) {
 		_esc_status.esc[motor_index].timestamp = esc.timestamp;
@@ -747,7 +743,28 @@ void DShot::consume_esc_data(const EscData &esc)
 			_esc_status.esc[motor_index].esc_voltage = esc.voltage;
 			_esc_status.esc[motor_index].esc_current = esc.current;
 			_esc_status.esc[motor_index].esc_temperature = esc.temperature;
+			update_temperature_failures(motor_index);
 		}
+	}
+}
+
+void DShot::update_temperature_failures(int motor_index)
+{
+	if (!math::isInRange(motor_index, 0, DSHOT_MAX_MOTORS - 1)) {
+		return;
+	}
+
+	uint16_t &failures = _esc_status.esc[motor_index].failures;
+	failures &= ~((1 << esc_report_s::FAILURE_WARN_ESC_TEMPERATURE)
+		      | (1 << esc_report_s::FAILURE_OVER_ESC_TEMPERATURE));
+
+	const float temperature = _esc_status.esc[motor_index].esc_temperature;
+
+	if (_esc_tmp_over > 0 && PX4_ISFINITE(temperature) && temperature > static_cast<float>(_esc_tmp_over)) {
+		failures |= (1 << esc_report_s::FAILURE_OVER_ESC_TEMPERATURE);
+
+	} else if (_esc_tmp_warn > 0 && PX4_ISFINITE(temperature) && temperature > static_cast<float>(_esc_tmp_warn)) {
+		failures |= (1 << esc_report_s::FAILURE_WARN_ESC_TEMPERATURE);
 	}
 }
 
@@ -757,7 +774,7 @@ uint16_t DShot::convert_output_to_3d_scaling(uint16_t output)
 	// This is in terms of DShot values, code below is in terms of actuator_output
 	// Direction 1) 48 is the slowest, 1047 is the fastest.
 	// Direction 2) 1049 is the slowest, 2047 is the fastest.
-	if (output >= _3d_dead_l && output <= _3d_dead_h) {
+	if (output >= _3d_dead_l && output < _3d_dead_h) {
 		return DSHOT_DISARM_VALUE;
 	}
 
@@ -866,6 +883,18 @@ void DShot::handle_configure_actuator(const vehicle_command_s &command)
 			_current_command.save = true;
 			break;
 
+		case DSHOT_CMD_TONE1:
+		case DSHOT_CMD_TONE2:
+		case DSHOT_CMD_TONE3:
+		case DSHOT_CMD_TONE4:
+		case DSHOT_CMD_TONE5:
+		case DSHOT_CMD_TONE6:
+		case DSHOT_CMD_TONE7:
+		case DSHOT_CMD_TONE8:
+			_current_command.command = (uint16_t)type;
+			_current_command.num_repetitions = 10; // DShot spec: commands need ~10 repeats to register
+			break;
+
 		default:
 			PX4_WARN("unknown command: %i", type);
 			break;
@@ -926,6 +955,14 @@ void DShot::update_params()
 	_3d_dead_h = _param_dshot_3d_dead_h.get();
 	_dshot_min = _param_dshot_min.get();
 	_esc_type = _param_dshot_esc_type.get();
+
+	if (_param_esc_tmp_warn != PARAM_INVALID) {
+		param_get(_param_esc_tmp_warn, &_esc_tmp_warn);
+	}
+
+	if (_param_esc_tmp_over != PARAM_INVALID) {
+		param_get(_param_esc_tmp_over, &_esc_tmp_over);
+	}
 
 	// Calculate minimum DShot output as percent of throttle and constrain.
 	float min_value = _dshot_min * (float)DSHOT_MAX_THROTTLE;

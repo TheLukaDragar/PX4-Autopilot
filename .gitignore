@@ -113,8 +113,10 @@ keys/
 # metadata
 _emscripten_sdk/
 
-# virtual Python environment
-.venv
-
-# Claude Code local settings
-.claude/settings.local.json
+# Local / fork-only trees (not PX4 submodules; keep out of index)
+/px4-ros2-interface-lib/
+/speedo_position_publisher/
+/sqrtvins/
+/lampy_px4_position_publisher/
+/flight_review/
+/ROMFS/px4fmu_common/init.d-posix/airframes/speedosim.params

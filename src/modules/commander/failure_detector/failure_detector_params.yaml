@@ -114,3 +114,42 @@ parameters:
       max: 5.0
       unit: s
       decimal: 2
+    FD_LAND_TILT:
+      description:
+        short: Landing tipover max tilt angle
+        long: |-
+          Maximum tilt angle before FailureDetector triggers landing_tipover flag.
+          Triggers only in a landing phase (AUTO_LAND, AUTO_PRECLAND, DESCEND) and if the FD_LAND_TILT is set above 0.
+          The ground_contact and landing_tipover hysteresis timings are configured by FD_GND_C_TF and FD_TIP_TTRI.
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 90.0
+      unit: deg
+      decimal: 1
+      increment: 1.0
+    FD_GND_C_TF:
+      description:
+        short: Ground contact clear hysteresis time
+        long: |-
+          Seconds required to clear the ground_contact hysteresis in the landing tipover detector
+          when transitioning from true to false. So when the drone tips over it losses ground contact, so it needs to have
+          this so to trigger the failure.
+      type: float
+      default: 3.0
+      min: 0.0
+      max: 10.0
+      unit: s
+      decimal: 2
+    FD_TIP_TTRI:
+      description:
+        short: Landing tipover trigger time
+        long: |-
+          Seconds that the landing tipover condition must persist before the landing_tipover flag is set
+          (hysteresis from false to true).
+      type: float
+      default: 0.10
+      min: 0.0
+      max: 2.0
+      unit: s
+      decimal: 2
