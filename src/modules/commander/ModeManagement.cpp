@@ -334,8 +334,7 @@ void ModeManagement::checkNewRegistrations(UpdateRequest &update_request)
 
 		reply.timestamp = hrt_absolute_time();
 		_register_ext_component_reply_pub.publish(reply);
-		
-		// Publish updated list of registered modes
+
 		publishRegisteredModes();
 	}
 }
@@ -358,7 +357,6 @@ void ModeManagement::checkUnregistrations(uint8_t user_intended_nav_state, Updat
 		if (request.mode_id != -1) {
 			if (_modes.removeExternalMode(request.mode_id, request.name)) {
 				removeModeExecutor(request.mode_executor_id);
-				// Publish updated list of registered modes
 				publishRegisteredModes();
 				// else: if the mode was already removed (due to a timeout), the executor was also removed already
 			}
@@ -406,7 +404,6 @@ void ModeManagement::update(bool armed, uint8_t user_intended_nav_state, UpdateR
 					_external_checks.removeRegistration(mode.arming_check_registration_id, i);
 					removeModeExecutor(mode.mode_executor_registration_id);
 					_modes.removeExternalMode(i, mode.name);
-					// Publish updated list of registered modes
 					publishRegisteredModes();
 				}
 			}
@@ -540,13 +537,38 @@ uint8_t ModeManagement::getNavStateDisplay(uint8_t nav_state) const
 	}
 }
 
-bool ModeManagement::updateControlMode(uint8_t nav_state, vehicle_control_mode_s &control_mode) const
+bool ModeManagement::updateControlMode(uint8_t nav_state, vehicle_control_mode_s &control_mode)
 {
 	bool ret = false;
 
+	const bool activation = (nav_state != _last_served_nav_state);
+
+	if (activation) {
+		_last_served_nav_state = nav_state;
+		_last_served_change_us = hrt_absolute_time();
+	}
+
 	if (nav_state >= Modes::FIRST_EXTERNAL_NAV_STATE && nav_state <= Modes::LAST_EXTERNAL_NAV_STATE) {
 		if (_modes.valid(nav_state)) {
-			control_mode = _modes.mode(nav_state).config_control_setpoint;
+			const Modes::Mode &mode = _modes.mode(nav_state);
+
+			// Refuse a cached config_control_setpoints entry that predates the current
+			// activation of this nav_state; publish safe defaults until a fresh one arrives.
+			const bool stale = (mode.config_control_setpoint.timestamp == 0)
+					   || (mode.config_control_setpoint.timestamp + 10_ms < _last_served_change_us);
+
+			if (stale) {
+				Modes::Mode::setControlModeDefaults(control_mode);
+
+				if (activation) {
+					PX4_DEBUG("External mode %i: stale config_control_setpoints on activation, using safe defaults",
+						  nav_state);
+				}
+
+			} else {
+				control_mode = mode.config_control_setpoint;
+			}
+
 			ret = true;
 
 		} else {
@@ -563,8 +585,19 @@ void ModeManagement::printStatus() const
 	_mode_executors.printStatus(modeExecutorInCharge());
 }
 
-void ModeManagement::updateActiveConfigOverrides(uint8_t nav_state, config_overrides_s &overrides_in_out)
+void ModeManagement::updateActiveConfigOverrides(uint8_t previous_nav_state, uint8_t nav_state, int previous_executor_in_charge,
+		config_overrides_s &overrides_in_out)
 {
+	if (previous_nav_state != nav_state && _modes.valid(previous_nav_state)) {
+		_modes.mode(previous_nav_state).overrides = {};
+	}
+
+	const int executor_in_charge = modeExecutorInCharge();
+
+	if (previous_executor_in_charge != executor_in_charge && _mode_executors.valid(previous_executor_in_charge)) {
+		_mode_executors.executor(previous_executor_in_charge).overrides = {};
+	}
+
 	config_overrides_s current_overrides;
 
 	if (_modes.valid(nav_state)) {
@@ -575,8 +608,6 @@ void ModeManagement::updateActiveConfigOverrides(uint8_t nav_state, config_overr
 	}
 
 	// Apply the overrides from executors on top (executors take precedence)
-	const int executor_in_charge = modeExecutorInCharge();
-
 	if (_mode_executors.valid(executor_in_charge)) {
 		const config_overrides_s &executor_overrides = _mode_executors.executor(executor_in_charge).overrides;
 
@@ -613,7 +644,9 @@ bool ModeManagement::checkConfigControlSetpointUpdates()
 
 	while (_config_control_setpoints_sub.update(&config_control_setpoint) && --max_updates >= 0) {
 		if (_modes.valid(config_control_setpoint.source_id)) {
-			_modes.mode(config_control_setpoint.source_id).config_control_setpoint = config_control_setpoint;
+			Modes::Mode &mode = _modes.mode(config_control_setpoint.source_id);
+			mode.config_control_setpoint = config_control_setpoint;
+			mode.config_control_setpoint.timestamp = hrt_absolute_time();
 			had_update = true;
 
 		} else {
@@ -704,14 +737,12 @@ void ModeManagement::publishRegisteredModes()
 	uint32_t valid_mask, can_set_mask;
 	getModeStatus(valid_mask, can_set_mask);
 
-	// Populate arrays for all 8 external mode slots
 	for (int i = 0; i < 8; ++i) {
 		const uint8_t nav_state = Modes::FIRST_EXTERNAL_NAV_STATE + i;
 		msg.nav_state[i] = nav_state;
-		
-		// mode_name is flattened: mode_name[i * 25] through mode_name[i * 25 + 24]
+
 		const int name_offset = i * 25;
-		
+
 		if (_modes.valid(nav_state)) {
 			const Modes::Mode &mode = _modes.mode(nav_state);
 			msg.valid[i] = true;
@@ -724,7 +755,7 @@ void ModeManagement::publishRegisteredModes()
 			msg.not_user_selectable[i] = true;
 		}
 	}
-	
+
 	_registered_modes_pub.publish(msg);
 }
 

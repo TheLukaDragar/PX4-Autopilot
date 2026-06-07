@@ -33,6 +33,8 @@
 
 #pragma once
 
+#include <drivers/drv_hrt.h>
+
 #include <uORB/Publication.hpp>
 #include <uORB/Subscription.hpp>
 #include <uORB/topics/register_ext_component_request.h>
@@ -165,7 +167,7 @@ public:
 
 	uint8_t getNavStateReplacementIfValid(uint8_t nav_state, bool report_error = true);
 
-	bool updateControlMode(uint8_t nav_state, vehicle_control_mode_s &control_mode) const;
+	bool updateControlMode(uint8_t nav_state, vehicle_control_mode_s &control_mode);
 
 	void printStatus() const;
 
@@ -173,7 +175,8 @@ public:
 
 	bool currentModeAcceptsOffboardSetpoints(uint8_t nav_state) const;
 
-	void updateActiveConfigOverrides(uint8_t nav_state, config_overrides_s &overrides_in_out);
+	void updateActiveConfigOverrides(uint8_t previous_nav_state, uint8_t nav_state, int previous_executor_in_charge,
+					 config_overrides_s &overrides_in_out);
 
 	void publishRegisteredModes();
 
@@ -201,6 +204,9 @@ private:
 	int _mode_executor_in_charge{ModeExecutors::AUTOPILOT_EXECUTOR_ID};
 
 	bool _invalid_mode_printed{false};
+
+	uint8_t _last_served_nav_state{0xff};
+	hrt_abstime _last_served_change_us{0};
 };
 
 #else /* CONSTRAINED_FLASH */
@@ -229,7 +235,7 @@ public:
 
 	uint8_t getNavStateReplacementIfValid(uint8_t nav_state, bool report_error = true) { return nav_state; }
 
-	bool updateControlMode(uint8_t nav_state, vehicle_control_mode_s &control_mode) const { return false; }
+	bool updateControlMode(uint8_t nav_state, vehicle_control_mode_s &control_mode) { return false; }
 
 	void printStatus() const {}
 
@@ -244,7 +250,8 @@ public:
 		return nav_state == vehicle_status_s::NAVIGATION_STATE_OFFBOARD;
 	}
 
-	void updateActiveConfigOverrides(uint8_t nav_state, config_overrides_s &overrides_in_out) { }
+	void updateActiveConfigOverrides(uint8_t previous_nav_state, uint8_t nav_state, int previous_executor_in_charge,
+					 config_overrides_s &overrides_in_out) { }
 
 	void publishRegisteredModes() { }
 
