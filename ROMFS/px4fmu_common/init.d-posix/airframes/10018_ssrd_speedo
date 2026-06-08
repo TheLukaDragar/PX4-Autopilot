@@ -597,6 +597,7 @@ param set-default FW_T_SINK_R_SP 2.000000000000000000
 param set-default GF_ACTION 2
 param set-default GF_MAX_HOR_DIST 0.000000000000000000
 param set-default GF_MAX_VER_DIST 0.000000000000000000
+param set-default GF_PREDICT 0
 param set-default GF_SOURCE 0
 param set-default HTE_ACC_GATE 3.000000000000000000
 param set-default HTE_HT_ERR_INIT 0.100000001490116119
@@ -633,7 +634,6 @@ param set-default LPE_EN 0
 param set-default MAN_ARM_GESTURE 1
 param set-default MAN_DEADZONE 0.100000001490116119
 param set-default MAN_KILL_GEST_T -1.000000000000000000
-param set-default MAV_0_BROADCAST 1
 param set-default MAV_COMP_ID 1
 param set-default MAV_FWDEXTSP 1
 param set-default MAV_HASH_CHK_EN 1
@@ -855,6 +855,7 @@ param set-default SENS_MAG_MODE 1
 param set-default SENS_MAG_RATE 15.000000000000000000
 param set-default SENS_MAG_SIDES 63
 param set-default SIM_BAT_DRAIN 60.000000000000000000
+param set-default SIM_BAT_ENABLE 1
 param set-default SIM_BAT_MIN_PCT 50.000000000000000000
 param set-default SYS_AUTOCONFIG 0
 param set-default SYS_AUTOSTART 10018
@@ -891,6 +892,20 @@ param set-default WV_GAIN 1.000000000000000000
 param set-default WV_ROLL_MIN 1.000000000000000000
 param set-default WV_YRATE_MAX 90.000000000000000000
 # End SpeedoSim exported parameters
+
+
+# PX4 param migrations (auto-applied)
+param set-default FD_ACT_MOT_C2T 35.000000000000000000
+param set-default FD_ACT_MOT_TOUT 1.000000000000000000
+param set-default FD_ACT_MOT_THR 10.0
+param set-default PWM_AUX_FUNC1 0
+param set-default PWM_AUX_FUNC2 0
+param set-default PWM_AUX_FUNC3 0
+param set-default PWM_AUX_FUNC4 0
+param set-default PWM_AUX_FUNC5 0
+param set-default PWM_AUX_FUNC6 0
+param set-default PWM_AUX_FUNC7 0
+param set-default PWM_AUX_FUNC8 0
 
 # Offboard/swarm: no RC required
 param set COM_RC_IN_MODE 1
