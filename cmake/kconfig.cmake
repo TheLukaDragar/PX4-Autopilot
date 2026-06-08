@@ -333,6 +333,9 @@ if(EXISTS ${BOARD_DEFCONFIG})
 	if(SERIAL_EXT2)
 		list(APPEND board_serial_ports EXT2:${SERIAL_EXT2})
 	endif()
+	if(SERIAL_ACM0)
+		list(APPEND board_serial_ports ACM0:${SERIAL_ACM0})
+	endif()
 
 	# ROMFS
 	if(ROMFSROOT)

@@ -41,8 +41,10 @@
 
 #pragma once
 
-#include "course.h"
 #include "geofence.h"
+#if defined(CONFIG_MODULES_FW_MODE_MANAGER) && CONFIG_MODULES_FW_MODE_MANAGER
+#include "course.h"
+#endif
 #include "land.h"
 #include "precland.h"
 #include "loiter.h"
@@ -176,7 +178,9 @@ public:
 	vehicle_status_s            *get_vstatus() { return &_vstatus; }
 
 	PrecLand *get_precland() { return &_precland; } /**< allow others, e.g. Mission, to use the precision land block */
+#if defined(CONFIG_MODULES_FW_MODE_MANAGER) && CONFIG_MODULES_FW_MODE_MANAGER
 	Course *get_course() { return &_course; }
+#endif
 
 	const PositionYawSetpoint &get_last_pos_with_gcs_heartbeat() const { return _last_pos_with_gcs_heartbeat; }
 
@@ -387,7 +391,9 @@ private:
 	Land		_land;			/**< class for handling land commands */
 	PrecLand	_precland;			/**< class for handling precision land commands */
 	RTL 		_rtl;				/**< class that handles RTL */
+#if defined(CONFIG_MODULES_FW_MODE_MANAGER) && CONFIG_MODULES_FW_MODE_MANAGER
 	Course		_course;			/**< class that handles course */
+#endif
 #if CONFIG_NAVIGATOR_ADSB
 	AdsbConflict 	_adsb_conflict;			/**< class that handles ADSB conflict avoidance */
 	traffic_buffer_s _traffic_buffer{};
