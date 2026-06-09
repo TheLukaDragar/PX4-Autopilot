@@ -31,6 +31,21 @@ jobs:
     env:
       PX4_MSGS_REPO: TheLukaDragar/px4_msgs
     steps:
+      # Self-hosted runners share one workspace across jobs. Containerized PX4 CI
+      # (compile_ubuntu, sitl_tests, etc.) writes build/ and .git/ as root; this
+      # non-container job then fails checkout with EACCES. Reset ownership first.
+      - name: Repair self-hosted workspace permissions
+        if: github.repository == 'TheLukaDragar/PX4-Autopilot' || vars.PX4_CI_SELF_HOSTED == 'true'
+        run: |
+          set -euo pipefail
+          ws="${GITHUB_WORKSPACE:-${{ github.workspace }}}"
+          parent="$(dirname "$ws")"
+          if [ -x /usr/local/bin/fix-runner-work-perms.sh ]; then
+            sudo /usr/local/bin/fix-runner-work-perms.sh
+          elif [ -d "$parent" ]; then
+            sudo chown -R "$(whoami):$(id -gn)" "$parent"
+          fi
+
       - name: Checkout PX4 repo
         uses: actions/checkout@v6
 
