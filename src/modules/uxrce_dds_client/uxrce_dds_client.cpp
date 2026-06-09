@@ -543,62 +543,74 @@ void UxrceddsClient::checkConnectivity(uxrSession *session)
 	// Reset RX zero counter, when data is received
 	if (_last_payload_rx_rate > 0) {
 		_num_rx_rate_zero = 0;
+		_rx_ever_active = true;
 	}
 
 	const hrt_abstime now = hrt_absolute_time();
 
-	// Start ping and tx/rx rate monitoring, unless we're actively sending & receiving payloads successfully
+	// Fully healthy: payload is flowing in both directions, so the link is
+	// proven live without any extra traffic. Skip the ping path entirely.
 	if ((_last_payload_tx_rate > 0) && (_last_payload_rx_rate > 0)) {
 		_connected = true;
 		_num_pings_missed = 0;
 		_last_ping = now;
+		return;
+	}
 
-	} else {
-		if (hrt_elapsed_time(&_last_ping) > 1_s) {
-			// Check payload tx rate
-			if (_last_payload_tx_rate == 0) {
-				_num_tx_rate_zero++;
-			}
-
-			// Check payload rx rate
-			if (_last_payload_rx_rate == 0) {
-				_num_rx_rate_zero++;
-			}
-
-			// Check ping
-			_last_ping = now;
-
-			if (_had_ping_reply) {
-				_num_pings_missed = 0;
-
-			} else {
-				++_num_pings_missed;
-			}
-
-			int timeout_ms = 1'000; // 1 second
-			uint8_t attempts = 1;
-			uxr_ping_agent_session(session, timeout_ms, attempts);
-
-			_had_ping_reply = false;
+	// Not bidirectionally active: verify liveness with a periodic ping.
+	//
+	// The ping is sent NON-BLOCKING (timeout 0): we only emit the GET_INFO
+	// request here and let the agent's reply be picked up asynchronously by
+	// uxr_run_session_timeout() in run(), which sets session.on_pong_flag ->
+	// _had_ping_reply on a later iteration. Previously this used a blocking
+	// 1 s ping, which stalled the whole main loop for up to a second every
+	// cycle whenever RX payload was absent. On send-only setups (RX rate
+	// always 0) that collapsed publish rates (e.g. sensor_combined 200 Hz ->
+	// ~1 Hz). See PX4#25873.
+	if (hrt_elapsed_time(&_last_ping) > 1_s) {
+		if (_last_payload_tx_rate == 0) {
+			_num_tx_rate_zero++;
 		}
 
-		if (_num_pings_missed >= 3) {
-			PX4_ERR("No ping response, disconnecting");
-			_connected = false;
+		// Smart RX: only count "no RX" against a link that has actually
+		// received payload before. A genuinely send-only client (RX never
+		// active) must not be torn down for never receiving, while a link
+		// that received data and then went silent is still flagged.
+		if (_last_payload_rx_rate == 0 && _rx_ever_active) {
+			_num_rx_rate_zero++;
 		}
 
-		int32_t tx_timeout = _param_uxrce_dds_tx_to.get();
-		int32_t rx_timeout = _param_uxrce_dds_rx_to.get();
+		_last_ping = now;
 
-		if (tx_timeout > 0 && _num_tx_rate_zero >= tx_timeout) {
-			PX4_ERR("Payload TX rate zero for too long, disconnecting");
-			_connected = false;
+		if (_had_ping_reply) {
+			_num_pings_missed = 0;
+
+		} else {
+			++_num_pings_missed;
 		}
 
-		if (rx_timeout > 0 && _num_rx_rate_zero >= rx_timeout) {
-			PX4_ERR("Payload RX rate zero for too long, disconnecting");
-			_connected = false;
-		}
+		// Non-blocking: send the ping, reply is handled asynchronously (see above).
+		uxr_ping_agent_session(session, 0, 1);
+
+		_had_ping_reply = false;
+	}
+
+	if (_num_pings_missed >= 3) {
+		PX4_ERR("No ping response, disconnecting");
+		_connected = false;
+	}
+
+	int32_t tx_timeout = _param_uxrce_dds_tx_to.get();
+	int32_t rx_timeout = _param_uxrce_dds_rx_to.get();
+
+	if (tx_timeout > 0 && _num_tx_rate_zero >= tx_timeout) {
+		PX4_ERR("Payload TX rate zero for too long, disconnecting");
+		_connected = false;
+	}
+
+	if (rx_timeout > 0 && _num_rx_rate_zero >= rx_timeout) {
+		PX4_ERR("Payload RX rate zero for too long, disconnecting");
+		_connected = false;
 	}
 }
 
@@ -607,6 +619,7 @@ void UxrceddsClient::resetConnectivityCounters()
 	_last_status_update = hrt_absolute_time();
 	_last_ping = hrt_absolute_time();
 	_had_ping_reply = false;
+	_rx_ever_active = false;
 	_num_pings_missed = 0;
 	_last_num_payload_sent = 0;
 	_last_num_payload_received = 0;
