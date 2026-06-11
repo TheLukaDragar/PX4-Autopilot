@@ -16,7 +16,7 @@ bmi270 -s -b 3 -R 6 start
 icm42688p -s -b 1 -R 0 start
 
 # # # Internal mag
-lis3mdl -I -b 2 -a 0x1C -R 0 start
+lis3mdl -I -b 2 -a 0x1C -R 6 start
 
 # # # External baro
 bmp388 -X -b 2 -a 0x76 start
