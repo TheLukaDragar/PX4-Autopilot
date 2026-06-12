@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# board specific defaults
+#------------------------------------------------------------------------------
+
+# Battery - calibrate these to your actual voltage divider circuit
+# param set-default BAT1_V_DIV 11.0
+# param set-default BAT1_A_PER_V -1.0
+# param set-default BAT1_N_CELLS 4
+# param set-default BAT1_V_CHARGED 4.2
+# param set-default BAT1_V_EMPTY 3.5
+
+# # PWM outputs - Timer1 (4 channels), negative = dshot
+param set-default PWM_MAIN_TIM0 -4
+
+# # RC input
+param set-default RC_INPUT_PROTO -1
+
+# # Vehicle type
+param set-default MAV_TYPE 2
+param set-default CA_AIRFRAME 0
+param set-default CA_ROTOR_COUNT 4
+
