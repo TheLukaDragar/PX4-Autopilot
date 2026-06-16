@@ -13,8 +13,14 @@
 # # PWM outputs - Timer1 (4 channels), negative = dshot
 param set-default PWM_MAIN_TIM0 -4
 
-# # RC input
-param set-default RC_INPUT_PROTO -1
+# # RC input — crsf_rc only (do not enable rc_input on same UART)
+param set-default RC_INPUT_PROTO 0
+param set-default RC_CRSF_PRT_CFG 300
+param set-default RC_CRSF_TEL_EN 1
+
+# # Multi-EKF: use all 3 onboard IMUs (ICM42688P, BMI088, BMI270)
+param set-default SENS_IMU_MODE 0
+param set-default EKF2_MULTI_IMU 3
 
 # # Vehicle type
 param set-default MAV_TYPE 2
