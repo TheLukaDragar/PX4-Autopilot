@@ -55,6 +55,7 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_command.h>
 #include <uORB/topics/vehicle_command_ack.h>
+#include <uORB/topics/target_bbox.h>
 
 using namespace device;
 
@@ -81,6 +82,8 @@ public:
 private:
 	void Run() override;
 
+	void PublishTrackerTelemetry(const hrt_abstime now);
+
 	uORB::PublicationMulti<input_rc_s> _input_rc_pub{ORB_ID(input_rc)};
 
 	input_rc_s _input_rc{};
@@ -93,6 +96,9 @@ private:
 	bool SendTelemetryAttitude(const int16_t pitch, const int16_t roll, const int16_t yaw);
 
 	bool SendTelemetryFlightMode(const char *flight_mode);
+
+	// CRSF 0x07 variometer: vertical speed 0 = no green target, non-zero = green bbox detected
+	bool SendTelemetryTrackerDetect(uint8_t detected);
 
 	bool BindCRSF();
 
@@ -113,16 +119,22 @@ private:
 
 	// telemetry
 	hrt_abstime _telemetry_update_last{0};
-	static constexpr int num_data_types{4}; ///< number of different telemetry data types
+	hrt_abstime _tracker_telemetry_last{0};
+	static constexpr hrt_abstime TRACKER_TELEMETRY_INTERVAL{50'000}; // 50 ms
+	static constexpr hrt_abstime TRACKER_TELEMETRY_MIN_INTERVAL{20'000}; // 20 ms
+	static constexpr hrt_abstime TARGET_BBOX_STALE_TIMEOUT{200'000}; // 200 ms
+	static constexpr int num_data_types{4}; ///< standard telemetry rotation (tracker is separate)
 	int _next_type{0};
 	uORB::Subscription _battery_status_sub{ORB_ID(battery_status)};
 	uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
 	uORB::Subscription _vehicle_gps_position_sub{ORB_ID(vehicle_gps_position)};
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
 	uORB::Subscription _vehicle_cmd_sub{ORB_ID(vehicle_command)};
+	uORB::Subscription _target_bbox_sub{ORB_ID(target_bbox)};
 
 	enum class crsf_frame_type_t : uint8_t {
 		gps = 0x02,
+		variometer = 0x07,
 		battery_sensor = 0x08,
 		link_statistics = 0x14,
 		rc_channels_packed = 0x16,
