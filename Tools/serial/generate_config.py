@@ -143,9 +143,9 @@ serial_ports = {
         "default_baudrate": 57600,
         },
 
-    # ACM0
+    # USB CDC ACM
     "ACM0": {
-        "label": "USB",
+        "label": "USB CDC ACM",
         "index": 500,
         "default_baudrate": 3000000,
         },
