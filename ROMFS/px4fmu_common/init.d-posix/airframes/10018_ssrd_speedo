@@ -6,12 +6,12 @@
 #
 # @maintainer Custom Configuration
 #
-# Default params from parameters_1sim.params (Vehicle 1 sim export).
+# Default params from simfast.params (Vehicle 1 sim export).
 #
 
 . ${R}etc/init.d/rc.mc_defaults
 
-# parameters_1sim.params (auto-generated, deduplicated)
+# simfast.params (auto-generated, deduplicated)
 param set-default ASPD_SCALE_1 1.000000000000000000
 param set-default ATT_EN 0
 param set-default BAT1_CAPACITY -1.000000000000000000
@@ -57,19 +57,19 @@ param set-default CAL_AIR_CMODEL 0
 param set-default CAL_AIR_TUBED_MM 1.500000000000000000
 param set-default CAL_AIR_TUBELEN 0.200000002980232239
 param set-default CAL_BARO0_ID 6620172
-param set-default CAL_BARO0_OFF 2.441406250000000000
+param set-default CAL_BARO0_OFF 14.648437500000000000
 param set-default CAL_BARO0_PRIO 50
 param set-default CAL_BARO1_ID 6620428
-param set-default CAL_BARO1_OFF 2.441406250000000000
+param set-default CAL_BARO1_OFF 14.656250000000000000
 param set-default CAL_BARO1_PRIO 50
 param set-default CAL_BARO2_ID 0
 param set-default CAL_BARO3_ID 0
 param set-default CAL_GYRO0_ID 1310988
-param set-default CAL_GYRO0_PRIO -1
+param set-default CAL_GYRO0_PRIO 50
 param set-default CAL_GYRO0_ROT -1
-param set-default CAL_GYRO0_XOFF 0.000000000000000000
-param set-default CAL_GYRO0_YOFF 0.000000000000000000
-param set-default CAL_GYRO0_ZOFF 0.000000000000000000
+param set-default CAL_GYRO0_XOFF 0.002449327148497105
+param set-default CAL_GYRO0_YOFF -0.005752595141530037
+param set-default CAL_GYRO0_ZOFF -0.003300430253148079
 param set-default CAL_GYRO1_ID 1310996
 param set-default CAL_GYRO1_PRIO -1
 param set-default CAL_GYRO1_ROT -1
@@ -287,7 +287,7 @@ param set-default COM_DISARM_PRFLT 10.000000000000000000
 param set-default COM_DLL_EXCEPT 0
 param set-default COM_DL_LOSS_T 10
 param set-default COM_FAIL_ACT_T 5.000000000000000000
-param set-default COM_FLIGHT_UUID 0
+param set-default COM_FLIGHT_UUID 7
 param set-default COM_FLTMODE1 2
 param set-default COM_FLTMODE2 -1
 param set-default COM_FLTMODE3 -1
@@ -308,8 +308,8 @@ param set-default COM_MODE0_HASH 775603228
 param set-default COM_MODE1_HASH 295541438
 param set-default COM_MODE2_HASH 1238208516
 param set-default COM_MODE3_HASH -1154903019
-param set-default COM_MODE4_HASH 0
-param set-default COM_MODE5_HASH 0
+param set-default COM_MODE4_HASH -1964578452
+param set-default COM_MODE5_HASH 677442217
 param set-default COM_MODE6_HASH 0
 param set-default COM_MODE7_HASH 0
 param set-default COM_MODE_ARM_CHK 1
@@ -414,7 +414,7 @@ param set-default EKF2_MAG_B_NOISE 0.000099999997473788
 param set-default EKF2_MAG_CHECK 1
 param set-default EKF2_MAG_CHK_INC 20.000000000000000000
 param set-default EKF2_MAG_CHK_STR 0.200000002980232239
-param set-default EKF2_MAG_DECL -0.177695140242576599
+param set-default EKF2_MAG_DECL 4.628988265991210938
 param set-default EKF2_MAG_DELAY 0.000000000000000000
 param set-default EKF2_MAG_E_NOISE 0.001000000047497451
 param set-default EKF2_MAG_GATE 3.000000000000000000
@@ -506,6 +506,7 @@ param set-default FLW_TGT_RS 0.100000001490116119
 param set-default FW_AIRSPD_MAX 20.000000000000000000
 param set-default FW_AIRSPD_TRIM 15.000000000000000000
 param set-default FW_GND_SPD_MIN 5.000000000000000000
+param set-default FW_LND_ANG 5.000000000000000000
 param set-default FW_PSP_OFF 0.000000000000000000
 param set-default FW_T_CLMB_R_SP 3.000000000000000000
 param set-default FW_T_SINK_R_SP 2.000000000000000000
@@ -543,7 +544,7 @@ param set-default LNDMC_ROT_MAX 40.000000000000000000
 param set-default LNDMC_XY_VEL_MAX 1.500000000000000000
 param set-default LNDMC_Z_VEL_MAX 0.250000000000000000
 param set-default LND_FLIGHT_T_HI 0
-param set-default LND_FLIGHT_T_LO 0
+param set-default LND_FLIGHT_T_LO 65658334
 param set-default LPE_EN 0
 param set-default MAN_ARM_GESTURE 0
 param set-default MAN_DEADZONE 0.100000001490116119
@@ -611,26 +612,28 @@ param set-default MC_YAW_TQ_CUTOFF 2.000000000000000000
 param set-default MC_YAW_WEIGHT 0.400000005960464478
 param set-default MC_YR_INT_LIM 0.300000011920928955
 param set-default MIS_COMMAND_TOUT 0.000000000000000000
+param set-default MIS_DIST_1WP 10000.000000000000000000
 param set-default MIS_LND_ABRT_ALT 30
 param set-default MIS_MNT_YAW_CTL 0
 param set-default MIS_TAKEOFF_ALT 2.500000000000000000
+param set-default MIS_TKO_LAND_REQ 0
 param set-default MIS_YAW_ERR 12.000000000000000000
 param set-default MIS_YAW_TMT -1.000000000000000000
 param set-default MNT_MODE_IN -1
 param set-default MOTFAIL_C2T 35.000000000000000000
 param set-default MOTFAIL_OFF 10.000000000000000000
 param set-default MOTFAIL_TIME 1.000000000000000000
-param set-default MPC_ACC_DECOUPLE 1
+param set-default MPC_ACC_DECOUPLE 0
 param set-default MPC_ACC_DOWN_MAX 15.000000000000000000
-param set-default MPC_ACC_HOR 15.000000000000000000
-param set-default MPC_ACC_HOR_MAX 15.000000000000000000
+param set-default MPC_ACC_HOR 30.000000000000000000
+param set-default MPC_ACC_HOR_MAX 30.000000000000000000
 param set-default MPC_ACC_UP_MAX 15.000000000000000000
 param set-default MPC_ALT_MODE 2
 param set-default MPC_GND_CON_ACC 100.000000000000000000
 param set-default MPC_HOLD_MAX_XY 0.800000011920928955
 param set-default MPC_HOLD_MAX_Z 0.600000023841857910
-param set-default MPC_JERK_AUTO 80.000000000000000000
-param set-default MPC_JERK_MAX 80.000000000000000000
+param set-default MPC_JERK_AUTO 160.000000000000000000
+param set-default MPC_JERK_MAX 160.000000000000000000
 param set-default MPC_LAND_ALT1 10.000000000000000000
 param set-default MPC_LAND_ALT2 5.000000000000000000
 param set-default MPC_LAND_ALT3 1.000000000000000000
@@ -639,7 +642,7 @@ param set-default MPC_LAND_RADIUS -1.000000000000000000
 param set-default MPC_LAND_RC_HELP 0
 param set-default MPC_LAND_SPEED 0.699999988079071045
 param set-default MPC_MANTHR_MIN 0.079999998211860657
-param set-default MPC_MAN_TILT_MAX 70.000000000000000000
+param set-default MPC_MAN_TILT_MAX 82.000000000000000000
 param set-default MPC_MAN_Y_MAX 150.000000000000000000
 param set-default MPC_MAN_Y_TAU 0.079999998211860657
 param set-default MPC_POS_MODE 4
@@ -648,7 +651,7 @@ param set-default MPC_THR_HOVER 0.209999993443489075
 param set-default MPC_THR_MAX 1.000000000000000000
 param set-default MPC_THR_MIN 0.119999997317790985
 param set-default MPC_THR_XY_MARG 0.300000011920928955
-param set-default MPC_TILTMAX_AIR 75.000000000000000000
+param set-default MPC_TILTMAX_AIR 87.000000000000000000
 param set-default MPC_TILTMAX_LND 12.000000000000000000
 param set-default MPC_TKO_RAMP_T 0.500000000000000000
 param set-default MPC_TKO_SPEED 1.500000000000000000
@@ -659,14 +662,14 @@ param set-default MPC_VEL_MAN_BACK -1.000000000000000000
 param set-default MPC_VEL_MAN_SIDE -1.000000000000000000
 param set-default MPC_VEL_NF_BW 5.000000000000000000
 param set-default MPC_VEL_NF_FRQ 0.000000000000000000
-param set-default MPC_XY_CRUISE 66.000000000000000000
+param set-default MPC_XY_CRUISE 100.000000000000000000
 param set-default MPC_XY_ERR_MAX 2.000000000000000000
 param set-default MPC_XY_P 1.500000000000000000
 param set-default MPC_XY_TRAJ_P 0.500000000000000000
 param set-default MPC_XY_VEL_ALL -10.000000000000000000
 param set-default MPC_XY_VEL_D_ACC 0.100000001490116119
 param set-default MPC_XY_VEL_I_ACC 1.000000000000000000
-param set-default MPC_XY_VEL_MAX 69.000000000000000000
+param set-default MPC_XY_VEL_MAX 100.000000000000000000
 param set-default MPC_XY_VEL_P_ACC 4.500000000000000000
 param set-default MPC_YAWRAUTO_ACC 20.000000000000000000
 param set-default MPC_YAWRAUTO_MAX 60.000000000000000000
@@ -908,7 +911,7 @@ param set-default THR_MDL_FAC 0.000000000000000000
 param set-default TRIG_INTERFACE 3
 param set-default TRIG_MODE 0
 param set-default UXRCE_DDS_AG_IP 2130706433
-param set-default UXRCE_DDS_DOM_ID 0
+param set-default UXRCE_DDS_DOM_ID 1
 param set-default UXRCE_DDS_FLCTRL 0
 param set-default UXRCE_DDS_KEY 1
 param set-default UXRCE_DDS_PTCFG 0
@@ -949,4 +952,4 @@ param set-default WV_EN 0
 param set-default WV_GAIN 1.000000000000000000
 param set-default WV_ROLL_MIN 1.000000000000000000
 param set-default WV_YRATE_MAX 90.000000000000000000
-# End parameters_1sim.params
+# End simfast.params
