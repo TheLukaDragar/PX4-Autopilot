@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# @name SSRD Speedo — GPS denied (no OF, no range)
+#
+# @type Quadrotor Wide
+#
+# @maintainer Custom Configuration
+#
+# Same params as 10018_ssrd_speedo (simfast.params); only the overrides below differ.
+#
+
+. ${R}etc/init.d-posix/airframes/10018_ssrd_speedo
+
+# ── GPS disabled ──────────────────────────────────────────────────────────────
+param set SYS_HAS_GPS 0
+param set SIM_GPS_USED 0
+param set MAV_USEHILGPS 0
+param set COM_ARM_WO_GPS 1
+param set EKF2_GPS_CTRL 0
+
+# Height: baro primary (no GPS / range height)
+param set EKF2_HGT_REF 0
+
+# ── No optical flow / range ───────────────────────────────────────────────────
+param set EKF2_OF_CTRL 0
+param set EKF2_RNG_CTRL 0
+
+param set SYS_AUTOSTART 10020
