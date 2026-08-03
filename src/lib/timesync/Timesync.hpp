@@ -62,10 +62,15 @@ static constexpr time_t PX4_EPOCH_SECS = 1234567890ULL;
 // tighter estimation of the skew (derivative), but will negatively affect how fast the
 // filter reacts to clock skewing (e.g cause by temperature changes to the oscillator).
 // Larger values will cause large-amplitude oscillations.
+//
+// SSRD / Jetson companion: stock FINAL=0.003 lets estimated_offset lag observed_offset
+// by 50–100 ms when the Agent wall clock slews, so every uXRCE stamp on ROS looks
+// stale (camera↔odometry fusion danger). With USB RTT ~1 ms and chrony slew-only on
+// the Jetson, track harder. ~7× FINAL still well below INITIAL.
 static constexpr double ALPHA_GAIN_INITIAL = 0.05;
 static constexpr double BETA_GAIN_INITIAL = 0.05;
-static constexpr double ALPHA_GAIN_FINAL = 0.003;
-static constexpr double BETA_GAIN_FINAL = 0.003;
+static constexpr double ALPHA_GAIN_FINAL = 0.02;
+static constexpr double BETA_GAIN_FINAL = 0.02;
 
 // Filter gain scheduling
 //
