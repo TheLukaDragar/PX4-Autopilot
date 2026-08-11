@@ -52,7 +52,7 @@ sync_to_px4_msgs:
         - srv/**/*
   script:
     - |
-      bash <<EOS
+      bash <<'EOS'
       set -euo pipefail
       REPO_URL="${PX4_MSGS_REPO_URL}"
       # Inject token for HTTPS push (oauth2 username is conventional for GitLab PATs).
@@ -121,7 +121,7 @@ tag_px4_msgs:
     - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
   script:
     - |
-      bash <<EOS
+      bash <<'EOS'
       set -euo pipefail
       TAG_NAME="${TAG_NAME:-${CI_COMMIT_TAG:-}}"
       if [ -z "${TAG_NAME}" ]; then
