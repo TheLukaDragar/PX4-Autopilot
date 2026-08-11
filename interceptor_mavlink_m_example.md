@@ -140,11 +140,21 @@ TARGET:         seeker lat/lon/alt + vel
 | Direction | Messages |
 | --------- | -------- |
 | In `/fmu/out/` | peer `TRACK`/`TARGET`/`HANDOVER`/`FIRES`/`DIRECTIVE`, peer PPLI, peer ACK/BDA |
-| Out `/fmu/in/` → stream | seeker `TRACK`/`TARGET`/`HANDOVER`, ACK, BDA |
+| Out `/fmu/in/` → stream | seeker `TRACK`, `TARGET`/`HANDOVER` via `*_send`, ACK, BDA |
 | Out (FC) | own-ship `PARTICIPANT_POSITION` |
 
 Companion must set `origin_sysid` / `ack_sysid` = `vehicle_status.system_id` (`MAV_SYS_ID`).
-Enable `TARGET` / `TARGET_HANDOVER` streams only where you originate those messages (typically the C2 telem instance); they share uORB with RX.
+
+**TARGET / TARGET_HANDOVER in vs out:** wire payloads have no `origin_sysid`, so peer RX and companion TX use separate uORB topics:
+
+| ROS | uORB | Role |
+| --- | ---- | ---- |
+| `/fmu/out/mavlink_m_target` | `mavlink_m_target` | Network RX only |
+| `/fmu/in/mavlink_m_target_send` | `mavlink_m_target_send` | Companion → TARGET stream |
+| `/fmu/out/mavlink_m_target_handover` | `mavlink_m_target_handover` | Network RX only |
+| `/fmu/in/mavlink_m_target_handover_send` | `mavlink_m_target_handover_send` | Companion → HANDOVER stream |
+
+`TRACK_IDENTITY` can share one uORB: the stream already TX-filters on payload `origin_sysid == MAV_SYS_ID`.
 
 Default rates (`MAVLINK_MODE_NORMAL` / `ONBOARD`, military dialect only):
 

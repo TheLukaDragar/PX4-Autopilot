@@ -38,8 +38,7 @@
 
 /**
  * Companion TARGET_HANDOVER → MAVLink (custody transfer to another shooter).
- * No origin_sysid on the message; enable only on the C2/peer uplink, not a
- * broadcast mesh, to avoid rebroadcasting received handovers.
+ * Subscribes to mavlink_m_target_handover_send (/fmu/in) only — never peer RX.
  */
 class MavlinkStreamMavlinkMTargetHandover : public MavlinkStream
 {
@@ -59,7 +58,7 @@ public:
 private:
 	explicit MavlinkStreamMavlinkMTargetHandover(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	uORB::Subscription _sub{ORB_ID(mavlink_m_target_handover)};
+	uORB::Subscription _sub{ORB_ID(mavlink_m_target_handover_send)};
 
 	bool send() override
 	{

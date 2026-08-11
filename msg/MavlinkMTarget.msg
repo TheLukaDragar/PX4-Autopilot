@@ -3,6 +3,13 @@
 # MAVLink-M message TARGET (id 53010).
 # Published by: mavlink_receiver (when dialect includes military.xml).
 #
+# Peer RX (MAVLink network) and companion TX must not share one uORB topic or the
+# TARGET stream rebroadcasts C2/peer samples under this vehicle's header.
+#   mavlink_m_target      — RX → /fmu/out (network heard)
+#   mavlink_m_target_send — /fmu/in → TARGET stream (interceptor-originated)
+#
+# TOPICS mavlink_m_target mavlink_m_target_send
+
 uint64 timestamp # [us] Time since system start
 
 uint64 time_usec # [us] Timestamp (UNIX epoch, microseconds UTC).

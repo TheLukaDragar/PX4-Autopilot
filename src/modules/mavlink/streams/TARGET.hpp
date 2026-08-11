@@ -38,8 +38,8 @@
 
 /**
  * Companion TARGET (e.g. onboard seeker) → MAVLink.
- * TARGET has no origin_sysid; enable this stream only on the C2 uplink,
- * not on a broadcast mesh, to avoid rebroadcasting peer/C2 targets.
+ * Subscribes to mavlink_m_target_send (/fmu/in) only — never the peer RX
+ * topic mavlink_m_target (/fmu/out), so network TARGET is not rebroadcast.
  */
 class MavlinkStreamMavlinkMTarget : public MavlinkStream
 {
@@ -59,7 +59,7 @@ public:
 private:
 	explicit MavlinkStreamMavlinkMTarget(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	uORB::Subscription _sub{ORB_ID(mavlink_m_target)};
+	uORB::Subscription _sub{ORB_ID(mavlink_m_target_send)};
 
 	bool send() override
 	{

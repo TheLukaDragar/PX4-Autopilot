@@ -3,6 +3,12 @@
 # MAVLink-M message TARGET_HANDOVER (id 53002).
 # Published by: mavlink_receiver (when dialect includes military.xml).
 #
+# Same in/out split as TARGET — do not mix peer RX with companion TX on one uORB.
+#   mavlink_m_target_handover      — RX → /fmu/out
+#   mavlink_m_target_handover_send — /fmu/in → TARGET_HANDOVER stream
+#
+# TOPICS mavlink_m_target_handover mavlink_m_target_handover_send
+
 uint64 timestamp # [us] Time since system start
 
 uint64 time_usec # [us] Timestamp (UNIX epoch, microseconds UTC).

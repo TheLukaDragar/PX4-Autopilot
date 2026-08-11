@@ -200,13 +200,15 @@ subscriptions:
 
   # MAVLink-M companion → FC → MAVLink streams
   # (own PARTICIPANT_POSITION is FC-generated; peer PPLI arrives on /fmu/out/)
+  # TARGET / HANDOVER use *_send uORB topics so peer RX on /fmu/out is not
+  # mixed into the TX streams (wire TARGET has no origin_sysid).
   - topic: /fmu/in/mavlink_m_track_identity
     type: px4_msgs::msg::MavlinkMTrackIdentity
 
-  - topic: /fmu/in/mavlink_m_target
+  - topic: /fmu/in/mavlink_m_target_send
     type: px4_msgs::msg::MavlinkMTarget
 
-  - topic: /fmu/in/mavlink_m_target_handover
+  - topic: /fmu/in/mavlink_m_target_handover_send
     type: px4_msgs::msg::MavlinkMTargetHandover
 
   - topic: /fmu/in/mavlink_m_ack
