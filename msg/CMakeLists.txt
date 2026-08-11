@@ -57,8 +57,6 @@ set(msg_files
 	CollisionConstraints.msg
 	ControlAllocatorStatus.msg
 	Cpuload.msg
-	CustomPing.msg
-	CustomPong.msg
 	DatamanRequest.msg
 	DatamanResponse.msg
 	DebugArray.msg
@@ -141,6 +139,32 @@ set(msg_files
 	MagWorkerData.msg
 	ManualControlSwitches.msg
 	MavlinkLog.msg
+	MavlinkMAck.msg
+	MavlinkMBattleDamageAssessment.msg
+	MavlinkMCallForFire.msg
+	MavlinkMCas9Line.msg
+	MavlinkMEngagementDirective.msg
+	MavlinkMEsadArming.msg
+	MavlinkMEsadConfig.msg
+	MavlinkMEsadState.msg
+	MavlinkMFires.msg
+	MavlinkMLoiterMunitionControl.msg
+	MavlinkMParticipantPosition.msg
+	MavlinkMRwsPose.msg
+	MavlinkMRwsState.msg
+	MavlinkMSensorTasking.msg
+	MavlinkMSplashCorrection.msg
+	MavlinkMStoreMunition.msg
+	MavlinkMStoreSensorStatus.msg
+	MavlinkMStoreStatus.msg
+	MavlinkMTarget.msg
+	MavlinkMTargetAuthorization.msg
+	MavlinkMTargetBoxCoord.msg
+	MavlinkMTargetCue.msg
+	MavlinkMTargetHandover.msg
+	MavlinkMTargetSetCoord.msg
+	MavlinkMTerminalControl.msg
+	MavlinkMTrackIdentity.msg
 	MavlinkTunnel.msg
 	MessageFormatRequest.msg
 	MessageFormatResponse.msg
@@ -224,12 +248,9 @@ set(msg_files
 	TaskStackInfo.msg
 	TecsStatus.msg
 	TelemetryStatus.msg
-	TfTransform.msg
 	TiltrotorExtraControls.msg
 	TimesyncStatus.msg
-	TrajectoryHeader.msg
 	TrajectorySetpoint6dof.msg
-	TrajectoryWaypoint.msg
 	TransponderReport.msg
 	TuneControl.msg
 	UavcanParameterRequest.msg

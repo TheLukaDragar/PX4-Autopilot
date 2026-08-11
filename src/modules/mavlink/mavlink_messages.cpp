@@ -81,6 +81,24 @@
 #if defined(MAVLINK_MSG_ID_GLOBAL_POSITION_SENSOR)
 #include "streams/GLOBAL_POSITION_SENSOR.hpp"
 #endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+#include "streams/PARTICIPANT_POSITION.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+#include "streams/TRACK_IDENTITY.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET)
+#include "streams/TARGET.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+#include "streams/TARGET_HANDOVER.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+#include "streams/MAVLINK_M_ACK.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+#include "streams/BATTLE_DAMAGE_ASSESSMENT.hpp"
+#endif
 #include "streams/GLOBAL_POSITION_INT.hpp"
 #if defined(MAVLINK_MSG_ID_GNSS_INTEGRITY)
 #include "streams/GNSS_INTEGRITY.hpp"
@@ -109,18 +127,6 @@
 #include "streams/OPTICAL_FLOW_RAD.hpp"
 #include "streams/ORBIT_EXECUTION_STATUS.hpp"
 #include "streams/PING.hpp"
-#if defined(MAVLINK_MSG_ID_CUSTOM_PONG)
-#include "streams/CUSTOM_PONG.hpp"
-#endif
-#if defined(MAVLINK_MSG_ID_TF_TRANSFORM)
-#include "streams/TF_TRANSFORM.hpp"
-#endif
-#if defined(MAVLINK_MSG_ID_TRAJECTORY_HEADER)
-#include "streams/TRAJECTORY_HEADER.hpp"
-#endif
-#if defined(MAVLINK_MSG_ID_TRAJECTORY_WAYPOINT)
-#include "streams/TRAJECTORY_WAYPOINT.hpp"
-#endif
 #include "streams/POSITION_TARGET_GLOBAL_INT.hpp"
 #include "streams/POSITION_TARGET_LOCAL_NED.hpp"
 #include "streams/PROTOCOL_VERSION.hpp"
@@ -463,18 +469,6 @@ static const StreamListItem streams_list[] = {
 #if defined(PING_HPP)
 	create_stream_list_item<MavlinkStreamPing>(),
 #endif // PING_HPP
-#if defined(MAVLINK_MSG_ID_CUSTOM_PONG)
-	create_stream_list_item<MavlinkStreamCustomPong>(),
-#endif // MAVLINK_MSG_ID_CUSTOM_PONG
-#if defined(MAVLINK_MSG_ID_TF_TRANSFORM)
-	create_stream_list_item<MavlinkStreamTfTransform>(),
-#endif // MAVLINK_MSG_ID_TF_TRANSFORM
-#if defined(MAVLINK_MSG_ID_TRAJECTORY_HEADER)
-	create_stream_list_item<MavlinkStreamTrajectoryHeader>(),
-#endif // MAVLINK_MSG_ID_TRAJECTORY_HEADER
-#if defined(MAVLINK_MSG_ID_TRAJECTORY_WAYPOINT)
-	create_stream_list_item<MavlinkStreamTrajectoryWaypoint>(),
-#endif // MAVLINK_MSG_ID_TRAJECTORY_WAYPOINT
 #if defined(ORBIT_EXECUTION_STATUS_HPP)
 	create_stream_list_item<MavlinkStreamOrbitStatus>(),
 #endif // ORBIT_EXECUTION_STATUS_HPP
@@ -559,6 +553,24 @@ static const StreamListItem streams_list[] = {
 #if defined(GLOBAL_POSITION_SENSOR_HPP)
 	create_stream_list_item<MavlinkStreamGlobalPositionSensor>(),
 #endif // GLOBAL_POSITION_SENSOR_HPP
+#if defined(PARTICIPANT_POSITION_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMParticipantPosition>(),
+#endif // PARTICIPANT_POSITION_HPP
+#if defined(TRACK_IDENTITY_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMTrackIdentity>(),
+#endif // TRACK_IDENTITY_HPP
+#if defined(MAVLINK_STREAM_TARGET_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMTarget>(),
+#endif // MAVLINK_STREAM_TARGET_HPP
+#if defined(TARGET_HANDOVER_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMTargetHandover>(),
+#endif // TARGET_HANDOVER_HPP
+#if defined(MAVLINK_M_ACK_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMAck>(),
+#endif // MAVLINK_M_ACK_HPP
+#if defined(BATTLE_DAMAGE_ASSESSMENT_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMBattleDamageAssessment>(),
+#endif // BATTLE_DAMAGE_ASSESSMENT_HPP
 };
 
 const char *get_stream_name(const uint16_t msg_id)

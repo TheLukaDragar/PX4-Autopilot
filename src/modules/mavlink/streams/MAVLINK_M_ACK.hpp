@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2024 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,51 +31,53 @@
  *
  ****************************************************************************/
 
-#ifndef TF_TRANSFORM_HPP
-#define TF_TRANSFORM_HPP
+#ifndef MAVLINK_M_ACK_HPP
+#define MAVLINK_M_ACK_HPP
 
-#include <uORB/topics/tf_transform.h>
+#include <uORB/topics/mavlink_m_ack.h>
 
-class MavlinkStreamTfTransform : public MavlinkStream
+class MavlinkStreamMavlinkMAck : public MavlinkStream
 {
 public:
-	static MavlinkStream *new_instance(Mavlink *mavlink) { return new MavlinkStreamTfTransform(mavlink); }
-	static constexpr const char *get_name_static() { return "TF_TRANSFORM"; }
-	static constexpr uint16_t get_id_static() { return MAVLINK_MSG_ID_TF_TRANSFORM; }
+	static MavlinkStream *new_instance(Mavlink *mavlink) { return new MavlinkStreamMavlinkMAck(mavlink); }
+	static constexpr const char *get_name_static() { return "MAVLINK_M_ACK"; }
+	static constexpr uint16_t get_id_static() { return MAVLINK_MSG_ID_MAVLINK_M_ACK; }
 
 	const char *get_name() const override { return get_name_static(); }
 	uint16_t get_id() override { return get_id_static(); }
 
 	unsigned get_size() override
 	{
-		return _tf_transform_sub.advertised() ? MAVLINK_MSG_ID_TF_TRANSFORM_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
+		return _mavlink_m_ack_sub.advertised() ? MAVLINK_MSG_ID_MAVLINK_M_ACK_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
 	}
 
 private:
-	explicit MavlinkStreamTfTransform(Mavlink *mavlink) : MavlinkStream(mavlink) {}
+	explicit MavlinkStreamMavlinkMAck(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	uORB::Subscription _tf_transform_sub{ORB_ID(tf_transform)};
+	uORB::Subscription _mavlink_m_ack_sub{ORB_ID(mavlink_m_ack)};
 
 	bool send() override
 	{
-		tf_transform_s tf;
+		mavlink_m_ack_s topic;
 
-		if (_tf_transform_sub.update(&tf)) {
-			mavlink_tf_transform_t msg{};
+		// Only forward ACKs issued by this system (peer ACKs land on the same
+		// uORB topic via RX and must not be rebroadcast).
+		while (_mavlink_m_ack_sub.update(&topic)) {
+			if (topic.ack_sysid != _mavlink->get_system_id()) {
+				continue;
+			}
 
-			msg.timestamp_usec = tf.timestamp;
-			msg.frame_id = tf.frame_id;
-			msg.child_frame_id = tf.child_frame_id;
-			msg.translation_x = tf.translation_x;
-			msg.translation_y = tf.translation_y;
-			msg.translation_z = tf.translation_z;
-			msg.rotation_x = tf.rotation_x;
-			msg.rotation_y = tf.rotation_y;
-			msg.rotation_z = tf.rotation_z;
-			msg.rotation_w = tf.rotation_w;
+			mavlink_mavlink_m_ack_t msg{};
 
-			mavlink_msg_tf_transform_send_struct(_mavlink->get_channel(), &msg);
+			msg.time_usec = topic.time_usec;
+			msg.ack_msgid = topic.ack_msgid;
+			msg.ack_instance = topic.ack_instance;
+			msg.origin_sysid = topic.origin_sysid;
+			msg.ack_sysid = topic.ack_sysid;
+			msg.result = topic.result;
+			memcpy(msg.reason, topic.reason, sizeof(msg.reason));
 
+			mavlink_msg_mavlink_m_ack_send_struct(_mavlink->get_channel(), &msg);
 			return true;
 		}
 
@@ -83,4 +85,4 @@ private:
 	}
 };
 
-#endif // TF_TRANSFORM_HPP
+#endif // MAVLINK_M_ACK_HPP

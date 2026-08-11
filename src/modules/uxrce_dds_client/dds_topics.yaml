@@ -165,13 +165,30 @@ publications:
     type: px4_msgs::msg::RateCtrlStatus
     rate_limit: 200.
 
-  # Custom Speedo messages
-  - topic: /fmu/out/custom_ping
-    type: px4_msgs::msg::CustomPing
+  # MAVLink-M interceptor core (FC → companion)
+  - topic: /fmu/out/mavlink_m_track_identity
+    type: px4_msgs::msg::MavlinkMTrackIdentity
 
-  - topic: /fmu/out/tf_transform
-    type: px4_msgs::msg::TfTransform
-    rate_limit: 20.
+  - topic: /fmu/out/mavlink_m_target
+    type: px4_msgs::msg::MavlinkMTarget
+
+  - topic: /fmu/out/mavlink_m_target_handover
+    type: px4_msgs::msg::MavlinkMTargetHandover
+
+  - topic: /fmu/out/mavlink_m_fires
+    type: px4_msgs::msg::MavlinkMFires
+
+  - topic: /fmu/out/mavlink_m_engagement_directive
+    type: px4_msgs::msg::MavlinkMEngagementDirective
+
+  - topic: /fmu/out/mavlink_m_participant_position
+    type: px4_msgs::msg::MavlinkMParticipantPosition
+
+  - topic: /fmu/out/mavlink_m_ack
+    type: px4_msgs::msg::MavlinkMAck
+
+  - topic: /fmu/out/mavlink_m_battle_damage_assessment
+    type: px4_msgs::msg::MavlinkMBattleDamageAssessment
 
 
 # Create uORB::Publication
@@ -181,18 +198,22 @@ subscriptions:
   - topic: /fmu/in/target_bbox
     type: px4_msgs::msg::TargetBbox
 
-  # Custom Speedo messages (ROS2 -> PX4)
-  - topic: /fmu/in/custom_pong
-    type: px4_msgs::msg::CustomPong
+  # MAVLink-M companion → FC → MAVLink streams
+  # (own PARTICIPANT_POSITION is FC-generated; peer PPLI arrives on /fmu/out/)
+  - topic: /fmu/in/mavlink_m_track_identity
+    type: px4_msgs::msg::MavlinkMTrackIdentity
 
-  - topic: /fmu/in/tf_transform
-    type: px4_msgs::msg::TfTransform
+  - topic: /fmu/in/mavlink_m_target
+    type: px4_msgs::msg::MavlinkMTarget
 
-  - topic: /fmu/in/trajectory_header
-    type: px4_msgs::msg::TrajectoryHeader
+  - topic: /fmu/in/mavlink_m_target_handover
+    type: px4_msgs::msg::MavlinkMTargetHandover
 
-  - topic: /fmu/in/trajectory_waypoint
-    type: px4_msgs::msg::TrajectoryWaypoint
+  - topic: /fmu/in/mavlink_m_ack
+    type: px4_msgs::msg::MavlinkMAck
+
+  - topic: /fmu/in/mavlink_m_battle_damage_assessment
+    type: px4_msgs::msg::MavlinkMBattleDamageAssessment
 
   - topic: /fmu/in/vehicle_constraints
     type: px4_msgs::msg::VehicleConstraints
