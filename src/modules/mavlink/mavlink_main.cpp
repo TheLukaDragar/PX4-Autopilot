@@ -1503,6 +1503,24 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 	switch (_mode) {
 	case MAVLINK_MODE_NORMAL:
 		configure_stream_local("ADSB_VEHICLE", 5.f);
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+		configure_stream_local("PARTICIPANT_POSITION", 10.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+		configure_stream_local("TRACK_IDENTITY", 20.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET)
+		configure_stream_local("TARGET", 20.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+		configure_stream_local("TARGET_HANDOVER", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+		configure_stream_local("BATTLE_DAMAGE_ASSESSMENT", unlimited_rate);
+#endif
 		configure_stream_local("ALTITUDE", 1.0f);
 		configure_stream_local("ATTITUDE", 15.0f);
 		configure_stream_local("ATTITUDE_QUATERNION", 10.0f);
@@ -1593,6 +1611,24 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("ODOMETRY", 30.0f);
 
 		configure_stream_local("ADSB_VEHICLE", 5.f);
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+		configure_stream_local("PARTICIPANT_POSITION", 10.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+		configure_stream_local("TRACK_IDENTITY", 20.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET)
+		configure_stream_local("TARGET", 20.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+		configure_stream_local("TARGET_HANDOVER", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+		configure_stream_local("BATTLE_DAMAGE_ASSESSMENT", unlimited_rate);
+#endif
 		configure_stream_local("ATTITUDE_QUATERNION", 50.0f);
 		configure_stream_local("ATTITUDE_TARGET", 10.0f);
 		configure_stream_local("AVAILABLE_MODES", 0.3f);
