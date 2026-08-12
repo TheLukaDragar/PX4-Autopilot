@@ -34,12 +34,10 @@
 #ifndef TRACK_IDENTITY_HPP
 #define TRACK_IDENTITY_HPP
 
-#include <uORB/topics/mavlink_m_track_identity.h>
-
 /**
- * Companion / local-origin TRACK_IDENTITY → MAVLink.
- * Only transmits tracks owned by this system (origin_sysid == MAV_SYS_ID)
- * so peer tracks received on uORB are not rebroadcast.
+ * Enemy-surrogate build: FC advertises own-ship as HOSTILE TRACK_IDENTITY
+ * from the estimator (no companion). track_uid[15] = MAV_SYS_ID.
+ * Always streams (no position / wall-clock gate).
  */
 class MavlinkStreamMavlinkMTrackIdentity : public MavlinkStream
 {
@@ -53,52 +51,48 @@ public:
 
 	unsigned get_size() override
 	{
-		return _sub.advertised() ? MAVLINK_MSG_ID_TRACK_IDENTITY_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
+		return MAVLINK_MSG_ID_TRACK_IDENTITY_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
 	}
 
 private:
 	explicit MavlinkStreamMavlinkMTrackIdentity(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	uORB::Subscription _sub{ORB_ID(mavlink_m_track_identity)};
+	uint64_t _first_detected_usec{0};
 
 	bool send() override
 	{
-		mavlink_m_track_identity_s topic;
+		timespec ts{};
+		px4_clock_gettime(CLOCK_REALTIME, &ts);
+		uint64_t time_usec = (uint64_t)ts.tv_sec * 1000000ULL + ts.tv_nsec / 1000ULL;
 
-		while (_sub.update(&topic)) {
-			if (topic.origin_sysid != _mavlink->get_system_id()) {
-				continue;
-			}
-
-			mavlink_track_identity_t msg{};
-			msg.time_usec = topic.time_usec;
-			memcpy(msg.track_uid, topic.track_uid, sizeof(msg.track_uid));
-			memcpy(msg.parent_track_uid, topic.parent_track_uid, sizeof(msg.parent_track_uid));
-			msg.target_set_id = topic.target_set_id;
-			msg.first_detected_usec = topic.first_detected_usec;
-			msg.id_confidence = topic.id_confidence;
-			msg.origin_sysid = topic.origin_sysid;
-			msg.origin_sensor = topic.origin_sensor;
-			msg.id_method = topic.id_method;
-			msg.pid_status = topic.pid_status;
-			msg.track_rel = topic.track_rel;
-			msg.target_class = topic.target_class;
-			msg.target_force = topic.target_force;
-			memcpy(msg.id_basis, topic.id_basis, sizeof(msg.id_basis));
-			memcpy(msg.external_track_number, topic.external_track_number, sizeof(msg.external_track_number));
-			msg.external_track_type = topic.external_track_type;
-			msg.stanag_identity = topic.stanag_identity;
-			msg.environment = topic.environment;
-			msg.atr_confidence_pct = topic.atr_confidence_pct;
-			msg.atr_model_id = topic.atr_model_id;
-			msg.atr_conf_tier = topic.atr_conf_tier;
-			msg.sidc_context = topic.sidc_context;
-
-			mavlink_msg_track_identity_send_struct(_mavlink->get_channel(), &msg);
-			return true;
+		// Prefer wall clock; fall back to boot time so we still TX without GPS time.
+		if (time_usec <= 978307200000000ULL) {
+			time_usec = hrt_absolute_time();
 		}
 
-		return false;
+		if (_first_detected_usec == 0) {
+			_first_detected_usec = time_usec;
+		}
+
+		mavlink_track_identity_t msg{};
+		msg.time_usec = time_usec;
+		msg.first_detected_usec = _first_detected_usec;
+		msg.track_uid[15] = _mavlink->get_system_id();
+		msg.origin_sysid = _mavlink->get_system_id();
+		msg.origin_sensor = MAVLINK_M_ID_METHOD_MULTI_SOURCE;
+		msg.id_method = MAVLINK_M_ID_METHOD_MULTI_SOURCE;
+		msg.pid_status = MAVLINK_M_PID_STATUS_POSITIVE;
+		msg.id_confidence = 1.0f;
+		msg.target_class = MAVLINK_M_TARGET_CLASS_UAS_MULTIROTOR;
+		msg.target_force = MAVLINK_M_TARGET_FORCE_FOE;
+		msg.stanag_identity = MAVLINK_M_STANAG_IDENTITY_HOSTILE;
+		msg.environment = MAVLINK_M_ENVIRONMENT_AIR;
+		msg.external_track_type = MAVLINK_M_TRACK_NUMBER_TYPE_NONE;
+		msg.atr_confidence_pct = 255;
+		msg.sidc_context = MAVLINK_M_SIDC_CONTEXT_REALITY;
+
+		mavlink_msg_track_identity_send_struct(_mavlink->get_channel(), &msg);
+		return true;
 	}
 };
 

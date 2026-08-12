@@ -34,12 +34,12 @@
 #ifndef MAVLINK_STREAM_TARGET_HPP
 #define MAVLINK_STREAM_TARGET_HPP
 
-#include <uORB/topics/mavlink_m_target.h>
+#include <uORB/topics/vehicle_global_position.h>
+#include <uORB/topics/vehicle_local_position.h>
 
 /**
- * Companion TARGET (e.g. onboard seeker) → MAVLink.
- * Subscribes to mavlink_m_target_send (/fmu/in) only — never the peer RX
- * topic mavlink_m_target (/fmu/out), so network TARGET is not rebroadcast.
+ * Enemy-surrogate build: FC advertises own-ship kinematics as TARGET
+ * (FOE / UAS_MULTIROTOR) from the estimator. target_id = MAV_SYS_ID.
  */
 class MavlinkStreamMavlinkMTarget : public MavlinkStream
 {
@@ -53,63 +53,70 @@ public:
 
 	unsigned get_size() override
 	{
-		return _sub.advertised() ? MAVLINK_MSG_ID_TARGET_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
+		return MAVLINK_MSG_ID_TARGET_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
 	}
 
 private:
 	explicit MavlinkStreamMavlinkMTarget(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	uORB::Subscription _sub{ORB_ID(mavlink_m_target_send)};
+	uORB::Subscription _gpos_sub{ORB_ID(vehicle_global_position)};
+	uORB::Subscription _lpos_sub{ORB_ID(vehicle_local_position)};
 
 	bool send() override
 	{
-		mavlink_m_target_s topic;
+		vehicle_global_position_s gpos{};
+		vehicle_local_position_s lpos{};
+		_gpos_sub.copy(&gpos);
+		_lpos_sub.copy(&lpos);
 
-		if (_sub.update(&topic)) {
-			mavlink_target_t msg{};
-			msg.time_usec = topic.time_usec;
-			msg.target_time_usec = topic.target_time_usec;
-			msg.target_id = topic.target_id;
-			msg.target_set_id = topic.target_set_id;
-			msg.package_id_hash = topic.package_id_hash;
-			memcpy(msg.target_name, topic.target_name, sizeof(msg.target_name));
-			msg.lat = topic.lat;
-			msg.lon = topic.lon;
-			msg.alt = topic.alt;
-			msg.vx = topic.vx;
-			msg.vy = topic.vy;
-			msg.vz = topic.vz;
-			msg.cov_pos_x = topic.cov_pos_x;
-			msg.cov_pos_y = topic.cov_pos_y;
-			msg.cov_pos_z = topic.cov_pos_z;
-			msg.cov_vel_x = topic.cov_vel_x;
-			msg.cov_vel_y = topic.cov_vel_y;
-			msg.cov_vel_z = topic.cov_vel_z;
-			msg.cep_desired = topic.cep_desired;
-			msg.cep_max = topic.cep_max;
-			msg.flags = topic.flags;
-			msg.package_endpoint_ip_1 = topic.package_endpoint_ip_1;
-			msg.package_endpoint_ip_2 = topic.package_endpoint_ip_2;
-			msg.package_endpoint_ip_3 = topic.package_endpoint_ip_3;
-			msg.target_class = topic.target_class;
-			msg.target_domain = topic.target_domain;
-			msg.target_entity_2525d = topic.target_entity_2525d;
-			msg.target_force = topic.target_force;
-			msg.confidence = topic.confidence;
-			msg.package_endpoint_port = topic.package_endpoint_port;
-			msg.sensor_type = topic.sensor_type;
-			msg.package_transport = topic.package_transport;
-			memcpy(msg.package_path, topic.package_path, sizeof(msg.package_path));
-			msg.prf_code = topic.prf_code;
-			msg.tle_category = topic.tle_category;
-			msg.dmpi_reference_kind = topic.dmpi_reference_kind;
-			msg.restricted_target_flags = topic.restricted_target_flags;
+		timespec ts{};
+		px4_clock_gettime(CLOCK_REALTIME, &ts);
+		uint64_t time_usec = (uint64_t)ts.tv_sec * 1000000ULL + ts.tv_nsec / 1000ULL;
 
-			mavlink_msg_target_send_struct(_mavlink->get_channel(), &msg);
-			return true;
+		// Prefer wall clock; fall back to boot time so we still TX without GPS time.
+		if (time_usec <= 978307200000000ULL) {
+			time_usec = hrt_absolute_time();
 		}
 
-		return false;
+		mavlink_target_t msg{};
+		msg.time_usec = time_usec;
+		msg.target_time_usec = time_usec;
+		msg.target_id = _mavlink->get_system_id();
+
+		if (gpos.lat_lon_valid) {
+			msg.lat = (int32_t)(gpos.lat * 1e7);
+			msg.lon = (int32_t)(gpos.lon * 1e7);
+
+		} else {
+			msg.lat = 0;
+			msg.lon = 0;
+		}
+
+		msg.alt = gpos.alt_valid ? gpos.alt : NAN;
+
+		if (lpos.v_xy_valid) {
+			msg.vx = lpos.vx;
+			msg.vy = lpos.vy;
+
+		} else {
+			msg.vx = NAN;
+			msg.vy = NAN;
+		}
+
+		msg.vz = lpos.v_z_valid ? lpos.vz : NAN;
+
+		static constexpr const char name[] = "leseni";
+		strncpy(msg.target_name, name, sizeof(msg.target_name) - 1);
+		msg.target_name[sizeof(msg.target_name) - 1] = '\0';
+
+		msg.target_class = MAVLINK_M_TARGET_CLASS_UAS_MULTIROTOR;
+		msg.target_domain = MAVLINK_M_TARGET_DOMAIN_AIR;
+		msg.target_force = MAVLINK_M_TARGET_FORCE_FOE;
+		msg.confidence = 10000;
+		msg.sensor_type = MAVLINK_M_TARGET_SENSOR_TYPE_FUSED;
+
+		mavlink_msg_target_send_struct(_mavlink->get_channel(), &msg);
+		return true;
 	}
 };
 

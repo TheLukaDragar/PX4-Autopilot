@@ -1,134 +1,187 @@
-# C-UAS interceptor — MAVLink-M ICD (TRITRI end-to-end)
+# C-UAS interceptor — MAVLink-M ICD
 
-## Working field setup (14 Aug 2026)
+Ground tracker finds a hostile → `TARGET_HANDOVER` loads the track (armed, gated) →
+`FIRES` starts the chase with a predicted intercept point (PIP) → live kinematics on
+`TARGET` → onboard seeker publishes its own `TRACK_IDENTITY` + `TARGET`.
 
-Two MicoAir H743-v2. **Do not flash `demo_enemy` onto the interceptor.** This file is on **`main`** (interceptor) and **`demo_enemy`** (enemy FC).
+| Role | Message |
+| ---- | ------- |
+| Hostile / track | `TRACK_IDENTITY` + `TARGET` |
+| Friendly self | `PARTICIPANT_POSITION` only |
+| Assign (no chase) | `TARGET_HANDOVER` |
+| Engage | `FIRES` (PIP + TOA + `track_uid`) |
+| Guide after engage | `TARGET` stream |
+| Abort / retarget | `ENGAGEMENT_DIRECTIVE` |
+| ACK / BDA | `MAVLINK_M_ACK`, `BATTLE_DAMAGE_ASSESSMENT` |
 
-**Dialect:** `CONFIG_MAVLINK_DIALECT="tritri"` → [`tritri.xml`](src/modules/mavlink/mavlink/message_definitions/v1.0/tritri.xml).
+## Actors
 
-**One COP type:** live TRACK/TARGET is **only** `TRITRI_TRACK` **53900** / `TRITRI_TARGET` **53901** on air, uORB, DDS, and QGC. No expand/collapse to 53000/53010.
+| Actor | Publishes |
+| ----- | --------- |
+| Ground tracker / C2 | `TRACK_IDENTITY`, `TARGET`, `TARGET_HANDOVER`, `FIRES`, `ENGAGEMENT_DIRECTIVE` |
+| Enemy surrogate (this FC build) | `TRACK_IDENTITY` + `TARGET` from estimator (no PPLI) |
+| Interceptor | `PARTICIPANT_POSITION` (self), ACK, onboard `TRACK_IDENTITY` + `TARGET`, BDA |
+| Operator / GCS | `TARGET_AUTHORIZATION` (audit), may trigger `FIRES` / directive |
 
-
-| Aircraft    | Git                       | `MAV_SYS_ID` | Role                                 |
-| ----------- | ------------------------- | ------------ | ------------------------------------ |
-| Interceptor | `main` + **tritri** dialect | **1**        | Hear HOSTILE, forward COP to QGC     |
-| Enemy       | `demo_enemy`              | **2**        | Advertise self as HOSTILE (`leseni`); also dummy C2 |
-
-
-Two **separate** [LR24-F](https://micoair.com/radio_telemetry_lr24f/) pairs (different **ADDR**).
-
-| Pair | Who | UART | Job |
-| ---- | --- | ---- | --- |
-| **QGC** | Interceptor `MAV_0` ↔ QGC | interceptor `ttyS0` @57600 | Fly interceptor; sees **53900/53901** (same msgids as air) |
-| **C2** | Enemy `MAV_1` ↔ interceptor `MAV_2` | enemy `ttyS3`, interceptor `ttyS4` @57600 | Lean COP + PPLI + events |
-
-C2 budget: plan **~2 kB/s** both-way steady (~1.4 kB/s typical with TRITRI + PPLI@5).
+## Sequence
 
 ```mermaid
-flowchart LR
-  QGC["QGC / DDS<br/>53900 / 53901"]
+sequenceDiagram
+    autonumber
+    participant T as Ground tracker / C2
+    participant G as GCS / Operator
+    participant I as Interceptor
 
-  subgraph qgcPair["Antenna pair 1 — QGC"]
-    RQ["LR24-F ADDR A"]
-  end
+    T->>G: TRACK_IDENTITY + TARGET (ground)
+    T->>I: TARGET (ground stream)
+    G->>T: TARGET_AUTHORIZATION (audit)
 
-  subgraph icept["Interceptor sysid 1 — main"]
-    I0["MAV_0 Normal FORWARD=1"]
-    I2["MAV_2 Custom FORWARD=0<br/>PPLI 53003 @ 5 Hz<br/>TRITRI seeker if companion"]
-  end
+    T->>I: TARGET_HANDOVER
+    I->>T: MAVLINK_M_ACK
+    Note over I: Load track — do not chase yet
 
-  subgraph c2Pair["Antenna pair 2 — C2"]
-    RC["LR24-F ADDR B HIGH"]
-  end
+    I->>G: PARTICIPANT_POSITION (self)
 
-  subgraph enemy["Enemy sysid 2 — demo_enemy / dummy C2"]
-    E1["MAV_1 Custom<br/>TRITRI HOSTILE<br/>PPLI TX stubbed"]
-    EU["USB QGC<br/>peer 53003 + COP"]
-  end
+    T->>I: FIRES (PIP + TOA + track_uid)
+    I->>T: MAVLINK_M_ACK
+    Note over I: Midcourse — replan from TARGET
 
-  QGC --- RQ --- I0
-  E1 -->|"53900 + 53901"| RC --> I2
-  I2 -->|"53003"| RC --> E1
-  I2 -->|"forward 539xx as-is"| I0
-  E1 -->|"always-forward"| EU
+    alt Seeker lock
+        I->>G: TRACK_IDENTITY + TARGET (onboard)
+        I->>T: TRACK_IDENTITY + TARGET (onboard)
+        Note over I: Prefer onboard TARGET for terminal
+    else Abort
+        G->>I: ENGAGEMENT_DIRECTIVE
+        I->>G: MAVLINK_M_ACK
+    end
+
+    I->>T: BATTLE_DAMAGE_ASSESSMENT
 ```
 
-### Keep sets
+## Companion fly logic
 
-**TRITRI_TRACK (53900):** times, `track_uid[16]`, set_id, id_confidence, ATR×3, origin_sysid/sensor, id_method, pid_status, class/force/STANAG/environment, sidc_context.
-
-**TRITRI_TARGET (53901):** times, `track_uid[16]`, `target_name[16]`, target_id, set_id, flags, lat/lon/alt, vel, cov×6, confidence, class/domain/force, sensor_type, tle_category, restricted_target_flags.
-
-**Not on live COP:** package path/IPs, CEP, PRF, DMPI, land 2525d, parent UID, id_basis[50], Link-16 strings (full 53000/53010 unused on path).
-
-### DDS / uORB
-
-| Direction | Topic | Type |
-| --- | --- | --- |
-| out | `/fmu/out/mavlink_m_tritri_track` | `MavlinkMTritriTrack` |
-| out | `/fmu/out/mavlink_m_tritri_target` | `MavlinkMTritriTarget` |
-| in | `/fmu/in/mavlink_m_tritri_track` | `MavlinkMTritriTrack` |
-| in | `/fmu/in/mavlink_m_tritri_target_send` | `MavlinkMTritriTarget` |
-
-### Enemy params (`demo_enemy`)
+1. `HANDOVER` → store `track_uid_G`, filter `TARGET`, hold
+2. `FIRES` → midcourse from PIP / `time_impact_usec`
+3. Replan from live `TARGET` → PX4 setpoints
+4. Seeker lock → publish onboard `TRACK_IDENTITY` + `TARGET`; prefer onboard for terminal
+5. Keep `PARTICIPANT_POSITION` as own-ship only
 
 ```text
-MAV_SYS_ID      2
-MAV_1_MODE      1         Custom — C2 on ttyS3
-MAV_1_FORWARD   0
+Ground track:   track_uid_G
+Onboard track:  track_uid_I  (parent_track_uid = track_uid_G)
+Guidance:       ground TARGET until lock → onboard TARGET after
 ```
 
-Custom: **TRITRI_TRACK 1 Hz**, **TRITRI_TARGET 5 Hz**, SYS_STATUS 0.5 Hz, HEARTBEAT, HANDOVER/FIRES/ENGAGEMENT one-shots. Hardcoded `leseni` HOSTILE. **PPLI TX stubbed.**
+## Example fields
 
-### Interceptor params (`main`)
+**Ground `TRACK_IDENTITY`**
 
 ```text
-MAV_SYS_ID      1
-MAV_0_FORWARD   1
-MAV_2_MODE      1         Custom — C2
-MAV_2_FORWARD   0
+track_uid / origin_sysid / target_class=UAS_MULTIROTOR / target_force=HOSTILE
 ```
 
-Custom: HEARTBEAT + **PARTICIPANT_POSITION @ 5 Hz** + companion **TRITRI_TRACK @ 1 Hz** / **TRITRI_TARGET @ 5 Hz** + ACK/BDA. Normal/Onboard also stream **TRITRI_*** @ 20 Hz (not 53000/53010).
+**Ground `TARGET`** — lat/lon/alt, NED vel, cov (PIP + midcourse replan)
 
-`should_always_forward`: 53900/53901/53002/53003/53020/53023/53004/53022 + gimbal.
+**`TARGET_HANDOVER`** — `track_uid_G` + kinematics snapshot; load only, wait for `FIRES`
 
-### Wire IDs
-
-| msgid | Name | On-wire | Demo |
-| ---: | --- | ---: | --- |
-| 0 | HEARTBEAT | 21 B | both, 1 Hz |
-| 1 | SYS_STATUS | ~55 B | enemy Custom 0.5 Hz |
-| **53900** | **TRITRI_TRACK** | **~65 B** | enemy→icept 1 Hz; seeker/onboard as configured |
-| **53901** | **TRITRI_TARGET** | **~128 B** | enemy→icept 5 Hz |
-| **53003** | **PARTICIPANT_POSITION** | **122 B** | icept→C2 @ 5 Hz; enemy TX stubbed |
-| 53002 | TARGET_HANDOVER | ~219 B | events |
-| 53004 | MAVLINK_M_ACK | — | events |
-| 53020 / 53023 / 53022 | FIRES / ENGAGEMENT / BDA | — | events |
-
-### Check
+**Enemy surrogate FC (this build, hardcoded)** — no companion needed:
 
 ```text
-# interceptor
-listener mavlink_m_tritri_track     # origin_sysid=2, uid[15]=2, HOSTILE
-listener mavlink_m_tritri_target    # name=leseni, target_id=2
-mavlink status                      # #2 RX: 53900 ~1 Hz, 53901 ~5 Hz
-
-# enemy (dummy C2)
-listener mavlink_m_participant_position   # origin_sysid=1, speed0
-mavlink status                            # Custom RX: 53003 ~5 Hz from sysid 1
-
-# Jetson
-ros2 topic hz /px4_0/fmu/out/mavlink_m_tritri_track
-ros2 topic hz /px4_0/fmu/out/mavlink_m_tritri_target
+PPLI:           disabled
+TRACK_IDENTITY: track_uid[15]=MAV_SYS_ID, HOSTILE, FOE, UAS_MULTIROTOR, AIR
+TARGET:         own lat/lon/alt + NED vel, target_id=MAV_SYS_ID, name=leseni
 ```
 
-### External flag-day (lockstep)
+Do not flash this tree to the interceptor without reverting those streams.
 
-| Repo | Change |
-| --- | --- |
-| **px4_msgs** | Add `MavlinkMTritriTrack` / `MavlinkMTritriTarget`; stop using old track/target msgs for live COP |
-| **seeker / speedo_c2** | Publish `/fmu/in/mavlink_m_tritri_track` and `/fmu/in/mavlink_m_tritri_target_send` |
-| **QGC (custom)** | Tritri dialect; COP UI binds **53900/53901** (not 53000/53010) |
+**`PARTICIPANT_POSITION`** (interceptor / blue FC only — disabled on this enemy build)
 
-Flash both FCs + Jetson msgs + QGC together — mixed old/new COP will not interoperate.
+```text
+lat/lon/alt, vx/vy/vz, course=COG, callsign=speed0, origin_sysid=MAV_SYS_ID
+stanag_identity=FRIEND, ppli_type=AIR
+lat/lon = INT32_MAX if unknown (never fake 0,0); alt/vel/course = NaN if unknown
+```
+
+
+**`FIRES`**
+
+```text
+lat/lon/alt = PIP, time_impact_usec = TOA, track_uid, sequence, effector_id
+```
+
+After ACK, chase from live `TARGET`; C2 may re-send `FIRES` when PIP changes.
+
+**Onboard lock**
+
+```text
+TRACK_IDENTITY: track_uid_I, parent=track_uid_G, origin_sysid=interceptor
+TARGET:         seeker lat/lon/alt + vel
+```
+
+**`BATTLE_DAMAGE_ASSESSMENT`** — prefer `track_uid_G` for chain continuity
+
+## Message cheat sheet
+
+| Message | Effect |
+| ------- | ------ |
+| `TRACK_IDENTITY` / `TARGET` (ground) | Hostile on COP; kinematics |
+| `TARGET_AUTHORIZATION` | Audit only |
+| `TARGET_HANDOVER` | Load track; wait |
+| `PARTICIPANT_POSITION` | Blue self |
+| `FIRES` | Start chase (PIP) |
+| `TRACK_IDENTITY` / `TARGET` (onboard) | Seeker track |
+| `ENGAGEMENT_DIRECTIVE` | Abort / retarget |
+| `BATTLE_DAMAGE_ASSESSMENT` | Close engagement |
+
+`LOITER_MUNITION_CONTROL` is not used for this high-speed intercept path.
+
+## PX4 wiring (`CONFIG_MAVLINK_DIALECT=military`)
+
+| MAVLink-M | uORB | ROS 2 |
+| --------- | ---- | ----- |
+| `TRACK_IDENTITY` | `mavlink_m_track_identity` | `MavlinkMTrackIdentity` |
+| `TARGET` | `mavlink_m_target` | `MavlinkMTarget` |
+| `TARGET_HANDOVER` | `mavlink_m_target_handover` | `MavlinkMTargetHandover` |
+| `FIRES` | `mavlink_m_fires` | `MavlinkMFires` |
+| `ENGAGEMENT_DIRECTIVE` | `mavlink_m_engagement_directive` | `MavlinkMEngagementDirective` |
+| `MAVLINK_M_ACK` | `mavlink_m_ack` | `MavlinkMAck` |
+| `BATTLE_DAMAGE_ASSESSMENT` | `mavlink_m_battle_damage_assessment` | `MavlinkMBattleDamageAssessment` |
+| `PARTICIPANT_POSITION` | `mavlink_m_participant_position` | `MavlinkMParticipantPosition` |
+
+### Paths
+
+| Direction | Messages |
+| --------- | -------- |
+| In `/fmu/out/` | peer `TRACK`/`TARGET`/`HANDOVER`/`FIRES`/`DIRECTIVE`, peer PPLI, peer ACK/BDA |
+| Out `/fmu/in/` → stream | seeker `TRACK`, `TARGET`/`HANDOVER` via `*_send`, ACK, BDA (interceptor) |
+| Out (FC, this enemy build) | own-ship `TRACK_IDENTITY` + `TARGET` (PPLI off) |
+| Out (FC, interceptor) | own-ship `PARTICIPANT_POSITION` |
+
+Companion must set `origin_sysid` / `ack_sysid` = `vehicle_status.system_id` (`MAV_SYS_ID`).
+
+**TARGET / TARGET_HANDOVER in vs out:** wire payloads have no `origin_sysid`, so peer RX and companion TX use separate uORB topics:
+
+| ROS | uORB | Role |
+| --- | ---- | ---- |
+| `/fmu/out/mavlink_m_target` | `mavlink_m_target` | Network RX only |
+| `/fmu/in/mavlink_m_target_send` | `mavlink_m_target_send` | Companion → TARGET stream |
+| `/fmu/out/mavlink_m_target_handover` | `mavlink_m_target_handover` | Network RX only |
+| `/fmu/in/mavlink_m_target_handover_send` | `mavlink_m_target_handover_send` | Companion → HANDOVER stream |
+
+`TRACK_IDENTITY` can share one uORB: the stream already TX-filters on payload `origin_sysid == MAV_SYS_ID`.
+
+Default rates (`MAVLINK_MODE_NORMAL` / `ONBOARD`, military dialect only):
+
+```text
+PARTICIPANT_POSITION       10 Hz
+TRACK_IDENTITY             20 Hz
+TARGET                     20 Hz
+TARGET_HANDOVER            unlimited (on event)
+MAVLINK_M_ACK              unlimited (on event)
+BATTLE_DAMAGE_ASSESSMENT   unlimited (on event)
+```
+
+Override later with `mavlink stream` or `MAV_CMD_SET_MESSAGE_INTERVAL`.
+
+| Publish | `/fmu/in/mavlink_m_{track_identity,target,target_handover,ack,battle_damage_assessment}` |
+| Subscribe | `/fmu/out/mavlink_m_*` (+ `fires`, `engagement_directive`, `participant_position`) |
