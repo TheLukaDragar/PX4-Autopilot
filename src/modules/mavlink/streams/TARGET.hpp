@@ -34,12 +34,14 @@
 #ifndef MAVLINK_STREAM_TARGET_HPP
 #define MAVLINK_STREAM_TARGET_HPP
 
+#include <climits>
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_local_position.h>
 
 /**
  * Enemy-surrogate build: FC advertises own-ship kinematics as TARGET
  * (FOE / UAS_MULTIROTOR) from the estimator. target_id = MAV_SYS_ID.
+ * Unknown lat/lon = INT32_MAX; unknown alt/vel/cov/CEP = NaN (never fake 0,0).
  */
 class MavlinkStreamMavlinkMTarget : public MavlinkStream
 {
@@ -88,8 +90,8 @@ private:
 			msg.lon = (int32_t)(gpos.lon * 1e7);
 
 		} else {
-			msg.lat = 0;
-			msg.lon = 0;
+			msg.lat = INT32_MAX;
+			msg.lon = INT32_MAX;
 		}
 
 		msg.alt = gpos.alt_valid ? gpos.alt : NAN;
@@ -104,6 +106,16 @@ private:
 		}
 
 		msg.vz = lpos.v_z_valid ? lpos.vz : NAN;
+
+		// No estimator covariance on this path — mark unknown (global dialect rule).
+		msg.cov_pos_x = NAN;
+		msg.cov_pos_y = NAN;
+		msg.cov_pos_z = NAN;
+		msg.cov_vel_x = NAN;
+		msg.cov_vel_y = NAN;
+		msg.cov_vel_z = NAN;
+		msg.cep_desired = NAN;
+		msg.cep_max = NAN;
 
 		static constexpr const char name[] = "leseni";
 		strncpy(msg.target_name, name, sizeof(msg.target_name) - 1);

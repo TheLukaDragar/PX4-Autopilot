@@ -90,6 +90,7 @@ track_uid / origin_sysid / target_class=UAS_MULTIROTOR / target_force=HOSTILE
 PPLI:           disabled
 TRACK_IDENTITY: track_uid[15]=MAV_SYS_ID, HOSTILE, FOE, UAS_MULTIROTOR, AIR
 TARGET:         own lat/lon/alt + NED vel, target_id=MAV_SYS_ID, name=leseni
+                lat/lon=INT32_MAX if unknown; alt/vel/cov/CEP=NaN if unknown
 ```
 
 Do not flash this tree to the interceptor without reverting those streams.
