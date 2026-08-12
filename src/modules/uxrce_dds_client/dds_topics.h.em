@@ -79,7 +79,8 @@ public:
 	EventDrivenCallback(void *owner, const orb_metadata *meta) :
 		uORB::SubscriptionCallback(meta), _owner(owner), _callback_count(0) {}
 
-	void call() override {
+	void call(unsigned generation) override {
+		(void)generation;
 		_callback_count++;
 		// Notify owner that event-driven topic updated
 		if (_owner) {
