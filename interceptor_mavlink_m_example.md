@@ -88,7 +88,9 @@ track_uid / origin_sysid / target_class=UAS_MULTIROTOR / target_force=HOSTILE
 ```text
 lat/lon/alt, vx/vy/vz, course=COG, callsign=speed0, origin_sysid=MAV_SYS_ID
 stanag_identity=FRIEND, ppli_type=AIR
+lat/lon = INT32_MAX if unknown (never fake 0,0); alt/vel/course = NaN if unknown
 ```
+
 
 **`FIRES`**
 
