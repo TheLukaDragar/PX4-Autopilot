@@ -43,6 +43,7 @@
 #include <uORB/topics/battery_status.h>
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/topics/sensor_gps.h>
+#include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/registered_modes.h>
 #include <drivers/drv_hrt.h>
@@ -78,12 +79,14 @@ private:
 	bool send_gps();
 	bool send_attitude();
 	bool send_flight_mode();
+	bool send_baro_altitude();
 
 	uORB::Subscription _vehicle_gps_position_sub{ORB_ID(vehicle_gps_position)};
 	uORB::Subscription _battery_status_sub{ORB_ID(battery_status)};
 	uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
 	uORB::Subscription _registered_modes_sub{ORB_ID(registered_modes)};
+	uORB::Subscription _vehicle_local_position_sub{ORB_ID(vehicle_local_position)};
 
 	char _external_mode_names[8][26]{}; ///< Names from last good `registered_modes` copy
 
@@ -93,7 +96,7 @@ private:
 
 	hrt_abstime _last_update{0};
 
-	static constexpr int num_data_types{4}; ///< number of different telemetry data types
+	static constexpr int num_data_types{5}; ///< number of different telemetry data types
 	int _next_type{0};
 
 	int _uart_fd;

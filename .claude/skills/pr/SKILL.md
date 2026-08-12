@@ -7,7 +7,7 @@ allowed-tools: Bash, Read, Glob, Grep
 
 # PX4 Pull Request
 
-**No Claude attribution anywhere (no Co-Authored-By, no "Generated with Claude").**
+**NEVER add Co-Authored-By lines. No Claude attribution in PRs.**
 
 Follow [CONTRIBUTING.md](../../CONTRIBUTING.md) for full project conventions.
 
