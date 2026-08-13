@@ -105,6 +105,7 @@ px4_add_module(
 		#-DDEBUG_BUILD
 	SRCS
 		mavlink.c
+		mavlink_cop.cpp
 		mavlink_command_sender.cpp
 		mavlink_events.cpp
 		mavlink_ftp.cpp

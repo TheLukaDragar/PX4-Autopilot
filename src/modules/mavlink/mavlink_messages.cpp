@@ -99,6 +99,12 @@
 #if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
 #include "streams/TRITRI_TARGET.hpp"
 #endif
+#if defined(MAVLINK_MSG_ID_FIRES)
+#include "streams/FIRES.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+#include "streams/ENGAGEMENT_DIRECTIVE.hpp"
+#endif
 #if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
 #include "streams/MAVLINK_M_ACK.hpp"
 #endif
@@ -573,6 +579,12 @@ static const StreamListItem streams_list[] = {
 #if defined(TRITRI_TARGET_HPP)
 	create_stream_list_item<MavlinkStreamTritriTarget>(),
 #endif // TRITRI_TARGET_HPP
+#if defined(FIRES_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMFires>(),
+#endif // FIRES_HPP
+#if defined(ENGAGEMENT_DIRECTIVE_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMEngagementDirective>(),
+#endif // ENGAGEMENT_DIRECTIVE_HPP
 #if defined(MAVLINK_M_ACK_HPP)
 	create_stream_list_item<MavlinkStreamMavlinkMAck>(),
 #endif // MAVLINK_M_ACK_HPP

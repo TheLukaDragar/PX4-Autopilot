@@ -61,7 +61,7 @@ parameters:
             type: enum
             values:
                 0: Normal
-                1: Custom
+                1: Custom # enemy C2: TRACK_IDENTITY + TARGET at 10 Hz
                 2: Onboard
                 3: OSD
                 4: Magic

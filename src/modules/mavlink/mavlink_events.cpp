@@ -208,7 +208,8 @@ void SendProtocol::handle_request_event(const mavlink_message_t &msg) const
 
 void SendProtocol::send_event(const Event &event) const
 {
-	if (_mavlink.get_mode() != Mavlink::MAVLINK_MODE_IRIDIUM) {
+	if (_mavlink.get_mode() != Mavlink::MAVLINK_MODE_IRIDIUM &&
+	    _mavlink.get_mode() != Mavlink::MAVLINK_MODE_CUSTOM) {
 		mavlink_event_t event_msg{};
 		event_msg.event_time_boot_ms = event.timestamp_ms;
 		event_msg.destination_component = MAV_COMP_ID_ALL;
@@ -231,7 +232,8 @@ void SendProtocol::send_current_sequence(const hrt_abstime &now, bool force_rese
 {
 	// only send if enough tx buffer space available or not MAVLINK_MODE_IRIDIUM
 	if (_mavlink.get_free_tx_buf() < MAVLINK_MSG_ID_CURRENT_EVENT_SEQUENCE_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES ||
-	    _mavlink.get_mode() == Mavlink::MAVLINK_MODE_IRIDIUM) {
+	    _mavlink.get_mode() == Mavlink::MAVLINK_MODE_IRIDIUM ||
+	    _mavlink.get_mode() == Mavlink::MAVLINK_MODE_CUSTOM) {
 		return;
 	}
 

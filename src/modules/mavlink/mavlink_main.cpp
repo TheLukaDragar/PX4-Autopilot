@@ -211,6 +211,19 @@ mavlink_message_t *Mavlink::get_buffer()
 void Mavlink::lock_send() { if (_instance_id >= 0) { pthread_mutex_lock(&mavlink_channel_send_mutexes[_instance_id]); } }
 void Mavlink::unlock_send() { if (_instance_id >= 0) { pthread_mutex_unlock(&mavlink_channel_send_mutexes[_instance_id]); } }
 
+bool Mavlink::queue_cop_bytes(const uint8_t *data, uint16_t len)
+{
+	if (data == nullptr || len == 0 || len > sizeof(_cop_tx_buf)) {
+		return false;
+	}
+
+	lock_send();
+	memcpy(_cop_tx_buf, data, len);
+	_cop_tx_len = len;
+	unlock_send();
+	return true;
+}
+
 static bool accept_unsigned_callback(const mavlink_status_t *status, uint32_t message_id)
 {
 	// Use link_id to index directly: the callback fires on the instance's own
@@ -473,6 +486,17 @@ Mavlink::instance_count()
 	}
 
 	return inst_index;
+}
+
+Mavlink *
+Mavlink::get_instance(int instance_id)
+{
+	if (instance_id < 0 || instance_id >= MAVLINK_COMM_NUM_BUFFERS) {
+		return nullptr;
+	}
+
+	LockGuard lg{mavlink_module_mutex};
+	return mavlink_module_instances[instance_id];
 }
 
 Mavlink *
@@ -1670,24 +1694,7 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 	switch (_mode) {
 	case MAVLINK_MODE_NORMAL:
 		configure_stream_local("ADSB_VEHICLE", 5.f);
-#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
-		configure_stream_local("PARTICIPANT_POSITION", 10.0f);
-#endif
-#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
-		configure_stream_local("TRITRI_TRACK", 20.0f);
-#endif
-#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
-		configure_stream_local("TRITRI_TARGET", 20.0f);
-#endif
-#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
-		configure_stream_local("TARGET_HANDOVER", unlimited_rate);
-#endif
-#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
-		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
-#endif
-#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
-		configure_stream_local("BATTLE_DAMAGE_ASSESSMENT", unlimited_rate);
-#endif
+
 		configure_stream_local("ALTITUDE", 1.0f);
 		configure_stream_local("ATTITUDE", 15.0f);
 		configure_stream_local("ATTITUDE_QUATERNION", 10.0f);
@@ -1949,22 +1956,24 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 
 	case MAVLINK_MODE_CUSTOM:
-		// C2: TRITRI COP + blue PPLI (one COP type end-to-end).
-#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
-		configure_stream_local("TRITRI_TRACK", 1.0f);
+		// Enemy C2. LR24-F HIGH = 8 KB/s air; TRACK+TARGET at 5 Hz ≈ 2.1 KB/s
+		// so ACK/abort still have room. Keep EVENT/STATUSTEXT off (see start()).
+#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+		configure_stream_local("TRACK_IDENTITY", 5.0f);
 #endif
-#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
-		configure_stream_local("TRITRI_TARGET", 5.0f);
+#if defined(MAVLINK_MSG_ID_TARGET)
+		configure_stream_local("TARGET", 5.0f);
 #endif
-#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
-		configure_stream_local("PARTICIPANT_POSITION", 5.0f);
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+		configure_stream_local("TARGET_HANDOVER", unlimited_rate);
 #endif
-#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
-		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
+#if defined(MAVLINK_MSG_ID_FIRES)
+		configure_stream_local("FIRES", unlimited_rate);
 #endif
-#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
-		configure_stream_local("BATTLE_DAMAGE_ASSESSMENT", unlimited_rate);
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+		configure_stream_local("ENGAGEMENT_DIRECTIVE", unlimited_rate);
 #endif
+		configure_stream_local("SYS_STATUS", 0.5f);
 		break;
 
 	case MAVLINK_MODE_CONFIG: // USB
@@ -2056,6 +2065,12 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 
 	case MAVLINK_MODE_MINIMAL:
+#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+		configure_stream_local("TRACK_IDENTITY", 5.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET)
+		configure_stream_local("TARGET", 5.0f);
+#endif
 		configure_stream_local("ALTITUDE", 0.5f);
 		configure_stream_local("ATTITUDE", 10.0f);
 		configure_stream_local("EXTENDED_SYS_STATE", 0.1f);
@@ -2636,8 +2651,10 @@ Mavlink::task_main(int argc, char *argv[])
 		/* HEARTBEAT is constant rate stream, rate never adjusted */
 		configure_stream("HEARTBEAT", 1.0f);
 
-		/* STATUSTEXT stream */
-		configure_stream("STATUSTEXT", 20.0f);
+		/* Custom = lean C2 radio: no STATUSTEXT flood (EVENT is also suppressed). */
+		if (_mode != MAVLINK_MODE_CUSTOM) {
+			configure_stream("STATUSTEXT", 20.0f);
+		}
 
 		/* COMMAND_LONG stream: use unlimited rate to send all commands */
 		configure_stream("COMMAND_LONG");
@@ -2765,6 +2782,16 @@ Mavlink::task_main(int argc, char *argv[])
 		// mutex is recursive, so nested locking via send_start/send_finish or
 		// other lock_send() callers inside the send path is safe.
 		lock_send();
+
+		if (_cop_tx_len > 0 && get_protocol() == Protocol::SERIAL && _uart_fd >= 0) {
+			const int w = ::write(_uart_fd, _cop_tx_buf, _cop_tx_len);
+
+			if (w != (int)_cop_tx_len) {
+				PX4_ERR("cop TX %d/%u", w, (unsigned)_cop_tx_len);
+			}
+
+			_cop_tx_len = 0;
+		}
 
 		for (const auto &stream : _streams) {
 			stream->update(t);
@@ -3882,6 +3909,8 @@ $ mavlink stream -u 14556 -s HIGHRES_IMU -r 50
 	PRINT_MODULE_USAGE_COMMAND_DESCR("status", "Print status for all instances");
 	PRINT_MODULE_USAGE_ARG("streams", "Print all enabled streams", true);
 
+	PRINT_MODULE_USAGE_COMMAND_DESCR("cop", "Enemy C2 demo: handover | fires | abort | workflow");
+
 	PRINT_MODULE_USAGE_COMMAND_DESCR("stream", "Configure the sending rate of a stream for a running instance");
 #if defined(CONFIG_NET) || defined(__PX4_POSIX)
 	PRINT_MODULE_USAGE_PARAM_INT('u', -1, 0, 65536, "Select Mavlink instance via local Network Port", true);
@@ -3917,6 +3946,9 @@ extern "C" __EXPORT int mavlink_main(int argc, char *argv[])
 
 	} else if (!strcmp(argv[1], "stream")) {
 		return Mavlink::stream_command(argc, argv);
+
+	} else if (!strcmp(argv[1], "cop")) {
+		return Mavlink::cop_command(argc, argv);
 
 	} else if (!strcmp(argv[1], "boot_complete")) {
 		Mavlink::set_boot_complete();

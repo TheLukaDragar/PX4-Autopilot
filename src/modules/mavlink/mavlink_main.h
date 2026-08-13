@@ -129,9 +129,11 @@ public:
 
 	static int stop_command(int argc, char *argv[]);
 	static int stream_command(int argc, char *argv[]);
+	static int cop_command(int argc, char *argv[]);
 
 	static int instance_count();
 	static Mavlink *new_instance();
+	static Mavlink *get_instance(int instance_id);
 	static Mavlink *get_instance_for_device(const char *device_name);
 
 	mavlink_message_t *get_buffer();
@@ -423,6 +425,9 @@ public:
 	void			lock_send();
 	void			unlock_send();
 
+	/** Queue a raw MAVLink frame for the send thread (NSH must not write _uart_fd). */
+	bool			queue_cop_bytes(const uint8_t *data, uint16_t len);
+
 	void			update_radio_status(const radio_status_s &radio_status);
 
 	unsigned		get_system_type() { return _param_mav_type.get(); }
@@ -640,6 +645,9 @@ private:
 	unsigned		_buf_fill{0};
 
 	bool			_tx_buffer_low{false};
+
+	uint8_t			_cop_tx_buf[MAVLINK_MAX_PACKET_LEN] {};
+	uint16_t		_cop_tx_len{0};
 
 	const char 		*_interface_name{nullptr};
 
