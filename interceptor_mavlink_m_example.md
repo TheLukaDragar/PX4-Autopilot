@@ -103,7 +103,7 @@ Military dialect. Common IDs stay in the low range; COP is 53000+.
 | 53020 | FIRES | — | start chase |
 | 53021 | SPLASH_CORRECTION | — | unused here |
 | 53022 | BATTLE_DAMAGE_ASSESSMENT | — | close engagement |
-| 53023 | ENGAGEMENT_DIRECTIVE | — | abort / retarget |
+| 53023 | ENGAGEMENT_DIRECTIVE | — | `abort`/`checkfire`/`resume` (0/1/2) |
 
 ROS does not use these numbers. Same payloads:
 
@@ -156,8 +156,10 @@ mavlink stream -d /dev/ttyS4 -s MAVLINK_M_ACK -r 50
 ```text
 # enemy (after MAV_1_FORWARD=0)
 mavlink cop handover          # 53002 — proven: Jetson onHandover(), then geo NACK
-mavlink cop fires             # 53020 — next
-mavlink cop abort             # 53023 ABORT — next
+mavlink cop fires             # 53020
+mavlink cop checkfire         # 53023 CHECK_FIRE(1) — companion NACKs if no intercept
+mavlink cop resume            # 53023 RESUME(2) — companion NACKs if not in check-fire
+mavlink cop abort             # 53023 ABORT(0)
 mavlink cop workflow          # handover ACK, then fires ACK
 
 # interceptor
@@ -170,7 +172,18 @@ listener mavlink_m_engagement_directive
 #   rejected — lat lon INT32_MAX   ← bench, no GPS
 ```
 
-Same `track_uid[15]=MAV_SYS_ID` (2) and `sequence` as FIRES so abort matches. Kinematics from estimator, or INT32_MAX/NaN if no GPS. Do not put a dummy PIP unless props are off — companion will arm.
+Same `track_uid[15]=MAV_SYS_ID` (2) and `sequence` as FIRES so abort/resume match. Kinematics from estimator, or INT32_MAX/NaN if no GPS. Do not put a dummy PIP unless props are off — companion will arm.
+
+`ENGAGEMENT_DIRECTIVE.directive` must match `speedo_c2_example` (`executor.hpp`). The old cop fallback sent ABORT=1, which is CHECK_FIRE.
+
+| `mavlink cop` | `directive` | Companion |
+| ------------- | ----------- | --------- |
+| `abort` | **0** ABORT | always `Accepted` (`ROS2: ABORT`) |
+| `checkfire` | **1** CHECK_FIRE | `Rejected` / `no active interception` unless FIRES/Kill |
+| `resume` | **2** RESUME | `Rejected` / `not in check-fire` unless after check-fire |
+| *(none yet)* | **3** RETARGET | needs valid lat/lon/alt |
+
+Bench with no chase: `abort` ACKs; `resume` / `checkfire` NACK for the reason above — that still means 53023 landed.
 
 ---
 
@@ -311,7 +324,7 @@ TARGET:         seeker lat/lon/alt + vel
 | `PARTICIPANT_POSITION`                | Blue self                  |
 | `FIRES`                               | Start chase (PIP)          |
 | `TRACK_IDENTITY` / `TARGET` (onboard) | Seeker track               |
-| `ENGAGEMENT_DIRECTIVE`                | Abort / retarget           |
+| `ENGAGEMENT_DIRECTIVE`                | Abort(0) / check-fire(1) / resume(2) / retarget(3) |
 | `BATTLE_DAMAGE_ASSESSMENT`            | Close engagement           |
 
 

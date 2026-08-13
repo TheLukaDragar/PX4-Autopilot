@@ -25,9 +25,10 @@
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_local_position.h>
 
-#ifndef MAVLINK_M_ENGAGEMENT_DIRECTIVE_ABORT
-#define MAVLINK_M_ENGAGEMENT_DIRECTIVE_ABORT 1
-#endif
+// speedo_c2_example EngagementDirective: Abort=0 CheckFire=1 Resume=2 Retarget=3
+static constexpr uint8_t kDirectiveAbort = 0;
+static constexpr uint8_t kDirectiveCheckFire = 1;
+static constexpr uint8_t kDirectiveResume = 2;
 
 namespace
 {
@@ -320,7 +321,7 @@ int publish_fires()
 	return ret;
 }
 
-int publish_abort()
+int publish_directive(uint8_t directive, const char *name)
 {
 	mavlink_m_engagement_directive_s t{};
 	t.timestamp = hrt_absolute_time();
@@ -331,7 +332,7 @@ int publish_abort()
 	t.retarget_lat = INT32_MAX;
 	t.retarget_lon = INT32_MAX;
 	t.retarget_alt = NAN;
-	t.directive = MAVLINK_M_ENGAGEMENT_DIRECTIVE_ABORT;
+	t.directive = directive;
 	t.origin_sysid = own_sysid();
 
 	uORB::Publication<mavlink_m_engagement_directive_s> pub{ORB_ID(mavlink_m_engagement_directive)};
@@ -352,8 +353,8 @@ int publish_abort()
 	const int n = send_on_custom([&](Mavlink * inst, mavlink_message_t * packed) {
 		mavlink_msg_engagement_directive_encode(inst->get_system_id(), inst->get_component_id(), packed, &msg);
 	});
-	PX4_INFO("cop: ENGAGEMENT_DIRECTIVE 53023 ABORT(%u) sequence=%u links=%d — wait ACK",
-		 (unsigned)t.directive, (unsigned)t.sequence, n);
+	PX4_INFO("cop: ENGAGEMENT_DIRECTIVE 53023 %s(%u) sequence=%u links=%d — wait ACK",
+		 name, (unsigned)t.directive, (unsigned)t.sequence, n);
 
 	const int ret = (n > 0 && wait_for_ack(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE, t.sequence, 5000)) ? 0 : 1;
 	for_each_custom(resume_periodic_cop);
@@ -362,11 +363,13 @@ int publish_abort()
 
 void cop_usage()
 {
-	PX4_INFO("mavlink cop handover | fires | abort | workflow");
-	PX4_INFO("  handover  TARGET_HANDOVER 53002  then wait MAVLINK_M_ACK 5s");
-	PX4_INFO("  fires     FIRES 53020 seq=%u     then wait ACK", (unsigned)g_cop_seq);
-	PX4_INFO("  abort     ENGAGEMENT_DIRECTIVE 53023 ABORT then wait ACK");
-	PX4_INFO("  workflow  handover ACK, then fires ACK");
+	PX4_INFO("mavlink cop handover | fires | abort | checkfire | resume | workflow");
+	PX4_INFO("  handover   TARGET_HANDOVER 53002  then wait ACK");
+	PX4_INFO("  fires      FIRES 53020 seq=%u     then wait ACK", (unsigned)g_cop_seq);
+	PX4_INFO("  abort      ENGAGEMENT_DIRECTIVE 53023 ABORT(0)");
+	PX4_INFO("  checkfire  ENGAGEMENT_DIRECTIVE 53023 CHECK_FIRE(1)");
+	PX4_INFO("  resume     ENGAGEMENT_DIRECTIVE 53023 RESUME(2)");
+	PX4_INFO("  workflow   handover ACK, then fires ACK");
 }
 
 } // namespace
@@ -389,7 +392,15 @@ int Mavlink::cop_command(int argc, char *argv[])
 	}
 
 	if (!strcmp(cmd, "abort")) {
-		return publish_abort();
+		return publish_directive(kDirectiveAbort, "ABORT");
+	}
+
+	if (!strcmp(cmd, "checkfire") || !strcmp(cmd, "check-fire")) {
+		return publish_directive(kDirectiveCheckFire, "CHECK_FIRE");
+	}
+
+	if (!strcmp(cmd, "resume")) {
+		return publish_directive(kDirectiveResume, "RESUME");
 	}
 
 	if (!strcmp(cmd, "workflow")) {
