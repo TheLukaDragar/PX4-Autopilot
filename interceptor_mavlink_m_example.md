@@ -31,7 +31,7 @@ flowchart LR
   subgraph icept["Interceptor FC  sysid 1  — main"]
     I0["MAV_0 Normal  ttyS0 57600  FORWARD=1"]
     I1["MAV_1 Onboard  ttyS3 115200"]
-    I2["MAV_2 Custom  ttyS4 57600  FORWARD=0<br/>HB + ACK + BDA  COP always-fwd to MAV_0"]
+    I2["MAV_2 Custom  ttyS4 57600  FORWARD=0<br/>HB + seeker TRACK/TARGET 5 Hz<br/>ACK + BDA  COP always-fwd to MAV_0"]
   end
 
   subgraph c2Pair["Antenna pair 2 — C2 COP"]
@@ -77,7 +77,7 @@ MAV_2_MODE      1         Custom — C2 antenna ttyS4
 MAV_2_FORWARD   0         never forward QGC onto C2
 ```
 
-Custom TX is **event-only**: HEARTBEAT + `MAVLINK_M_ACK` + `BATTLE_DAMAGE_ASSESSMENT` (companion `/fmu/in/...`). No TRACK/TARGET on C2.
+Custom TX: HEARTBEAT + companion seeker `TRACK_IDENTITY` / `TARGET` at **5 Hz** (own `origin_sysid` / `mavlink_m_target_send` only — does not loop enemy tracks) + ACK/BDA on event. Onboard still does 20 Hz to the Jetson.
 
 `MAV_2_FORWARD=0` still blocks QGC **onto** C2. COP frames that **arrive** on C2 are always forwarded to instances with FORWARD on (`should_always_forward`: 53000/53010/53002/53020/53023/53004/53022 + gimbal). QGC Inspector shows enemy TRACK/TARGET without `mavlink stream -s MAVLINK_M_ACK`. Do not set `MAV_2_FORWARD=1`.
 
@@ -130,6 +130,7 @@ ROS does not use these numbers. Same payloads:
 | Companion `lat lon INT32_MAX` | expected without GPS; NACK `Failed`, not a radio miss |
 | QGC on interceptor never sees 53000/53010 | `should_always_forward` on C2 RX (`MAV_2_FORWARD` stays 0) |
 | Companion ACK never left C2 | Custom streams ACK/BDA (was HB-only) |
+| Enemy never saw seeker TRACK/TARGET | Custom TRACK/TARGET 5 Hz (own-sysid / `*_send`) |
 
 
 ### Check

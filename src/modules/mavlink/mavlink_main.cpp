@@ -1938,8 +1938,14 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 
 	case MAVLINK_MODE_CUSTOM:
-		// Interceptor C2: HEARTBEAT already on. Event-only COP back to the
-		// enemy — do not add TRACK/TARGET here (those are 20 Hz on Onboard).
+		// Interceptor C2. TRACK/TARGET are own-sysid / *_send only (seeker),
+		// 5 Hz so the LoRa hop stays under HIGH. ACK/BDA on event.
+#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+		configure_stream_local("TRACK_IDENTITY", 5.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET)
+		configure_stream_local("TARGET", 5.0f);
+#endif
 #if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
 		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
 #endif
