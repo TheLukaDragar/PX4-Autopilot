@@ -137,10 +137,9 @@ publications:
     type: px4_msgs::msg::HomePosition
     rate_limit: 5.
 
-  - topic: /fmu/out/wind
-    type: px4_msgs::msg::Wind
-    rate_limit: 1.
-
+  # - topic: /fmu/out/wind
+  #   type: px4_msgs::msg::Wind
+  #   rate_limit: 1.
 
   #added by luka ssrd
   - topic: /fmu/out/obstacle_distance_fused
@@ -303,6 +302,10 @@ subscriptions:
 
   - topic: /fmu/in/aux_global_position
     type: px4_msgs::msg::AuxGlobalPosition
+
+  # added by Matic
+  - topic: /fmu/in/mavlink_log
+    type: px4_msgs::msg::MavlinkLog
 
   # - topic: /fmu/in/fixed_wing_longitudinal_setpoint
   #   type: px4_msgs::msg::FixedWingLongitudinalSetpoint
