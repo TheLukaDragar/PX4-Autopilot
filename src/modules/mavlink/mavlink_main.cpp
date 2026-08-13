@@ -69,6 +69,45 @@
 #include <sys/time.h>
 #endif
 
+/**
+ * Hop C2 radio → QGC even when the ingress instance has FORWARD off.
+ * Destination still needs MAV_X_FORWARD=1. Same exception as gimbal.
+ * Streams do not rebroadcast peer COP (TARGET has no origin_sysid;
+ * TRACK_IDENTITY TX-filters to own sysid).
+ */
+static bool should_always_forward(uint32_t msgid)
+{
+	switch (msgid) {
+	case MAVLINK_MSG_ID_GIMBAL_DEVICE_ATTITUDE_STATUS:
+	case MAVLINK_MSG_ID_GIMBAL_DEVICE_INFORMATION:
+#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+	case MAVLINK_MSG_ID_TRACK_IDENTITY:
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET)
+	case MAVLINK_MSG_ID_TARGET:
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+	case MAVLINK_MSG_ID_TARGET_HANDOVER:
+#endif
+#if defined(MAVLINK_MSG_ID_FIRES)
+	case MAVLINK_MSG_ID_FIRES:
+#endif
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+	case MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE:
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+	case MAVLINK_MSG_ID_MAVLINK_M_ACK:
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+	case MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT:
+#endif
+		return true;
+
+	default:
+		return false;
+	}
+}
+
 // Guard against MAVLink misconfiguration
 #ifndef MAVLINK_CRC_EXTRA
 #error MAVLINK_CRC_EXTRA has to be defined on PX4 systems
@@ -1227,16 +1266,8 @@ Mavlink::handle_message(const mavlink_message_t *msg)
 		return;
 	}
 
-	if (get_forwarding_on()) {
+	if (get_forwarding_on() || should_always_forward(msg->msgid)) {
 		/* forward any messages to other mavlink instances */
-		Mavlink::forward_message(msg, this);
-	}
-
-	// Special case for gimbals that need to forward GIMBAL_DEVICE_ATTITUDE_STATUS.
-	else if (msg->msgid == MAVLINK_MSG_ID_GIMBAL_DEVICE_ATTITUDE_STATUS) {
-		Mavlink::forward_message(msg, this);
-
-	} else if (msg->msgid == MAVLINK_MSG_ID_GIMBAL_DEVICE_INFORMATION) {
 		Mavlink::forward_message(msg, this);
 	}
 }
@@ -1903,10 +1934,18 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 
 	case MAVLINK_MODE_MAGIC:
+		// stream nothing
+		break;
 
-	/* fallthrough */
 	case MAVLINK_MODE_CUSTOM:
-		//stream nothing
+		// Interceptor C2: HEARTBEAT already on. Event-only COP back to the
+		// enemy — do not add TRACK/TARGET here (those are 20 Hz on Onboard).
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+		configure_stream_local("BATTLE_DAMAGE_ASSESSMENT", unlimited_rate);
+#endif
 		break;
 
 	case MAVLINK_MODE_CONFIG: // USB
