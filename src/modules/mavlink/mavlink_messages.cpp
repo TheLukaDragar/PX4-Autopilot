@@ -93,6 +93,12 @@
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 #include "streams/TARGET_HANDOVER.hpp"
 #endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+#include "streams/TRITRI_TRACK.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+#include "streams/TRITRI_TARGET.hpp"
+#endif
 #if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
 #include "streams/MAVLINK_M_ACK.hpp"
 #endif
@@ -561,6 +567,12 @@ static const StreamListItem streams_list[] = {
 #if defined(TARGET_HANDOVER_HPP)
 	create_stream_list_item<MavlinkStreamMavlinkMTargetHandover>(),
 #endif // TARGET_HANDOVER_HPP
+#if defined(TRITRI_TRACK_HPP)
+	create_stream_list_item<MavlinkStreamTritriTrack>(),
+#endif // TRITRI_TRACK_HPP
+#if defined(TRITRI_TARGET_HPP)
+	create_stream_list_item<MavlinkStreamTritriTarget>(),
+#endif // TRITRI_TARGET_HPP
 #if defined(MAVLINK_M_ACK_HPP)
 	create_stream_list_item<MavlinkStreamMavlinkMAck>(),
 #endif // MAVLINK_M_ACK_HPP

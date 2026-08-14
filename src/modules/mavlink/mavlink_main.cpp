@@ -60,6 +60,7 @@
 #include <uORB/topics/event.h>
 #include "mavlink_receiver.h"
 #include "mavlink_main.h"
+#include "mavlink_tritri.hpp"
 
 #ifdef CONFIG_DRIVERS_SERIALPASSTHROUGH
 #include <drivers/serialpassthrough/serialpassthrough.hpp>
@@ -74,6 +75,7 @@
  * Destination still needs MAV_X_FORWARD=1. Same exception as gimbal.
  * Streams do not rebroadcast peer COP (TARGET has no origin_sysid;
  * TRACK_IDENTITY TX-filters to own sysid).
+ * Lean TRITRI_* are expanded to 53000/53010 before forward (see forward_message).
  */
 static bool should_always_forward(uint32_t msgid)
 {
@@ -85,6 +87,12 @@ static bool should_always_forward(uint32_t msgid)
 #endif
 #if defined(MAVLINK_MSG_ID_TARGET)
 	case MAVLINK_MSG_ID_TARGET:
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+	case MAVLINK_MSG_ID_TRITRI_TRACK:
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+	case MAVLINK_MSG_ID_TRITRI_TARGET:
 #endif
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 	case MAVLINK_MSG_ID_TARGET_HANDOVER:
@@ -630,7 +638,35 @@ Mavlink::component_was_seen(int system_id, int component_id, Mavlink &self)
 void
 Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 {
-	const mavlink_msg_entry_t *meta = mavlink_get_msg_entry(msg->msgid);
+	mavlink_message_t expanded_msg{};
+	const mavlink_message_t *fwd = msg;
+
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK) && defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+
+	if (msg->msgid == MAVLINK_MSG_ID_TRITRI_TRACK) {
+		mavlink_tritri_track_t lean;
+		mavlink_msg_tritri_track_decode(msg, &lean);
+		mavlink_track_identity_t full{};
+		tritri_track_expand(lean, full);
+		mavlink_msg_track_identity_encode(msg->sysid, msg->compid, &expanded_msg, &full);
+		fwd = &expanded_msg;
+	}
+
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET) && defined(MAVLINK_MSG_ID_TARGET)
+
+	if (msg->msgid == MAVLINK_MSG_ID_TRITRI_TARGET) {
+		mavlink_tritri_target_t lean;
+		mavlink_msg_tritri_target_decode(msg, &lean);
+		mavlink_target_t full{};
+		tritri_target_expand(lean, full);
+		mavlink_msg_target_encode(msg->sysid, msg->compid, &expanded_msg, &full);
+		fwd = &expanded_msg;
+	}
+
+#endif
+
+	const mavlink_msg_entry_t *meta = mavlink_get_msg_entry(fwd->msgid);
 
 	int target_system_id = 0;
 	int target_component_id = 0;
@@ -639,11 +675,11 @@ Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 	if (meta) {
 		// Extract target system and target component if set
 		if (meta->flags & MAV_MSG_ENTRY_FLAG_HAVE_TARGET_SYSTEM) {
-			target_system_id = static_cast<uint8_t>((_MAV_PAYLOAD(msg))[meta->target_system_ofs]);
+			target_system_id = static_cast<uint8_t>((_MAV_PAYLOAD(fwd))[meta->target_system_ofs]);
 		}
 
 		if (meta->flags & MAV_MSG_ENTRY_FLAG_HAVE_TARGET_COMPONENT) {
-			target_component_id = static_cast<uint8_t>((_MAV_PAYLOAD(msg))[meta->target_component_ofs]);
+			target_component_id = static_cast<uint8_t>((_MAV_PAYLOAD(fwd))[meta->target_component_ofs]);
 		}
 	}
 
@@ -658,11 +694,11 @@ Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 	}
 
 	// We don't forward heartbeats unless it's specifically enabled.
-	if (msg->msgid == MAVLINK_MSG_ID_HEARTBEAT && !self->forward_heartbeats_enabled()) {
+	if (fwd->msgid == MAVLINK_MSG_ID_HEARTBEAT && !self->forward_heartbeats_enabled()) {
 		return;
 	}
 
-	if (self->get_mode() == MAVLINK_MODE_LOW_BANDWIDTH && msg->msgid == MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS) {
+	if (self->get_mode() == MAVLINK_MODE_LOW_BANDWIDTH && fwd->msgid == MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS) {
 		return;
 	}
 
@@ -672,7 +708,7 @@ Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 		if (inst && (inst != self) && (inst->get_forwarding_on())) {
 			// Pass message only if target component was seen before
 			if (inst->_receiver.component_was_seen(target_system_id, target_component_id)) {
-				inst->pass_message(msg);
+				inst->pass_message(fwd);
 			}
 		}
 	}
@@ -1938,12 +1974,16 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 
 	case MAVLINK_MODE_CUSTOM:
-		// Interceptor C2. TRACK/TARGET are own-sysid / *_send only (seeker),
-		// 5 Hz so the LoRa hop stays under HIGH. ACK/BDA on event.
-#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+		// Interceptor C2: lean TRITRI_* on LoRa (TRACK 1 Hz, TARGET 5 Hz).
+		// Full TRACK/TARGET stay on Normal/Onboard for Jetson.
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+		configure_stream_local("TRITRI_TRACK", 1.0f);
+#elif defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
 		configure_stream_local("TRACK_IDENTITY", 5.0f);
 #endif
-#if defined(MAVLINK_MSG_ID_TARGET)
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+		configure_stream_local("TRITRI_TARGET", 5.0f);
+#elif defined(MAVLINK_MSG_ID_TARGET)
 		configure_stream_local("TARGET", 5.0f);
 #endif
 #if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)

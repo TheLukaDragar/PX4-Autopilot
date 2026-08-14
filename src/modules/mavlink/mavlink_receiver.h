@@ -272,6 +272,12 @@ private:
 #if defined(MAVLINK_MSG_ID_TARGET)
 	void handle_message_mavlink_m_target(mavlink_message_t *msg);
 #endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+	void handle_message_tritri_track(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+	void handle_message_tritri_target(mavlink_message_t *msg);
+#endif
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 	void handle_message_mavlink_m_target_handover(mavlink_message_t *msg);
 #endif
