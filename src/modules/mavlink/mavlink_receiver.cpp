@@ -61,6 +61,7 @@
 #include "mavlink_command_params.hpp"
 #include "mavlink_main.h"
 #include "mavlink_receiver.h"
+#include "mavlink_tritri.hpp"
 
 #ifdef CONFIG_DRIVERS_SERIALPASSTHROUGH
 #include <drivers/serialpassthrough/serialpassthrough.hpp>
@@ -229,6 +230,16 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 #if defined(MAVLINK_MSG_ID_TARGET)
 	case MAVLINK_MSG_ID_TARGET:
 		handle_message_mavlink_m_target(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+	case MAVLINK_MSG_ID_TRITRI_TRACK:
+		handle_message_tritri_track(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+	case MAVLINK_MSG_ID_TRITRI_TARGET:
+		handle_message_tritri_target(msg);
 		break;
 #endif
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
@@ -2915,6 +2926,107 @@ MavlinkReceiver::handle_message_mavlink_m_target(mavlink_message_t *msg)
 	_mavlink_m_target_pub.publish(topic);
 }
 #endif // MAVLINK_MSG_ID_TARGET
+
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+void
+MavlinkReceiver::handle_message_tritri_track(mavlink_message_t *msg)
+{
+	mavlink_tritri_track_t lean;
+	mavlink_msg_tritri_track_decode(msg, &lean);
+
+	if (lean.origin_sysid == _mavlink.get_system_id() || msg->sysid == _mavlink.get_system_id()) {
+		return;
+	}
+
+	mavlink_track_identity_t full{};
+	tritri_track_expand(lean, full);
+
+	mavlink_m_track_identity_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = full.time_usec;
+	memcpy(topic.track_uid, full.track_uid, sizeof(topic.track_uid));
+	memcpy(topic.parent_track_uid, full.parent_track_uid, sizeof(topic.parent_track_uid));
+	topic.target_set_id = full.target_set_id;
+	topic.first_detected_usec = full.first_detected_usec;
+	topic.id_confidence = full.id_confidence;
+	topic.origin_sysid = full.origin_sysid;
+	topic.origin_sensor = full.origin_sensor;
+	topic.id_method = full.id_method;
+	topic.pid_status = full.pid_status;
+	topic.track_rel = full.track_rel;
+	topic.target_class = full.target_class;
+	topic.target_force = full.target_force;
+	memcpy(topic.id_basis, full.id_basis, sizeof(topic.id_basis));
+	memcpy(topic.external_track_number, full.external_track_number, sizeof(topic.external_track_number));
+	topic.external_track_type = full.external_track_type;
+	topic.stanag_identity = full.stanag_identity;
+	topic.environment = full.environment;
+	topic.atr_confidence_pct = full.atr_confidence_pct;
+	topic.atr_model_id = full.atr_model_id;
+	topic.atr_conf_tier = full.atr_conf_tier;
+	topic.sidc_context = full.sidc_context;
+
+	_mavlink_m_track_identity_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_TRITRI_TRACK
+
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+void
+MavlinkReceiver::handle_message_tritri_target(mavlink_message_t *msg)
+{
+	if (msg->sysid == _mavlink.get_system_id()) {
+		return;
+	}
+
+	mavlink_tritri_target_t lean;
+	mavlink_msg_tritri_target_decode(msg, &lean);
+
+	mavlink_target_t full{};
+	tritri_target_expand(lean, full);
+
+	mavlink_m_target_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = full.time_usec;
+	topic.target_time_usec = full.target_time_usec;
+	topic.target_id = full.target_id;
+	topic.target_set_id = full.target_set_id;
+	topic.package_id_hash = full.package_id_hash;
+	memcpy(topic.target_name, full.target_name, sizeof(topic.target_name));
+	topic.lat = full.lat;
+	topic.lon = full.lon;
+	topic.alt = full.alt;
+	topic.vx = full.vx;
+	topic.vy = full.vy;
+	topic.vz = full.vz;
+	topic.cov_pos_x = full.cov_pos_x;
+	topic.cov_pos_y = full.cov_pos_y;
+	topic.cov_pos_z = full.cov_pos_z;
+	topic.cov_vel_x = full.cov_vel_x;
+	topic.cov_vel_y = full.cov_vel_y;
+	topic.cov_vel_z = full.cov_vel_z;
+	topic.cep_desired = full.cep_desired;
+	topic.cep_max = full.cep_max;
+	topic.flags = full.flags;
+	topic.package_endpoint_ip_1 = full.package_endpoint_ip_1;
+	topic.package_endpoint_ip_2 = full.package_endpoint_ip_2;
+	topic.package_endpoint_ip_3 = full.package_endpoint_ip_3;
+	topic.target_class = full.target_class;
+	topic.target_domain = full.target_domain;
+	topic.target_entity_2525d = full.target_entity_2525d;
+	topic.target_force = full.target_force;
+	topic.confidence = full.confidence;
+	topic.package_endpoint_port = full.package_endpoint_port;
+	topic.sensor_type = full.sensor_type;
+	topic.package_transport = full.package_transport;
+	memcpy(topic.package_path, full.package_path, sizeof(topic.package_path));
+	topic.prf_code = full.prf_code;
+	topic.tle_category = full.tle_category;
+	topic.dmpi_reference_kind = full.dmpi_reference_kind;
+	topic.restricted_target_flags = full.restricted_target_flags;
+
+	_mavlink_m_target_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_TRITRI_TARGET
 
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 void
