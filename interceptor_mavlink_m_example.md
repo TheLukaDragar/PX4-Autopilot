@@ -149,7 +149,11 @@ ROS does not use these numbers. Same payloads:
 # interceptor nsh
 listener mavlink_m_track_identity    # uid[15]=2, HOSTILE/FOE, origin_sysid=2
 listener mavlink_m_target            # name=leseni, target_id=2
-mavlink status                       # inst #2: msgid 53000 and 53010 ~5 Hz
+mavlink status                       # #2 RX: 53900 ~1 Hz, 53901 ~5 Hz (not 53003 from sysid 2)
+
+# enemy nsh (dummy C2)
+listener mavlink_m_participant_position   # origin_sysid=1, callsign speed0
+mavlink status                            # Custom RX: 53003 ~5 Hz from sysid 1
 
 # Jetson
 ros2 topic hz /px4_0/fmu/out/mavlink_m_track_identity
