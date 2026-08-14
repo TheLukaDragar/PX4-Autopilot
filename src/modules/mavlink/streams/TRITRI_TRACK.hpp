@@ -7,12 +7,10 @@
 #ifndef TRITRI_TRACK_HPP
 #define TRITRI_TRACK_HPP
 
-#include <uORB/topics/mavlink_m_track_identity.h>
-
-#include "../mavlink_tritri.hpp"
+#include <uORB/topics/mavlink_m_tritri_track.h>
 
 /**
- * Own-origin TRACK → lean TRITRI_TRACK on C2 air.
+ * Own-origin TRITRI_TRACK (companion /fmu/in/mavlink_m_tritri_track).
  */
 class MavlinkStreamTritriTrack : public MavlinkStream
 {
@@ -32,39 +30,37 @@ public:
 private:
 	explicit MavlinkStreamTritriTrack(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	uORB::Subscription _sub{ORB_ID(mavlink_m_track_identity)};
+	uORB::Subscription _sub{ORB_ID(mavlink_m_tritri_track)};
 
 	bool send() override
 	{
-		mavlink_m_track_identity_s topic;
+		mavlink_m_tritri_track_s topic;
 
 		while (_sub.update(&topic)) {
 			if (topic.origin_sysid != _mavlink->get_system_id()) {
 				continue;
 			}
 
-			mavlink_track_identity_t full{};
-			full.time_usec = topic.time_usec;
-			memcpy(full.track_uid, topic.track_uid, sizeof(full.track_uid));
-			full.target_set_id = topic.target_set_id;
-			full.first_detected_usec = topic.first_detected_usec;
-			full.id_confidence = topic.id_confidence;
-			full.origin_sysid = topic.origin_sysid;
-			full.origin_sensor = topic.origin_sensor;
-			full.id_method = topic.id_method;
-			full.pid_status = topic.pid_status;
-			full.target_class = topic.target_class;
-			full.target_force = topic.target_force;
-			full.stanag_identity = topic.stanag_identity;
-			full.environment = topic.environment;
-			full.atr_confidence_pct = topic.atr_confidence_pct;
-			full.atr_model_id = topic.atr_model_id;
-			full.atr_conf_tier = topic.atr_conf_tier;
-			full.sidc_context = topic.sidc_context;
+			mavlink_tritri_track_t msg{};
+			msg.time_usec = topic.time_usec;
+			msg.first_detected_usec = topic.first_detected_usec;
+			memcpy(msg.track_uid, topic.track_uid, sizeof(msg.track_uid));
+			msg.target_set_id = topic.target_set_id;
+			msg.id_confidence = topic.id_confidence;
+			msg.atr_model_id = topic.atr_model_id;
+			msg.origin_sysid = topic.origin_sysid;
+			msg.origin_sensor = topic.origin_sensor;
+			msg.id_method = topic.id_method;
+			msg.pid_status = topic.pid_status;
+			msg.target_class = topic.target_class;
+			msg.target_force = topic.target_force;
+			msg.stanag_identity = topic.stanag_identity;
+			msg.environment = topic.environment;
+			msg.atr_confidence_pct = topic.atr_confidence_pct;
+			msg.atr_conf_tier = topic.atr_conf_tier;
+			msg.sidc_context = topic.sidc_context;
 
-			mavlink_tritri_track_t lean{};
-			tritri_track_collapse(full, lean);
-			mavlink_msg_tritri_track_send_struct(_mavlink->get_channel(), &lean);
+			mavlink_msg_tritri_track_send_struct(_mavlink->get_channel(), &msg);
 			return true;
 		}
 

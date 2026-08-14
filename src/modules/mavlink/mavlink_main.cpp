@@ -60,7 +60,6 @@
 #include <uORB/topics/event.h>
 #include "mavlink_receiver.h"
 #include "mavlink_main.h"
-#include "mavlink_tritri.hpp"
 
 #ifdef CONFIG_DRIVERS_SERIALPASSTHROUGH
 #include <drivers/serialpassthrough/serialpassthrough.hpp>
@@ -73,21 +72,13 @@
 /**
  * Hop C2 radio → QGC even when the ingress instance has FORWARD off.
  * Destination still needs MAV_X_FORWARD=1. Same exception as gimbal.
- * Streams do not rebroadcast peer COP (TARGET has no origin_sysid;
- * TRACK_IDENTITY TX-filters to own sysid).
- * Lean TRITRI_* are expanded to 53000/53010 before forward (see forward_message).
+ * Live COP is TRITRI_* (539xx) end-to-end — forward as-is (no expand).
  */
 static bool should_always_forward(uint32_t msgid)
 {
 	switch (msgid) {
 	case MAVLINK_MSG_ID_GIMBAL_DEVICE_ATTITUDE_STATUS:
 	case MAVLINK_MSG_ID_GIMBAL_DEVICE_INFORMATION:
-#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
-	case MAVLINK_MSG_ID_TRACK_IDENTITY:
-#endif
-#if defined(MAVLINK_MSG_ID_TARGET)
-	case MAVLINK_MSG_ID_TARGET:
-#endif
 #if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
 	case MAVLINK_MSG_ID_TRITRI_TRACK:
 #endif
@@ -641,33 +632,7 @@ Mavlink::component_was_seen(int system_id, int component_id, Mavlink &self)
 void
 Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 {
-	mavlink_message_t expanded_msg{};
 	const mavlink_message_t *fwd = msg;
-
-#if defined(MAVLINK_MSG_ID_TRITRI_TRACK) && defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
-
-	if (msg->msgid == MAVLINK_MSG_ID_TRITRI_TRACK) {
-		mavlink_tritri_track_t lean;
-		mavlink_msg_tritri_track_decode(msg, &lean);
-		mavlink_track_identity_t full{};
-		tritri_track_expand(lean, full);
-		mavlink_msg_track_identity_encode(msg->sysid, msg->compid, &expanded_msg, &full);
-		fwd = &expanded_msg;
-	}
-
-#endif
-#if defined(MAVLINK_MSG_ID_TRITRI_TARGET) && defined(MAVLINK_MSG_ID_TARGET)
-
-	if (msg->msgid == MAVLINK_MSG_ID_TRITRI_TARGET) {
-		mavlink_tritri_target_t lean;
-		mavlink_msg_tritri_target_decode(msg, &lean);
-		mavlink_target_t full{};
-		tritri_target_expand(lean, full);
-		mavlink_msg_target_encode(msg->sysid, msg->compid, &expanded_msg, &full);
-		fwd = &expanded_msg;
-	}
-
-#endif
 
 	const mavlink_msg_entry_t *meta = mavlink_get_msg_entry(fwd->msgid);
 
@@ -1701,11 +1666,11 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 #if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
 		configure_stream_local("PARTICIPANT_POSITION", 10.0f);
 #endif
-#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
-		configure_stream_local("TRACK_IDENTITY", 20.0f);
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+		configure_stream_local("TRITRI_TRACK", 20.0f);
 #endif
-#if defined(MAVLINK_MSG_ID_TARGET)
-		configure_stream_local("TARGET", 20.0f);
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+		configure_stream_local("TRITRI_TARGET", 20.0f);
 #endif
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 		configure_stream_local("TARGET_HANDOVER", unlimited_rate);
@@ -1809,11 +1774,11 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 #if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
 		configure_stream_local("PARTICIPANT_POSITION", 10.0f);
 #endif
-#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
-		configure_stream_local("TRACK_IDENTITY", 20.0f);
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+		configure_stream_local("TRITRI_TRACK", 20.0f);
 #endif
-#if defined(MAVLINK_MSG_ID_TARGET)
-		configure_stream_local("TARGET", 20.0f);
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+		configure_stream_local("TRITRI_TARGET", 20.0f);
 #endif
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 		configure_stream_local("TARGET_HANDOVER", unlimited_rate);
@@ -1977,18 +1942,12 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 
 	case MAVLINK_MODE_CUSTOM:
-		// Interceptor C2: lean TRITRI_* on LoRa (TRACK 1 Hz, TARGET 5 Hz)
-		// + blue PPLI so the enemy link sees this aircraft. Full TRACK/TARGET
-		// stay on Normal/Onboard for Jetson.
+		// C2: TRITRI COP + blue PPLI (one COP type end-to-end).
 #if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
 		configure_stream_local("TRITRI_TRACK", 1.0f);
-#elif defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
-		configure_stream_local("TRACK_IDENTITY", 5.0f);
 #endif
 #if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
 		configure_stream_local("TRITRI_TARGET", 5.0f);
-#elif defined(MAVLINK_MSG_ID_TARGET)
-		configure_stream_local("TARGET", 5.0f);
 #endif
 #if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
 		configure_stream_local("PARTICIPANT_POSITION", 5.0f);

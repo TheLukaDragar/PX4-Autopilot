@@ -166,12 +166,12 @@ publications:
     type: px4_msgs::msg::RateCtrlStatus
     rate_limit: 200.
 
-  # MAVLink-M interceptor core (FC → companion)
-  - topic: /fmu/out/mavlink_m_track_identity
-    type: px4_msgs::msg::MavlinkMTrackIdentity
+  # MAVLink-M interceptor core (FC → companion) — live COP is TRITRI only
+  - topic: /fmu/out/mavlink_m_tritri_track
+    type: px4_msgs::msg::MavlinkMTritriTrack
 
-  - topic: /fmu/out/mavlink_m_target
-    type: px4_msgs::msg::MavlinkMTarget
+  - topic: /fmu/out/mavlink_m_tritri_target
+    type: px4_msgs::msg::MavlinkMTritriTarget
 
   - topic: /fmu/out/mavlink_m_target_handover
     type: px4_msgs::msg::MavlinkMTargetHandover
@@ -212,13 +212,13 @@ subscriptions:
 
   # MAVLink-M companion → FC → MAVLink streams
   # (own PARTICIPANT_POSITION is FC-generated; peer PPLI arrives on /fmu/out/)
-  # TARGET / HANDOVER use *_send uORB topics so peer RX on /fmu/out is not
-  # mixed into the TX streams (wire TARGET has no origin_sysid).
-  - topic: /fmu/in/mavlink_m_track_identity
-    type: px4_msgs::msg::MavlinkMTrackIdentity
+  # TRITRI_TARGET / HANDOVER use *_send uORB topics so peer RX on /fmu/out is not
+  # mixed into the TX streams.
+  - topic: /fmu/in/mavlink_m_tritri_track
+    type: px4_msgs::msg::MavlinkMTritriTrack
 
-  - topic: /fmu/in/mavlink_m_target_send
-    type: px4_msgs::msg::MavlinkMTarget
+  - topic: /fmu/in/mavlink_m_tritri_target_send
+    type: px4_msgs::msg::MavlinkMTritriTarget
 
   - topic: /fmu/in/mavlink_m_target_handover_send
     type: px4_msgs::msg::MavlinkMTargetHandover

@@ -165,6 +165,8 @@ set(msg_files
 	MavlinkMTargetSetCoord.msg
 	MavlinkMTerminalControl.msg
 	MavlinkMTrackIdentity.msg
+	MavlinkMTritriTarget.msg
+	MavlinkMTritriTrack.msg
 	MavlinkTunnel.msg
 	MessageFormatRequest.msg
 	MessageFormatResponse.msg

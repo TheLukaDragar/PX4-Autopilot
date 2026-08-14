@@ -88,11 +88,11 @@
 #include <uORB/topics/log_message.h>
 #include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/topics/mavlink_tunnel.h>
-#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
-#include <uORB/topics/mavlink_m_track_identity.h>
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+#include <uORB/topics/mavlink_m_tritri_track.h>
 #endif
-#if defined(MAVLINK_MSG_ID_TARGET)
-#include <uORB/topics/mavlink_m_target.h>
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+#include <uORB/topics/mavlink_m_tritri_target.h>
 #endif
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 #include <uORB/topics/mavlink_m_target_handover.h>
@@ -266,12 +266,6 @@ private:
 	void handle_message_ranging_beacon(mavlink_message_t *msg);
 #endif // MAVLINK_MSG_ID_RANGING_BEACON
 
-#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
-	void handle_message_mavlink_m_track_identity(mavlink_message_t *msg);
-#endif
-#if defined(MAVLINK_MSG_ID_TARGET)
-	void handle_message_mavlink_m_target(mavlink_message_t *msg);
-#endif
 #if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
 	void handle_message_tritri_track(mavlink_message_t *msg);
 #endif
@@ -398,11 +392,11 @@ private:
 	uORB::Publication<cellular_status_s>			_cellular_status_pub{ORB_ID(cellular_status)};
 	uORB::Publication<differential_pressure_s>		_differential_pressure_pub{ORB_ID(differential_pressure)};
 	uORB::Publication<follow_target_s>			_follow_target_pub{ORB_ID(follow_target)};
-#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
-	uORB::Publication<mavlink_m_track_identity_s>		_mavlink_m_track_identity_pub{ORB_ID(mavlink_m_track_identity)};
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+	uORB::Publication<mavlink_m_tritri_track_s>		_mavlink_m_tritri_track_pub{ORB_ID(mavlink_m_tritri_track)};
 #endif
-#if defined(MAVLINK_MSG_ID_TARGET)
-	uORB::Publication<mavlink_m_target_s>			_mavlink_m_target_pub{ORB_ID(mavlink_m_target)};
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+	uORB::Publication<mavlink_m_tritri_target_s>		_mavlink_m_tritri_target_pub{ORB_ID(mavlink_m_tritri_target)};
 #endif
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 	uORB::Publication<mavlink_m_target_handover_s>		_mavlink_m_target_handover_pub{ORB_ID(mavlink_m_target_handover)};
