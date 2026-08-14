@@ -1,13 +1,15 @@
 # C-UAS interceptor — MAVLink-M ICD
 
-## Working field setup (13 Aug 2026)
+## Working field setup (14 Aug 2026)
 
-Two MicoAir H743-v2. **Do not flash `demo_enemy` onto the interceptor.**
+Two MicoAir H743-v2. **Do not flash `demo_enemy` onto the interceptor.** This file is on **`main`** (interceptor) and **`demo_enemy`** (enemy FC).
+
+**Dialect:** `CONFIG_MAVLINK_DIALECT="tritri"` → [`tritri.xml`](src/modules/mavlink/mavlink/message_definitions/v1.0/tritri.xml) includes `military.xml` + private lean msgs.
 
 
 | Aircraft    | Git                       | `MAV_SYS_ID` | Role                                 |
 | ----------- | ------------------------- | ------------ | ------------------------------------ |
-| Interceptor | `main` + military dialect | **1**        | Hear HOSTILE, forward COP to QGC     |
+| Interceptor | `main` + **tritri** dialect | **1**        | Hear HOSTILE, forward COP to QGC     |
 | Enemy       | `demo_enemy`              | **2**        | Advertise self as HOSTILE (`leseni`) |
 
 
@@ -15,41 +17,46 @@ Two **separate** [LR24-F](https://micoair.com/radio_telemetry_lr24f/) pairs (dif
 
 | Pair | Who | UART | Job |
 | ---- | --- | ---- | --- |
-| **QGC** | Interceptor `MAV_0` ↔ QGC only | interceptor `ttyS0` @57600 | Fly the interceptor. Also **displays** forwarded enemy `TRACK_IDENTITY` **53000** / `TARGET` **53010**. Enemy radio is **not** on this pair. |
-| **C2** | Enemy `MAV_1` ↔ interceptor `MAV_2` | enemy `ttyS3` (TELEM 2) @57600, interceptor `ttyS4` @57600 | COP air: 53000 / 53010 / 53002 / ACK |
+| **QGC** | Interceptor `MAV_0` ↔ QGC only | interceptor `ttyS0` @57600 | Fly the interceptor. Sees **expanded** `TRACK_IDENTITY` **53000** / `TARGET` **53010** (from lean air). |
+| **C2** | Enemy `MAV_1` ↔ interceptor `MAV_2` | enemy `ttyS3` @57600, interceptor `ttyS4` @57600 | Lean air: **`TRITRI_TRACK` 53900 @ 1 Hz**, **`TRITRI_TARGET` 53901 @ 5 Hz** + HANDOVER/ACK events |
 
-C2 pair: **MODE=DUPLEX**, **RATE=HIGH** (8 KB/s), UART **57600**, same ADDR on that pair only. Half-duplex — keep the interceptor C2 instance lean.
+C2 pair: **MODE=DUPLEX**, **RATE=HIGH** (8 KB/s), UART **57600**. Half-duplex — lean TRITRI_* keeps ~1.5 kB/s both-way.
 
 ```mermaid
 flowchart LR
-  QGC["QGC<br/>fly interceptor + COP view<br/>53000 TRACK_IDENTITY<br/>53010 TARGET  sysid 2"]
+  QGC["QGC<br/>53000 / 53010 after expand"]
 
-  subgraph qgcPair["Antenna pair 1 — interceptor ↔ QGC only"]
-    RQ["LR24-F ADDR A  57600"]
+  subgraph qgcPair["Antenna pair 1 — QGC"]
+    RQ["LR24-F ADDR A"]
   end
 
-  subgraph icept["Interceptor FC  sysid 1  — main"]
-    I0["MAV_0 Normal  ttyS0 57600  FORWARD=1"]
-    I1["MAV_1 Onboard  ttyS3 115200"]
-    I2["MAV_2 Custom  ttyS4 57600  FORWARD=0  HB only"]
+  subgraph icept["Interceptor sysid 1 — main"]
+    I0["MAV_0 Normal FORWARD=1"]
+    I2["MAV_2 Custom FORWARD=0<br/>TRITRI_TRACK 1 Hz<br/>TRITRI_TARGET 5 Hz"]
   end
 
-  subgraph c2Pair["Antenna pair 2 — C2 COP"]
-    RC["LR24-F ADDR B  HIGH  57600"]
+  subgraph c2Pair["Antenna pair 2 — C2"]
+    RC["LR24-F ADDR B HIGH"]
   end
 
-  subgraph enemy["Enemy FC  sysid 2  — demo_enemy"]
-    E0["MAV_0 Normal  ttyS0"]
-    E1["MAV_1 Custom  ttyS3  FORWARD=0<br/>53000 + 53010 @ 5 Hz<br/>mavlink cop one-shots"]
-    EU["USB Onboard  ttyACM0  FORWARD=1<br/>QGC here only — not C2"]
+  subgraph enemy["Enemy sysid 2 — demo_enemy"]
+    E1["MAV_1 Custom<br/>TRITRI_* lean"]
   end
 
   QGC --- RQ --- I0
-  E1 -->|"53000 + 53010"| RC --> I2
-  I2 -->|"forward COP"| I0
+  E1 -->|"53900 + 53901"| RC --> I2
+  I2 -->|"expand + forward"| I0
 ```
 
-QGC never talks to the enemy radio. It sees TARGET because the interceptor **forwards** 53000/53010 from `MAV_2` onto `MAV_0` over pair 1. Stock QGC will not *name* military messages unless it has the dialect; MAVLink Inspector still shows msgid **53000** / **53010** from sysid **2**.
+On RX, FC **expands** TRITRI_* → `mavlink_m_track_identity` / `mavlink_m_target` (Jetson/DDS unchanged). Forward to QGC re-encodes as **53000/53010**.
+
+### Lean message keep sets
+
+**TRITRI_TRACK (53900):** times, `track_uid[16]`, set_id, id_confidence, ATR×3, origin_sysid/sensor, id_method, pid_status, class/force/STANAG/environment, sidc_context.
+
+**TRITRI_TARGET (53901):** times, `track_uid[16]`, `target_name[16]`, target_id, set_id, flags, lat/lon/alt, vel, cov×6, confidence, class/domain/force, sensor_type, tle_category, restricted_target_flags.
+
+**Cut on air:** package path/IPs, CEP, PRF, DMPI, land 2525d, parent UID, id_basis[50], Link-16 external track strings.
 
 
 
@@ -63,11 +70,11 @@ MAV_1_FORWARD   0         required — see "QGC on enemy USB" below
 MAV_1_CONFIG    TELEM 2   /dev/ttyS3 @57600
 ```
 
-Custom: TRACK_IDENTITY 5 Hz, TARGET 5 Hz, SYS_STATUS 0.5 Hz, HEARTBEAT 1 Hz. EVENT and STATUSTEXT suppressed. PPLI stubbed. `mavlink cop` queues one-shots for the mavlink thread (NSH must not `write()` the UART fd — EBADF).
+Custom: **TRITRI_TRACK 1 Hz**, **TRITRI_TARGET 5 Hz**, SYS_STATUS 0.5 Hz, HEARTBEAT 1 Hz, plus HANDOVER/FIRES/ENGAGEMENT one-shots. Hardcoded `leseni` HOSTILE own-ship (no companion). EVENT/STATUSTEXT suppressed. Normal still streams full TRACK/TARGET @ 20 Hz for local USB debug.
 
 **QGC on enemy USB:** USB always has `FORWARD` on. If `MAV_1_FORWARD=1`, QGC sees interceptor as vehicle 1 and `SET_MESSAGE_INTERVAL` opens a full GCS session on the LoRa hop. Interceptor C2 then shows `sysid 254`; enemy Custom UART `FIONSPACE` stays 0; HANDOVER never goes out. After `MAV_1_FORWARD=0` + reboot: C2 RX is interceptor HB only (~87 B/s), USB 20 kB/s stays on `ttyACM0`.
 
-### Interceptor params (`main`) — no rebuild
+### Interceptor params (`main`)
 
 ```text
 MAV_SYS_ID      1
@@ -77,11 +84,13 @@ MAV_2_MODE      1         Custom — C2 antenna ttyS4
 MAV_2_FORWARD   0         never forward QGC onto C2
 ```
 
-On **main**, Custom streams nothing except HEARTBEAT. That keeps the C2 antenna at ~50 B/s TX so the enemy can talk. `MAV_2_FORWARD=0` stops QGC traffic from being blasted **onto** C2. COP still hops **to** QGC: C2 RX → `forward_message` → `MAV_0` (`FORWARD=1`). Do not set `MAV_2_FORWARD=1` or the QGC firehose returns to the C2 radio.
+Custom TX: HEARTBEAT + companion seeker **TRITRI_TRACK @ 1 Hz** / **TRITRI_TARGET @ 5 Hz** (own `origin_sysid` / `mavlink_m_target_send`) + ACK/BDA on event. Onboard still does full TRACK/TARGET @ 20 Hz to the Jetson.
+
+`MAV_2_FORWARD=0` still blocks QGC **onto** C2. COP frames that **arrive** on C2 are always forwarded to instances with FORWARD on (`should_always_forward`: 53000/53010/53002/53003/53020/53023/53004/53022 + gimbal). On enemy USB (dummy C2), that includes peer **PARTICIPANT_POSITION**. Do not set `MAV_2_FORWARD=1` / `MAV_1_FORWARD=1`.
 
 ### Wire message IDs (`mavlink status` → `msgid`)
 
-Military dialect. Common IDs stay in the low range; COP is 53000+.
+`tritri` dialect. Common IDs stay in the low range; lean C2 air is 539xx; QGC/uORB see expanded 53000+.
 
 | msgid | MAVLink name | On-wire | This demo |
 | ----- | ------------ | ------- | --------- |
@@ -91,12 +100,14 @@ Military dialect. Common IDs stay in the low range; COP is 53000+.
 | 42 | MISSION_CURRENT | — | PX4 leak, ignore |
 | 410 | EVENT | — | **off** on enemy Custom |
 | 411 | CURRENT_EVENT_SEQUENCE | — | **off** on enemy Custom |
-| **53000** | **TRACK_IDENTITY** | **153 B** | enemy → interceptor, 5 Hz |
+| **53900** | **TRITRI_TRACK** | **~65 B** | enemy C2 air → interceptor, 1 Hz |
+| **53901** | **TRITRI_TARGET** | **~128 B** | enemy C2 air → interceptor, 5 Hz |
+| **53000** | **TRACK_IDENTITY** | **153 B** | after expand / QGC forward |
 | 53001 | TARGET_CUE | — | unused here |
 | 53002 | TARGET_HANDOVER | ~219 B | `mavlink cop handover` (proven RX on Jetson) |
-| 53003 | PARTICIPANT_POSITION | 122 B | interceptor only (blue PPLI). Enemy stubbed. |
+| 53003 | PARTICIPANT_POSITION | 122 B | interceptor → C2 (blue PPLI); enemy TX stubbed; always-forward to enemy USB QGC |
 | 53004 | MAVLINK_M_ACK | — | ACK (event) |
-| **53010** | **TARGET** | **257 B** | enemy → interceptor, 5 Hz |
+| **53010** | **TARGET** | **257 B** | after expand / QGC forward |
 | 53011 | TARGET_SET_COORD | — | unused here |
 | 53012 | TARGET_BOX_COORD | — | unused here |
 | 53013 | TARGET_AUTHORIZATION | — | audit |
@@ -126,6 +137,9 @@ ROS does not use these numbers. Same payloads:
 | NSH `write(uart_fd)` errno 9 | NuttX fds are per-task — do not write from `mavlink cop` |
 | Companion `valid_until` expired | send `valid_until_usec=0` (ROS UNIX µs ≠ FC hrt) |
 | Companion `lat lon INT32_MAX` | expected without GPS; NACK `Failed`, not a radio miss |
+| QGC on interceptor never sees 53000/53010 | `should_always_forward` on C2 RX (`MAV_2_FORWARD` stays 0) |
+| Companion ACK never left C2 | Custom streams ACK/BDA (was HB-only) |
+| Enemy never saw seeker TRACK/TARGET | Custom TRACK/TARGET 5 Hz (own-sysid / `*_send`) |
 
 
 ### Check
@@ -134,7 +148,7 @@ ROS does not use these numbers. Same payloads:
 # interceptor nsh
 listener mavlink_m_track_identity    # uid[15]=2, HOSTILE/FOE, origin_sysid=2
 listener mavlink_m_target            # name=leseni, target_id=2
-mavlink status                       # inst #2: msgid 53000 and 53010 ~5 Hz
+mavlink status                       # inst #2 RX: msgid 53900 ~1 Hz, 53901 ~5 Hz
 
 # Jetson
 ros2 topic hz /px4_0/fmu/out/mavlink_m_track_identity
@@ -147,11 +161,9 @@ ROS `hz` can be ~2 Hz with holes (uXRCE + half-duplex). Trust interceptor `mavli
 
 `demo_enemy` only. One-shots are queued onto Custom; TRACK/TARGET pause while waiting for ACK.
 
-Companion (`speedo_c2_example` on speed0-1): `own_sysid=1`, **`c2_sysid=200`**. ACK `origin_sysid` is 200, not 2. It NACKs HANDOVER if lat/lon are `INT32_MAX` or alt is NaN; `Accepted` then **arms the interceptor**. Enable interceptor C2 ACK TX (no reflash):
+Companion (`speedo_c2_example` on speed0-1): `own_sysid=1`, **`c2_sysid=200`**. ACK `origin_sysid` is 200, not 2. It NACKs HANDOVER if lat/lon are `INT32_MAX` or alt is NaN; `Accepted` then **arms the interceptor**.
 
-```text
-mavlink stream -d /dev/ttyS4 -s MAVLINK_M_ACK -r 50
-```
+On current `main`, Custom already streams ACK/BDA. No `mavlink stream -s MAVLINK_M_ACK` needed after flash.
 
 ```text
 # enemy (after MAV_1_FORWARD=0)
