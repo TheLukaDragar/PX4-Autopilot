@@ -97,6 +97,9 @@ static bool should_always_forward(uint32_t msgid)
 #if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
 	case MAVLINK_MSG_ID_TARGET_HANDOVER:
 #endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+	case MAVLINK_MSG_ID_PARTICIPANT_POSITION:
+#endif
 #if defined(MAVLINK_MSG_ID_FIRES)
 	case MAVLINK_MSG_ID_FIRES:
 #endif
@@ -1974,8 +1977,9 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 
 	case MAVLINK_MODE_CUSTOM:
-		// Interceptor C2: lean TRITRI_* on LoRa (TRACK 1 Hz, TARGET 5 Hz).
-		// Full TRACK/TARGET stay on Normal/Onboard for Jetson.
+		// Interceptor C2: lean TRITRI_* on LoRa (TRACK 1 Hz, TARGET 5 Hz)
+		// + blue PPLI so the enemy link sees this aircraft. Full TRACK/TARGET
+		// stay on Normal/Onboard for Jetson.
 #if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
 		configure_stream_local("TRITRI_TRACK", 1.0f);
 #elif defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
@@ -1985,6 +1989,9 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("TRITRI_TARGET", 5.0f);
 #elif defined(MAVLINK_MSG_ID_TARGET)
 		configure_stream_local("TARGET", 5.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+		configure_stream_local("PARTICIPANT_POSITION", 5.0f);
 #endif
 #if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
 		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
