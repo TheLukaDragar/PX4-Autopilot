@@ -192,6 +192,7 @@ private:
 	hrt_abstime _last_status_update;
 	hrt_abstime _last_ping;
 	bool _had_ping_reply{false};
+	bool _rx_ever_active{false}; ///< true once any RX payload has been received this session
 	int _num_pings_missed{0};
 	int32_t _num_tx_rate_zero{0};
 	int32_t _num_rx_rate_zero{0};

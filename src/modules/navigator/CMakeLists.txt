@@ -57,7 +57,6 @@ set(NAVIGATOR_SOURCES
 	mission_base.cpp
 	mission_block.cpp
 	mission.cpp
-	course.cpp
 	loiter.cpp
 	rtl.cpp
 	rtl_direct.cpp
@@ -88,6 +87,12 @@ if(CONFIG_MODE_NAVIGATOR_VTOL_TAKEOFF)
 	set(NAVIGATOR_SOURCES
 		${NAVIGATOR_SOURCES}
 		vtol_takeoff.cpp)
+endif()
+
+if(CONFIG_MODULES_FW_MODE_MANAGER)
+	set(NAVIGATOR_SOURCES
+		${NAVIGATOR_SOURCES}
+		course.cpp)
 endif()
 
 if(CONFIG_NAVIGATOR_ADSB)

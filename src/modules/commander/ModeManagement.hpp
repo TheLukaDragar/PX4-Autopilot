@@ -45,6 +45,7 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_control_mode.h>
 #include <uORB/topics/config_overrides.h>
+#include <uORB/topics/registered_modes.h>
 
 #include <lib/modes/ui.hpp>
 #include "UserModeIntention.hpp"
@@ -169,6 +170,8 @@ public:
 
 	void updateActiveConfigOverrides(uint8_t nav_state, config_overrides_s &overrides_in_out);
 
+	void publishRegisteredModes();
+
 private:
 	bool checkConfigControlSetpointUpdates(uint8_t vehicle_type);
 	void checkNewRegistrations(UpdateRequest &update_request);
@@ -184,6 +187,7 @@ private:
 	uORB::Publication<register_ext_component_reply_s> _register_ext_component_reply_pub{ORB_ID(register_ext_component_reply)};
 	uORB::Publication<config_overrides_s> _config_overrides_pub{ORB_ID(config_overrides)};
 	uORB::Subscription _config_overrides_request_sub{ORB_ID(config_overrides_request)};
+	uORB::Publication<registered_modes_s> _registered_modes_pub{ORB_ID(registered_modes)};
 	uORB::Publication<config_overrides_s> _config_overrides_confirm_pub{ORB_ID(config_overrides_confirm)};
 
 	ExternalChecks &_external_checks;
@@ -240,6 +244,8 @@ public:
 	}
 
 	void updateActiveConfigOverrides(uint8_t nav_state, config_overrides_s &overrides_in_out) { }
+
+	void publishRegisteredModes() { }
 
 private:
 };

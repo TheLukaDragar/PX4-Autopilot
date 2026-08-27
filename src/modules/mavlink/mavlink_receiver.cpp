@@ -221,6 +221,47 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_follow_target(msg);
 		break;
 
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+	case MAVLINK_MSG_ID_TRITRI_TRACK:
+		handle_message_tritri_track(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+	case MAVLINK_MSG_ID_TRITRI_TARGET:
+		handle_message_tritri_target(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+	case MAVLINK_MSG_ID_TARGET_HANDOVER:
+		handle_message_mavlink_m_target_handover(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_FIRES)
+	case MAVLINK_MSG_ID_FIRES:
+		handle_message_mavlink_m_fires(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+	case MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE:
+		handle_message_mavlink_m_engagement_directive(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+	case MAVLINK_MSG_ID_PARTICIPANT_POSITION:
+		handle_message_mavlink_m_participant_position(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+	case MAVLINK_MSG_ID_MAVLINK_M_ACK:
+		handle_message_mavlink_m_ack(msg);
+		break;
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+	case MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT:
+		handle_message_mavlink_m_battle_damage_assessment(msg);
+		break;
+#endif
+
 	case MAVLINK_MSG_ID_GLOBAL_POSITION_SENSOR:
 		handle_message_global_position_sensor(msg);
 		break;
@@ -2789,6 +2830,281 @@ MavlinkReceiver::handle_message_follow_target(mavlink_message_t *msg)
 
 	_follow_target_pub.publish(follow_target_topic);
 }
+
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+void
+MavlinkReceiver::handle_message_tritri_track(mavlink_message_t *msg)
+{
+	mavlink_tritri_track_t mav;
+	mavlink_msg_tritri_track_decode(msg, &mav);
+
+	if (mav.origin_sysid == _mavlink.get_system_id() || msg->sysid == _mavlink.get_system_id()) {
+		return;
+	}
+
+	mavlink_m_tritri_track_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = mav.time_usec;
+	topic.first_detected_usec = mav.first_detected_usec;
+	memcpy(topic.track_uid, mav.track_uid, sizeof(topic.track_uid));
+	topic.target_set_id = mav.target_set_id;
+	topic.id_confidence = mav.id_confidence;
+	topic.atr_model_id = mav.atr_model_id;
+	topic.origin_sysid = mav.origin_sysid;
+	topic.origin_sensor = mav.origin_sensor;
+	topic.id_method = mav.id_method;
+	topic.pid_status = mav.pid_status;
+	topic.target_class = mav.target_class;
+	topic.target_force = mav.target_force;
+	topic.stanag_identity = mav.stanag_identity;
+	topic.environment = mav.environment;
+	topic.atr_confidence_pct = mav.atr_confidence_pct;
+	topic.atr_conf_tier = mav.atr_conf_tier;
+	topic.sidc_context = mav.sidc_context;
+
+	_mavlink_m_tritri_track_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_TRITRI_TRACK
+
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+void
+MavlinkReceiver::handle_message_tritri_target(mavlink_message_t *msg)
+{
+	if (msg->sysid == _mavlink.get_system_id()) {
+		return;
+	}
+
+	mavlink_tritri_target_t mav;
+	mavlink_msg_tritri_target_decode(msg, &mav);
+
+	mavlink_m_tritri_target_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = mav.time_usec;
+	topic.target_time_usec = mav.target_time_usec;
+	memcpy(topic.track_uid, mav.track_uid, sizeof(topic.track_uid));
+	memcpy(topic.target_name, mav.target_name, sizeof(topic.target_name));
+	topic.target_id = mav.target_id;
+	topic.target_set_id = mav.target_set_id;
+	topic.flags = mav.flags;
+	topic.lat = mav.lat;
+	topic.lon = mav.lon;
+	topic.alt = mav.alt;
+	topic.vx = mav.vx;
+	topic.vy = mav.vy;
+	topic.vz = mav.vz;
+	topic.cov_pos_x = mav.cov_pos_x;
+	topic.cov_pos_y = mav.cov_pos_y;
+	topic.cov_pos_z = mav.cov_pos_z;
+	topic.cov_vel_x = mav.cov_vel_x;
+	topic.cov_vel_y = mav.cov_vel_y;
+	topic.cov_vel_z = mav.cov_vel_z;
+	topic.confidence = mav.confidence;
+	topic.target_class = mav.target_class;
+	topic.target_domain = mav.target_domain;
+	topic.target_force = mav.target_force;
+	topic.sensor_type = mav.sensor_type;
+	topic.tle_category = mav.tle_category;
+	topic.restricted_target_flags = mav.restricted_target_flags;
+
+	_mavlink_m_tritri_target_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_TRITRI_TARGET
+
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+void
+MavlinkReceiver::handle_message_mavlink_m_target_handover(mavlink_message_t *msg)
+{
+	if (msg->sysid == _mavlink.get_system_id()) {
+		return;
+	}
+
+	mavlink_target_handover_t mav;
+	mavlink_msg_target_handover_decode(msg, &mav);
+
+	mavlink_m_target_handover_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = mav.time_usec;
+	topic.detected_first_usec = mav.detected_first_usec;
+	topic.valid_until_usec = mav.valid_until_usec;
+	topic.lat = mav.lat;
+	topic.lon = mav.lon;
+	topic.alt = mav.alt;
+	topic.vx = mav.vx;
+	topic.vy = mav.vy;
+	topic.vz = mav.vz;
+	topic.cov_pos_x = mav.cov_pos_x;
+	topic.cov_pos_y = mav.cov_pos_y;
+	topic.cov_pos_z = mav.cov_pos_z;
+	topic.cov_vel_x = mav.cov_vel_x;
+	topic.cov_vel_y = mav.cov_vel_y;
+	topic.cov_vel_z = mav.cov_vel_z;
+	topic.target_set_id = mav.target_set_id;
+	memcpy(topic.target_name, mav.target_name, sizeof(topic.target_name));
+	memcpy(topic.match_media_url, mav.match_media_url, sizeof(topic.match_media_url));
+	topic.confidence_score = mav.confidence_score;
+	memcpy(topic.authorization, mav.authorization, sizeof(topic.authorization));
+	topic.target_class = mav.target_class;
+	topic.target_force = mav.target_force;
+	topic.match_media_type = mav.match_media_type;
+	memcpy(topic.track_uid, mav.track_uid, sizeof(topic.track_uid));
+
+	_mavlink_m_target_handover_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_TARGET_HANDOVER
+
+#if defined(MAVLINK_MSG_ID_FIRES)
+void
+MavlinkReceiver::handle_message_mavlink_m_fires(mavlink_message_t *msg)
+{
+	mavlink_fires_t mav;
+	mavlink_msg_fires_decode(msg, &mav);
+
+	mavlink_m_fires_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = mav.time_usec;
+	topic.time_impact_usec = mav.time_impact_usec;
+	topic.lat = mav.lat;
+	topic.lon = mav.lon;
+	topic.alt = mav.alt;
+	topic.effector_id = mav.effector_id;
+	topic.sequence = mav.sequence;
+	topic.cep_expected = mav.cep_expected;
+	topic.prf_code = mav.prf_code;
+	topic.store_id = mav.store_id;
+	topic.requested_effect = mav.requested_effect;
+	topic.munition_class = mav.munition_class;
+	topic.fuze_mode = mav.fuze_mode;
+	topic.hob_intent = mav.hob_intent;
+	topic.fuze_mofa_capable = mav.fuze_mofa_capable;
+	memcpy(topic.track_uid, mav.track_uid, sizeof(topic.track_uid));
+
+	_mavlink_m_fires_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_FIRES
+
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+void
+MavlinkReceiver::handle_message_mavlink_m_engagement_directive(mavlink_message_t *msg)
+{
+	mavlink_engagement_directive_t mav;
+	mavlink_msg_engagement_directive_decode(msg, &mav);
+
+	mavlink_m_engagement_directive_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = mav.time_usec;
+	memcpy(topic.track_uid, mav.track_uid, sizeof(topic.track_uid));
+	topic.sequence = mav.sequence;
+	topic.effector_id = mav.effector_id;
+	topic.retarget_lat = mav.retarget_lat;
+	topic.retarget_lon = mav.retarget_lon;
+	topic.retarget_alt = mav.retarget_alt;
+	topic.directive = mav.directive;
+	topic.origin_sysid = mav.origin_sysid;
+
+	_mavlink_m_engagement_directive_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE
+
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+void
+MavlinkReceiver::handle_message_mavlink_m_participant_position(mavlink_message_t *msg)
+{
+	mavlink_participant_position_t mav;
+	mavlink_msg_participant_position_decode(msg, &mav);
+
+	// Ignore own-ship PPLI (we generate that outbound from the estimator).
+	if (mav.origin_sysid == _mavlink.get_system_id()) {
+		return;
+	}
+
+	mavlink_m_participant_position_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = mav.time_usec;
+	topic.lat = mav.lat;
+	topic.lon = mav.lon;
+	topic.alt = mav.alt;
+	topic.vx = mav.vx;
+	topic.vy = mav.vy;
+	topic.vz = mav.vz;
+	topic.course = mav.course;
+	memcpy(topic.external_track_number, mav.external_track_number, sizeof(topic.external_track_number));
+	memcpy(topic.callsign, mav.callsign, sizeof(topic.callsign));
+	topic.origin_sysid = mav.origin_sysid;
+	topic.external_track_type = mav.external_track_type;
+	topic.stanag_identity = mav.stanag_identity;
+	topic.ppli_type = mav.ppli_type;
+
+	_mavlink_m_participant_position_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_PARTICIPANT_POSITION
+
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+void
+MavlinkReceiver::handle_message_mavlink_m_ack(mavlink_message_t *msg)
+{
+	mavlink_mavlink_m_ack_t mav;
+	mavlink_msg_mavlink_m_ack_decode(msg, &mav);
+
+	// Ignore ACKs we issued (companion already knows; avoid TX/RX loop).
+	if (mav.ack_sysid == _mavlink.get_system_id() || msg->sysid == _mavlink.get_system_id()) {
+		return;
+	}
+
+	mavlink_m_ack_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = mav.time_usec;
+	topic.ack_msgid = mav.ack_msgid;
+	topic.ack_instance = mav.ack_instance;
+	topic.origin_sysid = mav.origin_sysid;
+	topic.ack_sysid = mav.ack_sysid;
+	topic.result = mav.result;
+	memcpy(topic.reason, mav.reason, sizeof(topic.reason));
+
+	_mavlink_m_ack_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_MAVLINK_M_ACK
+
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+void
+MavlinkReceiver::handle_message_mavlink_m_battle_damage_assessment(mavlink_message_t *msg)
+{
+	if (msg->sysid == _mavlink.get_system_id()) {
+		return;
+	}
+
+	mavlink_battle_damage_assessment_t mav;
+	mavlink_msg_battle_damage_assessment_decode(msg, &mav);
+
+	mavlink_m_battle_damage_assessment_s topic{};
+	topic.timestamp = hrt_absolute_time();
+	topic.time_usec = mav.time_usec;
+	topic.lat = mav.lat;
+	topic.lon = mav.lon;
+	topic.alt = mav.alt;
+	topic.vx = mav.vx;
+	topic.vy = mav.vy;
+	topic.vz = mav.vz;
+	topic.cov_pos_x = mav.cov_pos_x;
+	topic.cov_pos_y = mav.cov_pos_y;
+	topic.cov_pos_z = mav.cov_pos_z;
+	topic.cov_vel_x = mav.cov_vel_x;
+	topic.cov_vel_y = mav.cov_vel_y;
+	topic.cov_vel_z = mav.cov_vel_z;
+	topic.target_set_id = mav.target_set_id;
+	memcpy(topic.target_name, mav.target_name, sizeof(topic.target_name));
+	memcpy(topic.authorization, mav.authorization, sizeof(topic.authorization));
+	topic.destruction_pct = mav.destruction_pct;
+	topic.confidence_pct = mav.confidence_pct;
+	topic.target_class = mav.target_class;
+	topic.target_force = mav.target_force;
+	topic.functional_damage = mav.functional_damage;
+	topic.physical_damage = mav.physical_damage;
+	topic.reattack_recommended = mav.reattack_recommended;
+	memcpy(topic.track_uid, mav.track_uid, sizeof(topic.track_uid));
+
+	_mavlink_m_battle_damage_assessment_pub.publish(topic);
+}
+#endif // MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT
 
 void
 MavlinkReceiver::handle_message_landing_target(mavlink_message_t *msg)

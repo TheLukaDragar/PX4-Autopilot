@@ -48,6 +48,13 @@ FailureDetector::FailureDetector(ModuleParams *parent) :
 {
 }
 
+void FailureDetector::updateParams()
+{
+	ModuleParams::updateParams();
+
+	_cos_tilt_threshold = cosf(math::radians(_param_fd_land_tilt.get()));
+}
+
 bool FailureDetector::update(const vehicle_status_s &vehicle_status, const vehicle_control_mode_s &vehicle_control_mode)
 {
 	_failure_injector.update();
@@ -76,6 +83,8 @@ bool FailureDetector::update(const vehicle_status_s &vehicle_status, const vehic
 		updateImbalancedPropStatus();
 	}
 
+	updateLandingTipoverStatus(vehicle_status);
+
 	return _failure_detector_status.value != status_prev.value;
 }
 
@@ -89,6 +98,7 @@ void FailureDetector::publishStatus(bool esc_arm_status, uint16_t motor_failure_
 	failure_detector_status.fd_arm_escs = esc_arm_status || (motor_failure_mask != 0);
 	failure_detector_status.fd_battery = _failure_detector_status.flags.battery;
 	failure_detector_status.fd_imbalanced_prop = _failure_detector_status.flags.imbalanced_prop;
+	failure_detector_status.fd_landing_tipover = _failure_detector_status.flags.landing_tipover;
 	failure_detector_status.fd_motor = (motor_failure_mask != 0);
 	failure_detector_status.imbalanced_prop_metric = _imbalanced_prop_lpf.getState();
 	failure_detector_status.motor_failure_mask = motor_failure_mask;
@@ -268,4 +278,56 @@ void FailureDetector::updateImbalancedPropStatus()
 			}
 		}
 	}
+}
+
+void FailureDetector::updateLandingTipoverStatus(const vehicle_status_s &vehicle_status)
+{
+	const hrt_abstime now = hrt_absolute_time();
+
+	_ground_contact_hysteresis.set_hysteresis_time_from(false, 0);
+	_ground_contact_hysteresis.set_hysteresis_time_from(true, (hrt_abstime)(1_s * _param_fd_gnd_c_tf.get()));
+	_landing_tipover_hysteresis.set_hysteresis_time_from(false, (hrt_abstime)(1_s * _param_fd_tip_ttri.get()));
+
+	const float threshold = _param_fd_land_tilt.get();
+	if (threshold < FLT_EPSILON) {
+		_landing_tipover_hysteresis.set_state_and_update(false, now);
+		_ground_contact_hysteresis.set_state_and_update(false, now);
+		_failure_detector_status.flags.landing_tipover = false;
+		return;
+	}
+
+	const bool in_landing_phase =
+		   (vehicle_status.nav_state == vehicle_status_s::NAVIGATION_STATE_AUTO_LAND)
+		|| (vehicle_status.nav_state == vehicle_status_s::NAVIGATION_STATE_AUTO_PRECLAND)
+		|| (vehicle_status.nav_state == vehicle_status_s::NAVIGATION_STATE_DESCEND);
+
+	vehicle_land_detected_s land_detected{};
+	if (_vehicle_land_detected_sub.copy(&land_detected)) {
+		_has_ground_contact = land_detected.ground_contact || land_detected.maybe_landed || land_detected.landed;
+	}
+
+	_ground_contact_hysteresis.set_state_and_update(_has_ground_contact, now);
+
+	if (!in_landing_phase || !_ground_contact_hysteresis.get_state()) {
+		_landing_tipover_hysteresis.set_state_and_update(false, now);
+		_ground_contact_hysteresis.set_state_and_update(false, now);
+		_failure_detector_status.flags.landing_tipover = false;
+		return;
+	}
+
+	vehicle_attitude_s attitude{};
+	bool is_tipping_over = false;
+	if (_vehicle_attitude_sub.copy(&attitude)) {
+		const float q0 = attitude.q[0];
+		const float q1 = attitude.q[1];
+		const float q2 = attitude.q[2];
+		const float q3 = attitude.q[3];
+
+		const float cos_tilt = (q0 * q0) - (q1 * q1) - (q2 * q2) + (q3 * q3);
+
+		if (cos_tilt < _cos_tilt_threshold) { is_tipping_over = true; }
+	}
+
+	_landing_tipover_hysteresis.set_state_and_update(is_tipping_over, now);
+	_failure_detector_status.flags.landing_tipover = _landing_tipover_hysteresis.get_state();
 }

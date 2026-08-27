@@ -201,7 +201,6 @@ void MulticopterPositionControl::parameters_update(bool force)
 			Vector3f(_param_mpc_xy_vel_i_acc.get(), _param_mpc_xy_vel_i_acc.get(), _param_mpc_z_vel_i_acc.get()),
 			Vector3f(_param_mpc_xy_vel_d_acc.get(), _param_mpc_xy_vel_d_acc.get(), _param_mpc_z_vel_d_acc.get()));
 		_control.setHorizontalThrustMargin(_param_mpc_thr_xy_marg.get());
-		_control.decoupleHorizontalAndVecticalAcceleration(_param_mpc_acc_decouple.get());
 		_goto_control.setParamMpcAccHor(_param_mpc_acc_hor.get());
 		_goto_control.setParamMpcAccDownMax(_param_mpc_acc_down_max.get());
 		_goto_control.setParamMpcAccUpMax(_param_mpc_acc_up_max.get());
@@ -501,7 +500,12 @@ void MulticopterPositionControl::Run()
 
 			const bool not_taken_off             = (_takeoff.getTakeoffState() < TakeoffState::rampup);
 			const bool flying                    = (_takeoff.getTakeoffState() >= TakeoffState::flight);
+			const bool have_taken_off_since_arming = _takeoff.haveTakenOffSinceArming();
 			const bool flying_but_ground_contact = (flying && _vehicle_land_detected.ground_contact);
+
+			// Ignore value of MPC_ACC_DECOUPLE on ground (avoids flip from high downward acc_sp)
+			_control.decoupleHorizontalAndVecticalAcceleration(_param_mpc_acc_decouple.get() || not_taken_off
+					|| flying_but_ground_contact);
 
 			if (!flying) {
 				_control.setHoverThrust(_param_mpc_thr_hover.get());
@@ -513,12 +517,19 @@ void MulticopterPositionControl::Run()
 			}
 
 			if (not_taken_off || flying_but_ground_contact) {
-				// we are not flying yet and need to avoid any corrections
 				_setpoint = PositionControl::empty_trajectory_setpoint;
 				_setpoint.timestamp = vehicle_local_position.timestamp_sample;
-				Vector3f(0.f, 0.f, 100.f).copyTo(_setpoint.acceleration); // High downwards acceleration to make sure there's no thrust
 
-				// prevent any integrator windup
+				float down_force = 100.f; // High downwards acceleration to make sure there's no thrust
+
+				// the param check is for the code so it can be used with lampy and speedo, on the lampy you wouldn't change the parameter.
+				// have taken off since arming looks if it was flying or not, resets on disarming, maybe problem because you can't descend and touch the ground
+				// and takeoff again, you can but it will use the param instead of 100f.
+				if (have_taken_off_since_arming && _param_mpc_gnd_con_acc.get() < 100.f) {
+					down_force = _param_mpc_gnd_con_acc.get();
+				}
+
+				Vector3f(0.f, 0.f, down_force).copyTo(_setpoint.acceleration);
 				_control.resetIntegral();
 			}
 

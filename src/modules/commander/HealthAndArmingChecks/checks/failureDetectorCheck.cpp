@@ -105,13 +105,32 @@ void FailureDetectorChecks::checkAndReport(const Context &context, Report &repor
 
 	reporter.failsafeFlags().fd_imbalanced_prop = fd_status.fd_imbalanced_prop;
 
+	reporter.failsafeFlags().fd_landing_tipover = fd_status.fd_landing_tipover;
+
+	if (reporter.failsafeFlags().fd_landing_tipover) {
+		/* EVENT
+		 * @description
+		 * The vehicle tipped over during landing or after ground contact.
+		 *
+		 * <profile name="dev">
+		 * This check can be configured via <param>FD_LAND_TILT</param> parameter.
+		 * </profile>
+		 */
+		reporter.armingCheckFailure(NavModes::All, health_component_t::system, events::ID("check_failure_detector_landing_tipover"),
+					    events::Log::Critical, "Landing tip-over detected");
+
+		if (reporter.mavlink_log_pub()) {
+			mavlink_log_critical(reporter.mavlink_log_pub(), "Failure: Landing tip-over detected");
+		}
+	}
+
 	if (reporter.failsafeFlags().fd_imbalanced_prop) {
 		/* EVENT
 		 * @description
 		 * Check that all propellers are mounted correctly and are not damaged.
 		 *
 		 * <profile name="dev">
-		 * This check can be configured via <param>FD_IMB_PROP_THR</param> parameter.
+		 * This check can be configured via <param>FD_IMB_PROP_THR</param> and <param>COM_IMB_PROP_ACT</param> parameters.
 		 * </profile>
 		 */
 		reporter.healthFailure(NavModes::All, health_component_t::system, events::ID("check_failure_detector_imbalanced_prop"),

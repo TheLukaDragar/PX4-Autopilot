@@ -49,7 +49,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static constexpr char NAMESPACE_PREFIX[] = "uav_";
+static constexpr char NAMESPACE_PREFIX[] = "px4_";
 #define PARTICIPANT_XML_SIZE 512
 static constexpr uint8_t TIMESYNC_MAX_TIMEOUTS = 10;
 
@@ -222,13 +222,30 @@ bool UxrceddsClient::setupSession(uxrSession *session)
 
 	bool got_response = false;
 
-	while (!should_exit() && !got_response) {
+	// Bound the ping wait so a permanently absent agent or wedged transport fd
+	// (USB-CDC / Tegra UART) doesn't spin here forever. Returning false drops
+	// us back to run()'s outer loop, which tears down the transport via
+	// deinit()/init() — the only known recovery for a stuck serial fd.
+	// Budget: MAX_PING_ATTEMPTS * PING_TIMEOUT_MS worst case (~5 s).
+	// See PX4#26022 / PX4#26848.
+	static constexpr unsigned MAX_PING_ATTEMPTS = 10;
+	static constexpr int PING_TIMEOUT_MS = 500;
+	unsigned ping_attempt = 0;
+
+	while (!should_exit() && !got_response && ping_attempt < MAX_PING_ATTEMPTS) {
 		// Sending ping without initing a XRCE session
-		got_response = uxr_ping_agent_attempts(_comm, 1000, 1);
+		got_response = uxr_ping_agent_attempts(_comm, PING_TIMEOUT_MS, 1);
+		ping_attempt++;
+
+		if (!got_response && (ping_attempt == 1 || ping_attempt % 3 == 0)) {
+			PX4_WARN("waiting for agent ping reply (attempt %u/%u)",
+				 ping_attempt, MAX_PING_ATTEMPTS);
+		}
 	}
 
 	if (!got_response) {
-		PX4_ERR("got no ping from agent");
+		PX4_ERR("got no ping from agent after %u attempts; will retry from transport init",
+			ping_attempt);
 		return false;
 	}
 
@@ -378,12 +395,13 @@ bool UxrceddsClient::setupSession(uxrSession *session)
 	}
 
 	// create VehicleCommand replier
-	if (_num_of_repliers < MAX_NUM_REPLIERS) {
-		if (add_replier(new VehicleCommandSrv(session, _reliable_out, reliable_in, _participant_id, _client_namespace,
-						      _num_of_repliers))) {
-			PX4_ERR("replier init failed");
-			return false;
-		}
+	// add_replier() takes ownership and returns true on success / false on
+	// failure (capacity exhausted, nullptr, or alloc fail). It frees the
+	// passed-in pointer on overflow so we don't leak on this path.
+	if (!add_replier(new VehicleCommandSrv(session, _reliable_out, reliable_in, _participant_id, _client_namespace,
+					       _num_of_repliers))) {
+		PX4_ERR("replier init failed (capacity %u exhausted or alloc failed)", MAX_NUM_REPLIERS);
+		return false;
 	}
 
 	_connected = true;
@@ -408,6 +426,11 @@ void UxrceddsClient::deleteSession(uxrSession *session)
 	_connected = false;
 	_last_payload_tx_rate = 0;
 	_timesync.reset_filter();
+
+	// Reset connectivity counters on teardown so any code path reading them
+	// between deleteSession() and the next successful setupSession() sees
+	// clean state. Defense-in-depth for PX4#26022.
+	resetConnectivityCounters();
 }
 
 UxrceddsClient::~UxrceddsClient()
@@ -520,62 +543,74 @@ void UxrceddsClient::checkConnectivity(uxrSession *session)
 	// Reset RX zero counter, when data is received
 	if (_last_payload_rx_rate > 0) {
 		_num_rx_rate_zero = 0;
+		_rx_ever_active = true;
 	}
 
 	const hrt_abstime now = hrt_absolute_time();
 
-	// Start ping and tx/rx rate monitoring, unless we're actively sending & receiving payloads successfully
+	// Fully healthy: payload is flowing in both directions, so the link is
+	// proven live without any extra traffic. Skip the ping path entirely.
 	if ((_last_payload_tx_rate > 0) && (_last_payload_rx_rate > 0)) {
 		_connected = true;
 		_num_pings_missed = 0;
 		_last_ping = now;
+		return;
+	}
 
-	} else {
-		if (hrt_elapsed_time(&_last_ping) > 1_s) {
-			// Check payload tx rate
-			if (_last_payload_tx_rate == 0) {
-				_num_tx_rate_zero++;
-			}
-
-			// Check payload rx rate
-			if (_last_payload_rx_rate == 0) {
-				_num_rx_rate_zero++;
-			}
-
-			// Check ping
-			_last_ping = now;
-
-			if (_had_ping_reply) {
-				_num_pings_missed = 0;
-
-			} else {
-				++_num_pings_missed;
-			}
-
-			int timeout_ms = 1'000; // 1 second
-			uint8_t attempts = 1;
-			uxr_ping_agent_session(session, timeout_ms, attempts);
-
-			_had_ping_reply = false;
+	// Not bidirectionally active: verify liveness with a periodic ping.
+	//
+	// The ping is sent NON-BLOCKING (timeout 0): we only emit the GET_INFO
+	// request here and let the agent's reply be picked up asynchronously by
+	// uxr_run_session_timeout() in run(), which sets session.on_pong_flag ->
+	// _had_ping_reply on a later iteration. Previously this used a blocking
+	// 1 s ping, which stalled the whole main loop for up to a second every
+	// cycle whenever RX payload was absent. On send-only setups (RX rate
+	// always 0) that collapsed publish rates (e.g. sensor_combined 200 Hz ->
+	// ~1 Hz). See PX4#25873.
+	if (hrt_elapsed_time(&_last_ping) > 1_s) {
+		if (_last_payload_tx_rate == 0) {
+			_num_tx_rate_zero++;
 		}
 
-		if (_num_pings_missed >= 3) {
-			PX4_ERR("No ping response, disconnecting");
-			_connected = false;
+		// Smart RX: only count "no RX" against a link that has actually
+		// received payload before. A genuinely send-only client (RX never
+		// active) must not be torn down for never receiving, while a link
+		// that received data and then went silent is still flagged.
+		if (_last_payload_rx_rate == 0 && _rx_ever_active) {
+			_num_rx_rate_zero++;
 		}
 
-		int32_t tx_timeout = _param_uxrce_dds_tx_to.get();
-		int32_t rx_timeout = _param_uxrce_dds_rx_to.get();
+		_last_ping = now;
 
-		if (tx_timeout > 0 && _num_tx_rate_zero >= tx_timeout) {
-			PX4_ERR("Payload TX rate zero for too long, disconnecting");
-			_connected = false;
+		if (_had_ping_reply) {
+			_num_pings_missed = 0;
+
+		} else {
+			++_num_pings_missed;
 		}
 
-		if (rx_timeout > 0 && _num_rx_rate_zero >= rx_timeout) {
-			PX4_ERR("Payload RX rate zero for too long, disconnecting");
-			_connected = false;
-		}
+		// Non-blocking: send the ping, reply is handled asynchronously (see above).
+		uxr_ping_agent_session(session, 0, 1);
+
+		_had_ping_reply = false;
+	}
+
+	if (_num_pings_missed >= 3) {
+		PX4_ERR("No ping response, disconnecting");
+		_connected = false;
+	}
+
+	int32_t tx_timeout = _param_uxrce_dds_tx_to.get();
+	int32_t rx_timeout = _param_uxrce_dds_rx_to.get();
+
+	if (tx_timeout > 0 && _num_tx_rate_zero >= tx_timeout) {
+		PX4_ERR("Payload TX rate zero for too long, disconnecting");
+		_connected = false;
+	}
+
+	if (rx_timeout > 0 && _num_rx_rate_zero >= rx_timeout) {
+		PX4_ERR("Payload RX rate zero for too long, disconnecting");
+		_connected = false;
 	}
 }
 
@@ -584,6 +619,7 @@ void UxrceddsClient::resetConnectivityCounters()
 	_last_status_update = hrt_absolute_time();
 	_last_ping = hrt_absolute_time();
 	_had_ping_reply = false;
+	_rx_ever_active = false;
 	_num_pings_missed = 0;
 	_last_num_payload_sent = 0;
 	_last_num_payload_received = 0;
@@ -705,6 +741,9 @@ void UxrceddsClient::run()
 					poll_error_counter++;
 				}
 			}
+
+			// Event-driven /fmu/out publishers (uORB SubscriptionCallback); not covered by px4_poll above.
+			_subs->update_event_driven(&session, _reliable_out, _best_effort_out, _participant_id, _client_namespace);
 
 			// Run session with 0 timeout (non-blocking). Under high inbound traffic the socket RX buffer can
 			// overflow and starve the system; drain a small burst per loop to keep up.
@@ -920,13 +959,21 @@ bool UxrceddsClient::setBaudrate(int fd, unsigned baud)
 
 bool UxrceddsClient::add_replier(SrvBase *replier)
 {
-	if (replier == nullptr || _num_of_repliers >= MAX_NUM_REPLIERS) {
-		return true;
+	// Returns true on success, false on failure (standard convention).
+	// On failure we take ownership of `replier` and free it so the caller
+	// can stay simple: `if (!add_replier(new FooSrv(...))) { ... }`.
+	if (replier == nullptr) {
+		return false;
+	}
+
+	if (_num_of_repliers >= MAX_NUM_REPLIERS) {
+		delete replier;
+		return false;
 	}
 
 	_repliers[_num_of_repliers] = replier;
 	_num_of_repliers++;
-	return false;
+	return true;
 }
 
 void UxrceddsClient::process_requests(uxrObjectId object_id, SampleIdentity *sample_id, ucdrBuffer *ub,
@@ -976,7 +1023,7 @@ int UxrceddsClient::task_spawn(int argc, char *argv[])
 {
 	desc.task_id = px4_task_spawn_cmd("uxrce_dds_client",
 					  SCHED_DEFAULT,
-					  SCHED_PRIORITY_DEFAULT,
+					  SCHED_PRIORITY_MIDDLEWARE,
 					  PX4_STACK_ADJUSTED(8000),
 					  (px4_main_t)&run_trampoline,
 					  (char *const *)argv);
@@ -1014,6 +1061,10 @@ int UxrceddsClient::print_status()
 	}
 
 	PX4_INFO("timesync converged: %s", _timesync.sync_converged() ? "true" : "false");
+
+	if (_subs) {
+		_subs->print_statistics();
+	}
 
 	perf_print_counter(_loop_perf);
 	perf_print_counter(_loop_interval_perf);

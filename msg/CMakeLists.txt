@@ -69,6 +69,7 @@ set(msg_files
 	DistanceSensorModeChangeRequest.msg
 	DronecanNodeStatus.msg
 	Ekf2Timestamps.msg
+	EscBeepControl.msg
 	EscEepromRead.msg
 	EscEepromWrite.msg
 	EscReport.msg
@@ -138,6 +139,34 @@ set(msg_files
 	MagWorkerData.msg
 	ManualControlSwitches.msg
 	MavlinkLog.msg
+	MavlinkMAck.msg
+	MavlinkMBattleDamageAssessment.msg
+	MavlinkMCallForFire.msg
+	MavlinkMCas9Line.msg
+	MavlinkMEngagementDirective.msg
+	MavlinkMEsadArming.msg
+	MavlinkMEsadConfig.msg
+	MavlinkMEsadState.msg
+	MavlinkMFires.msg
+	MavlinkMLoiterMunitionControl.msg
+	MavlinkMParticipantPosition.msg
+	MavlinkMRwsPose.msg
+	MavlinkMRwsState.msg
+	MavlinkMSensorTasking.msg
+	MavlinkMSplashCorrection.msg
+	MavlinkMStoreMunition.msg
+	MavlinkMStoreSensorStatus.msg
+	MavlinkMStoreStatus.msg
+	MavlinkMTarget.msg
+	MavlinkMTargetAuthorization.msg
+	MavlinkMTargetBoxCoord.msg
+	MavlinkMTargetCue.msg
+	MavlinkMTargetHandover.msg
+	MavlinkMTargetSetCoord.msg
+	MavlinkMTerminalControl.msg
+	MavlinkMTrackIdentity.msg
+	MavlinkMTritriTarget.msg
+	MavlinkMTritriTrack.msg
 	MavlinkTunnel.msg
 	MessageFormatRequest.msg
 	MessageFormatResponse.msg
@@ -248,6 +277,7 @@ set(msg_files
 	VehicleThrustSetpoint.msg
 	VehicleTorqueSetpoint.msg
 	VelocityLimits.msg
+	TargetBbox.msg
 	Vtx.msg
 	WheelEncoders.msg
 	YawEstimatorStatus.msg
@@ -267,6 +297,7 @@ set(msg_files
 	versioned/LongitudinalControlConfiguration.msg
 	versioned/ManualControlSetpoint.msg
 	versioned/ModeCompleted.msg
+	versioned/RegisteredModes.msg
 	versioned/RaptorInput.msg
 	versioned/RaptorStatus.msg
 	versioned/RegisterExtComponentReply.msg

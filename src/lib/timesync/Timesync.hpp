@@ -62,10 +62,15 @@ static constexpr time_t PX4_EPOCH_SECS = 1234567890ULL;
 // tighter estimation of the skew (derivative), but will negatively affect how fast the
 // filter reacts to clock skewing (e.g cause by temperature changes to the oscillator).
 // Larger values will cause large-amplitude oscillations.
+//
+// SSRD / Jetson companion: stock FINAL=0.003 lets estimated_offset lag observed_offset
+// by 50–100 ms when the Agent wall clock slews, so every uXRCE stamp on ROS looks
+// stale (camera↔odometry fusion danger). With USB RTT ~1 ms and chrony slew-only on
+// the Jetson, track harder. ~7× FINAL still well below INITIAL.
 static constexpr double ALPHA_GAIN_INITIAL = 0.05;
 static constexpr double BETA_GAIN_INITIAL = 0.05;
-static constexpr double ALPHA_GAIN_FINAL = 0.003;
-static constexpr double BETA_GAIN_FINAL = 0.003;
+static constexpr double ALPHA_GAIN_FINAL = 0.02;
+static constexpr double BETA_GAIN_FINAL = 0.02;
 
 // Filter gain scheduling
 //
@@ -85,7 +90,11 @@ static constexpr uint32_t CONVERGENCE_WINDOW = 500;
 // of such events in a row will reset the filter. This usually happens only due to a time jump
 // on the remote system.
 // TODO : automatically determine these using ping statistics?
-static constexpr uint64_t MAX_RTT_SAMPLE = 10_ms;
+//
+// 10 ms is too tight for serial uXRCE-DDS (USB-CDC / TELEM): steady-state RTT is
+// typically 18–24 ms with spikes >50 ms under CPU load. Samples above the gate are
+// rejected and the filter never reaches CONVERGENCE_WINDOW — see PX4#22382, #19626.
+static constexpr uint64_t MAX_RTT_SAMPLE = 50_ms;
 static constexpr uint64_t MAX_DEVIATION_SAMPLE = 100_ms;
 static constexpr uint32_t MAX_CONSECUTIVE_HIGH_RTT = 10;
 static constexpr uint32_t MAX_CONSECUTIVE_HIGH_DEVIATION = 10;

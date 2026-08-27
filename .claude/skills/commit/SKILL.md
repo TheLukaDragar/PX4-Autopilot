@@ -7,32 +7,21 @@ allowed-tools: Bash, Read, Glob, Grep
 
 # PX4 Conventional Commit
 
-Create a git commit in conventional-commit format: `type(scope): description`.
+Create a git commit: `type(scope): description`
 
-- **type:** `feat`, `fix`, `refactor`, `perf`, `docs`, `style`, `test`,
-  `build`, `ci`, `chore`, `revert`. Append `!` before `:` for breaking changes.
-- **scope:** the module/driver/area affected — derive from the directory
-  path of the changed files (`src/modules/ekf2/` → `ekf2`,
-  `src/drivers/imu/invensense/icm42688p/` → `drivers/icm42688p`,
-  `.github/workflows/` → `ci`).
-- **description:** imperative, concise, ≥5 chars.
+**NEVER add Co-Authored-By lines. No Claude attribution in commits.**
 
-**The user is the author. Never add `Co-Authored-By` naming an AI. End the
-commit body with the disclosure trailer `Assisted-by: Claude:<model-id>`
-(e.g. `Assisted-by: Claude:claude-fable-5`).**
+Follow [CONTRIBUTING.md](../../CONTRIBUTING.md) for full project conventions.
 
 ## Steps
 
-1. Check branch (`git branch --show-current`). If on `main`, create a feature
-   branch `<username>/<description>` where `<username>` comes from
-   `gh api user --jq .login`.
-2. Run `git status` and `git diff --staged`. If nothing staged, ask what to stage.
-3. Run `make format` (or `./Tools/astyle/fix_code_style.sh <file>`) on changed
-   C/C++ files.
-4. Body (if needed): explain **why**, not what.
-5. Commit with `git commit -s`. Do not pass `-S`: GPG signing is the user's
-   git config decision (`commit.gpgsign`), not the skill's. The `-s` sign-off
-   is the user's DCO certification of changes they have reviewed: never
-   commit with `-s` work the user has not seen.
+1. **Read [CONTRIBUTING.md](../../CONTRIBUTING.md)** for commit message format, types, scopes, and conventions.
+2. Check branch (`git branch --show-current`). If on `main`, create a feature branch. Use `<username>/<description>` format where `<username>` comes from `gh api user --jq .login`. If unavailable, just use `<description>`.
+3. Run `git status` and `git diff --staged`. If nothing staged, ask what to stage.
+4. Follow the commit message convention from CONTRIBUTING.md: pick the correct **type** and **scope**, write a concise imperative description. The scope table is not exhaustive — derive the scope from the directory path of the changed files.
+5. Body (if needed): explain **why**, not what.
+6. Run `make format` or `./Tools/astyle/fix_code_style.sh <file>` on changed C/C++ files before committing.
+7. Check if GPG signing is available: `git config --get user.signingkey`. If set, use `git commit -S -s`. Otherwise, use `git commit -s`.
+8. Stage and commit. No `Co-Authored-By`.
 
 If the user provided arguments, use them as context: $ARGUMENTS

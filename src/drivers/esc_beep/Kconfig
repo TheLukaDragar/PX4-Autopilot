@@ -1,0 +1,5 @@
+menuconfig DRIVERS_ESC_BEEP
+	bool "esc_beep"
+	default n
+	---help---
+		Enable support for esc_beep

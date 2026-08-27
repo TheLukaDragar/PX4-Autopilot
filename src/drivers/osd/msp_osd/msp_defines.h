@@ -356,6 +356,15 @@ struct msp_rendor_rssi_t {
 	char str[4]; // 100%
 } __attribute__((packed));
 
+/** Betaflight `osdElementCrosshairs` — `osd_symbols.h` SYM_AH_CENTER_LINE/CENTER/CENTER_LINE_RIGHT as raw font bytes. */
+struct msp_rendor_crosshairs_t {
+	uint8_t subCommand;   // MSP_DP_WRITE_STRING (3)
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t attr;         // DisplayPort font/attr byte (Betaflight `writeString` buf[3])
+	char sym[3];          // 0x72, 0x73, 0x74
+} __attribute__((packed));
+
 
 // MSP_ARMING_CONFIG reply
 struct msp_arming_config_t {
@@ -444,7 +453,7 @@ struct msp_rendor_latitude_t {
 	uint8_t iconAttrs = 0x00;
 	uint8_t iconIndex = 0x89; //LAT icon
 
-	char str[11]; // -00.0000000
+	char str[12]; // "00.000000N" or "-00.000000S" (11 chars + NUL)
 } __attribute__((packed));
 
 
@@ -455,7 +464,7 @@ struct msp_rendor_longitude_t {
 	uint8_t iconAttrs = 0x00;
 	uint8_t iconIndex = 0x98; //LON icon
 
-	char str[12]; // -000.0000000
+	char str[13]; // "000.000000E" or "-000.000000W" (12 chars + NUL)
 } __attribute__((packed));
 
 struct msp_rendor_satellites_used_t {
@@ -469,15 +478,74 @@ struct msp_rendor_satellites_used_t {
 	char str[3]; // 99
 } __attribute__((packed));
 
-struct msp_rendor_gps_speed_t {
+struct msp_rendor_esc_tmp_t {
 	uint8_t subCommand = 0x03; // 0x03 subcommand write string. fixed
 	uint8_t screenYPosition;
 	uint8_t screenXPosition;
 	uint8_t iconAttrs = 0x00;
-	uint8_t iconIndex = 0x9F; //mps icon
+	/** Betaflight SYM_TEMPERATURE (osd_symbols.h) — prefix like pitch/roll SYM. */
+	uint8_t iconIndex = 0x7A;
 
-	char str[7]; // 115.25
+	char str[6]; // " 99C" or "100C"
 } __attribute__((packed));
+
+/** Estimator horizontal ground speed (km/h), DisplayPort string (separate from BF GPS speed / MSP_RAW_GPS). */
+struct msp_rendor_est_speed_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	/** Betaflight SYM_SPEED — prefix before km/h digits. */
+	uint8_t iconIndex = 0x70;
+
+	char str[10]; // e.g. "54" or "162" (integer km/h), or " --"
+} __attribute__((packed));
+
+/** Main battery remaining [%], same source as QGC (remaining / volt_based_soc). */
+struct msp_rendor_batt_pct_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	/** Betaflight SYM_BATT_* — use 0x91–0x96 (not 0x97 MAIN_BATT: maps wrong e.g. skull on some fonts). */
+	uint8_t iconIndex = 0x91;
+
+	char str[8]; // e.g. "100" / "87" / " --" (no ASCII '%' — glyph 0x25 unreliable on some VTX)
+} __attribute__((packed));
+
+/** mAh drawn — BF SYM_MAH (0x07) prefix, "1234" text. */
+struct msp_rendor_mah_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	uint8_t iconIndex = 0x07; // SYM_MAH
+
+	char str[6]; // e.g. "1234"
+} __attribute__((packed));
+
+/** Current draw — BF SYM_AMP (0x9A) prefix, "12.3A" text. */
+struct msp_rendor_current_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	uint8_t iconIndex = 0x9A; // SYM_AMP
+
+	char str[7]; // e.g. "12.3A"
+} __attribute__((packed));
+
+/** Vertical speed (vario) — BF SYM_ARROW_SMALL_UP/DOWN (0x75/0x76) prefix, "1.2" text (m/s). */
+struct msp_rendor_vario_t {
+	uint8_t subCommand = 0x03;
+	uint8_t screenYPosition;
+	uint8_t screenXPosition;
+	uint8_t iconAttrs = 0x00;
+	uint8_t iconIndex; // 0x75 up / 0x76 down at runtime
+
+	char str[7]; // e.g. "1.2" m/s
+} __attribute__((packed));
+
 
 // MSP_COMP_GPS reply
 struct msp_comp_gps_t {
@@ -491,9 +559,9 @@ struct msp_rendor_distanceToHome_t {
 	uint8_t screenYPosition;
 	uint8_t screenXPosition;
 	uint8_t iconAttrs = 0x00; //
-	uint8_t iconIndex = 0x71; //distanceToHome icon
+	uint8_t iconIndex = 0x11; // SYM_HOMEFLAG
 
-	char str[6]; // 65536
+	char str[8]; // "1234m" or "65.5km"
 } __attribute__((packed));
 
 
@@ -885,40 +953,12 @@ struct msp_battery_state_t {
 } __attribute__((packed));
 
 struct msp_rendor_battery_state_t {
-	uint8_t subCommand = 0x03; // 0x03 write string. fixed
+	uint8_t subCommand; // 0x03 write string. fixed
 	uint8_t screenYPosition;
 	uint8_t screenXPosition;
-	uint8_t iconAttrs = 0x00;
+	uint8_t iconAttrs;
 	uint8_t iconIndex;
 	char str[5];
-} __attribute__((packed));
-
-struct msp_rendor_current_draw_t {
-	uint8_t subCommand = 0x03; // 0x03 write string. fixed
-	uint8_t screenYPosition;
-	uint8_t screenXPosition;
-	uint8_t iconAttrs = 0x00;
-	uint8_t iconIndex = 0x9A;
-	char str[7]; // 100.00
-} __attribute__((packed));
-
-struct msp_rendor_mah_drawn_t {
-	uint8_t subCommand = 0x03; // 0x03 write string. fixed
-	uint8_t screenYPosition;
-	uint8_t screenXPosition;
-	uint8_t iconAttrs = 0x00;
-	uint8_t iconIndex = 0x07;
-	char str[8]; // 10000.0
-} __attribute__((packed));
-
-struct msp_rendor_crosshairs_t {
-	uint8_t subCommand = 0x03; // 0x03 write string. fixed
-	uint8_t screenYPosition;
-	uint8_t screenXPosition;
-	uint8_t iconAttrs = 0x00;
-	uint8_t iconIndex = 0x72; //SYM_AH_CENTER_LINE
-	uint8_t iconIndex2 = 0x73; //SYM_AH_CENTER
-	uint8_t iconIndex3 = 0x74; //SYM_AH_CENTER_LINE_RIGHT
 } __attribute__((packed));
 
 // MSP_STATUS reply customized for BF/DJI

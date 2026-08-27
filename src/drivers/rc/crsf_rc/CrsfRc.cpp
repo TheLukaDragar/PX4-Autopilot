@@ -306,6 +306,10 @@ void CrsfRc::Run()
 			}
 		}
 
+		if (_param_rc_crsf_tel_en.get() && !_is_singlewire) {
+			PublishTrackerTelemetry(time_now_us);
+		}
+
 		if (_param_rc_crsf_tel_en.get() && !_is_singlewire
 		    && (_input_rc.timestamp > _telemetry_update_last + 100_ms)) {
 			switch (_next_type) {
@@ -353,7 +357,8 @@ void CrsfRc::Run()
 			case 3:
 				vehicle_status_s vehicle_status;
 
-				if (_vehicle_status_sub.update(&vehicle_status)) {
+				// copy() not update(): vehicle_status may already be consumed above for the armed check
+				if (_vehicle_status_sub.copy(&vehicle_status)) {
 					const char *flight_mode = "(unknown)";
 
 					switch (vehicle_status.nav_state) {
@@ -474,6 +479,38 @@ void CrsfRc::Run()
 	ScheduleDelayed(4_ms);
 }
 
+void CrsfRc::PublishTrackerTelemetry(const hrt_abstime now)
+{
+	const bool bbox_updated = _target_bbox_sub.updated();
+	const bool interval_elapsed = (now > _tracker_telemetry_last + TRACKER_TELEMETRY_INTERVAL);
+
+	if (!bbox_updated && !interval_elapsed) {
+		return;
+	}
+
+	if (bbox_updated && !interval_elapsed && (now <= _tracker_telemetry_last + TRACKER_TELEMETRY_MIN_INTERVAL)) {
+		return;
+	}
+
+	target_bbox_s det{};
+	uint8_t detected = 0;
+
+	if (_target_bbox_sub.copy(&det) && det.count > 0
+	    && (now - det.timestamp) < TARGET_BBOX_STALE_TIMEOUT) {
+		const uint8_t n = math::min(det.count, target_bbox_s::MAX_DETECTIONS);
+
+		for (uint8_t i = 0; i < n; i++) {
+			if (det.color[i] == 1) { // green
+				detected = 1;
+				break;
+			}
+		}
+	}
+
+	SendTelemetryTrackerDetect(detected);
+	_tracker_telemetry_last = now;
+}
+
 /**
  * write an uint8_t value to a buffer at a given offset and increment the offset
  */
@@ -572,6 +609,20 @@ bool CrsfRc::SendTelemetryAttitude(const int16_t pitch, const int16_t roll, cons
 	write_uint16_t(buf, offset, yaw);
 	WriteFrameCrc(buf, offset, sizeof(buf));
 	return _uart->write((void *) buf, (size_t) offset);
+}
+
+bool CrsfRc::SendTelemetryTrackerDetect(const uint8_t detected)
+{
+	// Encode green-target state as CRSF variometer (0x07): 0 cm/s = none, 100 cm/s = green bbox.
+	// On EdgeTX/ELRS this appears as VSpd; set a model warning when VSpd > 0.
+	const int16_t vertical_speed_cm_s = detected ? 100 : 0;
+
+	uint8_t buf[6];
+	int offset = 0;
+	WriteFrameHeader(buf, offset, crsf_frame_type_t::variometer, 2);
+	write_uint16_t(buf, offset, (uint16_t)vertical_speed_cm_s);
+	WriteFrameCrc(buf, offset, sizeof(buf));
+	return _uart->write((void *)buf, (size_t)offset);
 }
 
 bool CrsfRc::SendTelemetryBaroAltitude(const uint16_t altitude, const int16_t vertical_speed)

@@ -1,3 +1,4 @@
+# Self-hosted: TheLukaDragar/PX4-Autopilot or PX4_CI_SELF_HOSTED=true; PX4_SELF_HOSTED_LABELS.
 name: ROS Translation Node Tests
 on:
   push:
@@ -24,7 +25,12 @@ concurrency:
 jobs:
   build_and_test:
     name: Build and test [${{ matrix.config.ros_version }}]
-    runs-on: [runs-on,runner=4cpu-linux-x64,image=ubuntu24-full-x64,"run-id=${{ github.run_id }}",spot=false,extras=s3-cache]
+    runs-on: >-
+      ${{
+        (github.repository == 'TheLukaDragar/PX4-Autopilot' || vars.PX4_CI_SELF_HOSTED == 'true')
+        && fromJSON(vars.PX4_SELF_HOSTED_LABELS || '["self-hosted","Linux","X64"]')
+        || fromJSON(format('["runs-on","runner=4cpu-linux-x64","image=ubuntu24-full-x64","run-id={0}","spot=false","extras=s3-cache"]', github.run_id))
+      }}
     strategy:
       fail-fast: false
       matrix:
@@ -35,11 +41,16 @@ jobs:
       image: ros:${{ matrix.config.ros_version }}-ros-base-${{ matrix.config.ubuntu }}
     steps:
       - uses: runs-on/action@v2
+        if: ${{ !(github.repository == 'TheLukaDragar/PX4-Autopilot' || vars.PX4_CI_SELF_HOSTED == 'true') }}
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          submodules: recursive
       - name: Configure Git Safe Directory
         run: git config --system --add safe.directory '*'
+
+      - name: Sync git submodules (mavlink HEAD for px_update_git_header)
+        run: git submodule sync --recursive && git submodule update --init --recursive --jobs 8
 
       - uses: ./.github/actions/setup-ccache
         id: ccache

@@ -211,6 +211,7 @@ void PositionControl::_accelerationControl()
 
 	if (!_decouple_horizontal_and_vertical_acceleration) {
 		// Include vertical acceleration setpoint for better horizontal acceleration tracking
+		// except during ground contact due to high downwards acceleration setpoint.
 		z_specific_force += _acc_sp(2);
 	}
 

@@ -740,6 +740,10 @@ void Failsafe::checkStateAndMode(const hrt_abstime &time_us, const State &state,
 
 	CHECK_FAILSAFE(status_flags, fd_imbalanced_prop, Action::Warn);
 	CHECK_FAILSAFE(status_flags, fd_motor_failure, fromActuatorFailureActParam(_param_com_actuator_failure_act.get()));
+
+	// Landing tip-over: always disarm immediately, no deferral. Gate is handled upstream in FailureDetector.
+	CHECK_FAILSAFE(status_flags, fd_landing_tipover, ActionOptions(Action::Disarm).cannotBeDeferred());
+
 	CHECK_FAILSAFE(status_flags, gnss_lost, fromGnssLossActParam(_param_com_gnssloss_act.get()));
 
 

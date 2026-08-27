@@ -36,6 +36,9 @@
  *    A relatively low-hanging fruit would be figuring out which display elements require
  *    information from what UORB topics and disable if the information isn't displayed.
  * 	(this is complicated by the fact that it's not a one-to-one mapping...)
+ *  - Betaflight spreads MSP DisplayPort writes across the OSD state machine; we send many
+ *    packets per Run(). Digital VTX firmware often has small UART buffers — use
+ *    sendDisplayPort() (inter-packet delay) so multiple WRITE_STRING commands are not dropped.
  */
 
 #include "msp_osd.hpp"
@@ -52,6 +55,7 @@
 #include <px4_platform_common/getopt.h>
 #include <px4_platform_common/log.h>
 #include <px4_platform_common/posix.h>
+#include <px4_platform_common/time.h>
 
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/sensor_combined.h>
@@ -61,12 +65,18 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/airspeed_validated.h>
 #include <uORB/topics/vehicle_air_data.h>
+#include <uORB/topics/esc_status.h>
 
 #include <lib/geo/geo.h>
+#include <lib/mathlib/mathlib.h>
 
 #include "MspV1.hpp"
 
 ModuleBase::Descriptor MspOsd::desc{task_spawn, custom_command, print_usage};
+
+/** Pause after each MSP DisplayPort frame so Walksnail/Avatar-class VTX can drain the UART. */
+static constexpr useconds_t kDisplayPortInterPacketDelayUs = 800;
+
 
 //OSD elements positions
 //in betaflight configurator set OSD elements to your desired positions and in CLI type "set osd" to retreieve the numbers.
@@ -101,18 +111,24 @@ const uint16_t osd_altitude_pos = 2416;
 // Bottom Row 2
 const uint16_t osd_rssi_value_pos = 2445;
 const uint16_t osd_avg_cell_voltage_pos = 2446;
+const uint16_t osd_esc_tmp_pos = 1515; // OSD_POS(43,15) — lower than 1451 (43,13) so ESC temp stays visible
+// OSD_POS(23,5): above crosshair; 1 right of col 22
+const uint16_t osd_est_speed_pos = 183;
+const uint16_t osd_batt_pct_pos = 2447; // main battery remaining % — swapped with ESC temp (was 2443)
 const uint16_t osd_mah_drawn_pos = 2449;
 
 // Bottom Row 3
 const uint16_t osd_craft_name_pos = 2480;
-const uint16_t osd_crosshairs_pos = 2319;
+// Betaflight OSD_POS(x,y) for 3-char crosshair (SYM 0x72–0x74). Keep left edge x so x+2 < 30 — OSD_POS(31,10)
+// placed glyphs in cols 31–33 and disappeared on SD / 30-char-wide canvases.
+const uint16_t osd_crosshairs_pos = 344; // OSD_POS(24,10) — one row down vs 312; cols 24–26
 
 // Right
 const uint16_t osd_main_batt_voltage_pos = 2073;
 const uint16_t osd_current_draw_pos = 2103;
 
 
-const uint16_t osd_numerical_vario_pos = LOCATION_HIDDEN;
+const uint16_t osd_numerical_vario_pos = 215; // OSD_POS(23,6) — with est speed
 
 #define OSD_GRID_COL_MAX (59) // From betaflight-configurator OSD tab
 #define OSD_GRID_ROW_MAX (21) // From betaflight-configurator OSD tab
@@ -149,14 +165,14 @@ MspOsd::~MspOsd()
 
 bool MspOsd::init()
 {
-	ScheduleOnInterval(100_ms);
+	ScheduleOnInterval(50_ms); // 20 Hz — safe with 1-2 boxes + full telemetry
 
 	return true;
 }
 
 void MspOsd::SendConfig()
 {
-	msp_osd_config_t msp_osd_config;
+	msp_osd_config_t msp_osd_config{};
 
 	msp_osd_config.units = 0;
 	msp_osd_config.osd_item_count = 56;
@@ -193,14 +209,15 @@ void MspOsd::SendConfig()
 	msp_osd_config.osd_crosshairs_pos = LOCATION_HIDDEN;
 
 	if (enabled(SymbolIndex::CROSSHAIRS)) {
-		msp_osd_config.osd_crosshairs_pos = osd_crosshairs_pos - 32 * _param_osd_ch_pos_ver.get();
+		msp_osd_config.osd_crosshairs_pos = osd_crosshairs_pos - 32 * _param_osd_ch_height.get();
 	}
 
 	// possibly available, but not currently used
 	msp_osd_config.osd_flymode_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_esc_tmp_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_pitch_angle_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_roll_angle_pos = 			LOCATION_HIDDEN;
+	msp_osd_config.osd_esc_tmp_pos = enabled(SymbolIndex::ESC_TMP) ? osd_esc_tmp_pos : LOCATION_HIDDEN;
+	msp_osd_config.osd_flight_dist_pos = enabled(SymbolIndex::EST_SPEED) ? osd_est_speed_pos : LOCATION_HIDDEN;
+	msp_osd_config.osd_pitch_angle_pos = enabled(SymbolIndex::PITCH_ANGLE) ? (uint16_t)2445 : LOCATION_HIDDEN;
+	msp_osd_config.osd_roll_angle_pos  = enabled(SymbolIndex::ROLL_ANGLE)  ? (uint16_t)2477 : LOCATION_HIDDEN;
 	msp_osd_config.osd_horizon_sidebars_pos = 		LOCATION_HIDDEN;
 
 	// Not implemented or not available
@@ -214,7 +231,7 @@ void MspOsd::SendConfig()
 	msp_osd_config.osd_yaw_pids_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_pidrate_profile_pos =		LOCATION_HIDDEN;
 	msp_osd_config.osd_warnings_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_debug_pos = 				LOCATION_HIDDEN;
+	msp_osd_config.osd_debug_pos = enabled(SymbolIndex::BATT_REMAIN_PCT) ? osd_batt_pct_pos : LOCATION_HIDDEN;
 	msp_osd_config.osd_main_batt_usage_pos = 		LOCATION_HIDDEN;
 	msp_osd_config.osd_numerical_heading_pos = 		LOCATION_HIDDEN;
 	msp_osd_config.osd_compass_bar_pos = 			LOCATION_HIDDEN;
@@ -229,7 +246,6 @@ void MspOsd::SendConfig()
 	msp_osd_config.osd_log_status_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_flip_arrow_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_link_quality_pos = 			LOCATION_HIDDEN;
-	msp_osd_config.osd_flight_dist_pos = 			LOCATION_HIDDEN;
 	msp_osd_config.osd_stick_overlay_left_pos = 		LOCATION_HIDDEN;
 	msp_osd_config.osd_stick_overlay_right_pos = 		LOCATION_HIDDEN;
 	msp_osd_config.osd_display_name_pos = 			LOCATION_HIDDEN;
@@ -242,6 +258,7 @@ void MspOsd::SendConfig()
 
 	_msp.Send(MSP_OSD_CONFIG, &msp_osd_config);
 }
+
 
 // extract it to MSPOSD_BF_Run() and MSPOSD_DJIFPV_Run() for compatibility?
 void MspOsd::Run()
@@ -306,11 +323,53 @@ void MspOsd::Run()
 		return;
 	}
 
+	// Layout for Configurator / VTX (element positions). Was previously never sent.
+	SendConfig();
+
 	uint8_t subcmd = MSP_DP_HEARTBEAT;
-	this->Send(MSP_CMD_DISPLAYPORT, &subcmd, 1);
+	this->sendDisplayPort(&subcmd, 1);
 
 	subcmd = MSP_DP_CLEAR_SCREEN;
-	this->Send(MSP_CMD_DISPLAYPORT, &subcmd, 1);
+	this->sendDisplayPort(&subcmd, 1);
+
+	// Draw target bounding boxes from companion CV pipeline.
+	// Drawn first so VTX RX buffer is empty right after CLEAR_SCREEN — least likely to be dropped.
+	// DRAW_SCREEN at the end is what triggers the visible flip; WRITE_STRING order doesn't matter.
+	{
+		target_bbox_s det{};
+
+		// copy() returns true if the topic has ever been published
+		if (_target_bbox_sub.copy(&det)
+		    && det.count > 0
+		    && (hrt_absolute_time() - det.timestamp) < 500_ms) {
+
+			const uint8_t n = (uint8_t)math::min((int)det.count, 4);
+
+			for (uint8_t i = 0; i < n; i++) {
+				SimBox b{};
+				b.cx           = det.cx[i];
+				b.cy           = det.cy[i];
+				b.hw           = det.w[i] * 0.5f;
+				b.hh           = det.h[i] * 0.5f;
+				// Only use label if the first byte is printable ASCII — the OSD font
+			// maps non-printable bytes (e.g. 0x0A newline) to arrow/symbol glyphs.
+			const char *raw_lbl = &det.label_buf[i * 8];
+			b.label        = ((uint8_t)raw_lbl[0] >= 0x20u && (uint8_t)raw_lbl[0] <= 0x7Eu) ? raw_lbl : nullptr;
+				b.color        = det.color[i];
+				b.corners_only = false;
+				drawBbox(b);
+			}
+		}
+	}
+
+	// Betaflight draws crosshairs via DisplayPort WRITE_STRING (3 font chars), not MSP_OSD_CONFIG alone.
+	if (enabled(SymbolIndex::CROSSHAIRS)) {
+		const int32_t raw = (int32_t)osd_crosshairs_pos - 32 * (int32_t)_param_osd_ch_height.get();
+		// Betaflight OSD packed positions are 11-bit (max 0x7FF); avoid uint16_t underflow when CH_HEIGHT is large.
+		const uint16_t grid_pos = (uint16_t)math::constrain(raw, (int32_t)0, (int32_t)0x7FF);
+		const auto xh = msp_osd::construct_rendor_CROSSHAIRS(grid_pos);
+		this->sendDisplayPort(&xh, sizeof(xh));
+	}
 
 	// update display message
 	{
@@ -338,7 +397,7 @@ void MspOsd::Run()
 		msg[index++] = 0;		// Icon attr
 		msg[index++] = 0x03; // Icon index >
 		memcpy(&msg[index++], &display_message, sizeof(msp_name_t));
-		this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msg));
+		this->sendDisplayPort(&msg, sizeof(msg));
 	}
 
 	// MSP_FC_VARIANT
@@ -353,7 +412,7 @@ void MspOsd::Run()
 			input_rc_s input_rc{};
 			_input_rc_sub.copy(&input_rc);
 			const auto msg = msp_osd::construct_rendor_RSSI(input_rc);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_rssi_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_rssi_t));
 		}
 	}
 
@@ -365,45 +424,68 @@ void MspOsd::Run()
 		const auto msg_original = msp_osd::construct_BATTERY_STATE(battery_status);
 		this->Send(MSP_BATTERY_STATE, &msg_original);
 
-		if (enabled(SymbolIndex::AVG_CELL_VOLTAGE)) {
-			const auto msg = msp_osd::construct_rendor_BATTERY_STATE(battery_status);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_battery_state_t));
-		}
+		const auto msg = msp_osd::construct_rendor_BATTERY_STATE(battery_status);
+		this->sendDisplayPort(&msg, sizeof(msp_rendor_battery_state_t));
 
-		if (enabled(SymbolIndex::CURRENT_DRAW)) {
-			const auto msg = msp_osd::construct_rendor_CURRENT_DRAW(battery_status);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_current_draw_t));
+		if (enabled(SymbolIndex::BATT_REMAIN_PCT)) {
+			const auto pct_msg = msp_osd::construct_rendor_BATT_PCT(battery_status, osd_batt_pct_pos);
+			this->sendDisplayPort(&pct_msg, sizeof(msp_rendor_batt_pct_t));
 		}
 
 		if (enabled(SymbolIndex::MAH_DRAWN)) {
-			const auto msg = msp_osd::construct_rendor_MAH_DRAWN(battery_status);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_mah_drawn_t));
+			const auto mah_msg = msp_osd::construct_rendor_MAH(battery_status);
+			this->sendDisplayPort(&mah_msg, sizeof(msp_rendor_mah_t));
 		}
+
+		if (enabled(SymbolIndex::CURRENT_DRAW)) {
+			const auto cur_msg = msp_osd::construct_rendor_CURRENT(battery_status);
+			this->sendDisplayPort(&cur_msg, sizeof(msp_rendor_current_t));
+		}
+
 	}
 
-	// MSP_RAW_GPS
+	// ESC temperature (from esc_status)
+	if (enabled(SymbolIndex::ESC_TMP)) {
+		esc_status_s esc_status{};
+		_esc_status_sub.copy(&esc_status);
+		const auto msg = msp_osd::construct_rendor_ESC_TMP(esc_status, osd_esc_tmp_pos);
+		this->sendDisplayPort(&msg, sizeof(msp_rendor_esc_tmp_t));
+	}
+
+	// Fused horizontal ground speed (km/h), DisplayPort — separate from GPS_SPEED / MSP_RAW_GPS
+	if (enabled(SymbolIndex::EST_SPEED)) {
+		vehicle_local_position_s vehicle_local_position{};
+		_vehicle_local_position_sub.copy(&vehicle_local_position);
+		const auto msg = msp_osd::construct_rendor_EST_SPEED(vehicle_local_position, osd_est_speed_pos);
+		this->sendDisplayPort(&msg, sizeof(msp_rendor_est_speed_t));
+	}
+
+	// MSP_RAW_GPS (DisplayPort strings + MSP_RAW_GPS for BF GPS speed when enabled)
 	{
 		sensor_gps_s vehicle_gps_position{};
 		_vehicle_gps_position_sub.copy(&vehicle_gps_position);
 
 		if (enabled(SymbolIndex::GPS_LAT)) {
 			const auto msg = msp_osd::construct_rendor_GPS_LAT(vehicle_gps_position);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_latitude_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_latitude_t));
 		}
 
 		if (enabled(SymbolIndex::GPS_LON)) {
 			const auto msg = msp_osd::construct_rendor_GPS_LON(vehicle_gps_position);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_longitude_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_longitude_t));
 		}
 
 		if (enabled(SymbolIndex::GPS_SATS)) {
 			const auto msg = msp_osd::construct_rendor_GPS_NUM(vehicle_gps_position);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_satellites_used_t));
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_satellites_used_t));
 		}
 
 		if (enabled(SymbolIndex::GPS_SPEED)) {
-			const auto msg = msp_osd::construct_rendor_GPS_SPEED(vehicle_gps_position);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_gps_speed_t));
+			airspeed_validated_s airspeed_validated{};
+			_airspeed_validated_sub.copy(&airspeed_validated);
+
+			const auto msg = msp_osd::construct_RAW_GPS(vehicle_gps_position, airspeed_validated);
+			this->Send(MSP_RAW_GPS, &msg, sizeof(msg));
 		}
 	}
 
@@ -417,7 +499,8 @@ void MspOsd::Run()
 
 		if (enabled(SymbolIndex::HOME_DIST)) {
 			const auto msg =  msp_osd::construct_rendor_distanceToHome(home_position, vehicle_global_position);
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_distanceToHome_t));
+
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_distanceToHome_t));
 		}
 	}
 
@@ -426,17 +509,14 @@ void MspOsd::Run()
 		vehicle_attitude_s vehicle_attitude{};
 		_vehicle_attitude_sub.copy(&vehicle_attitude);
 
-		{
-			if (enabled(SymbolIndex::PITCH_ANGLE)) {
-				const auto msg = msp_osd::construct_rendor_PITCH(vehicle_attitude);
-				this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_pitch_t));
-			}
+		if (enabled(SymbolIndex::PITCH_ANGLE)) {
+			const auto msg = msp_osd::construct_rendor_PITCH(vehicle_attitude);
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_pitch_t));
 		}
-		{
-			if (enabled(SymbolIndex::ROLL_ANGLE)) {
-				const auto msg = msp_osd::construct_rendor_ROLL(vehicle_attitude);
-				this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_roll_t));
-			}
+
+		if (enabled(SymbolIndex::ROLL_ANGLE)) {
+			const auto msg = msp_osd::construct_rendor_ROLL(vehicle_attitude);
+			this->sendDisplayPort(&msg, sizeof(msp_rendor_roll_t));
 		}
 	}
 
@@ -452,8 +532,16 @@ void MspOsd::Run()
 		if (enabled(SymbolIndex::ALTITUDE)) {
 			const auto msg = msp_osd::construct_Rendor_ALTITUDE(vehicle_gps_position, vehicle_local_position);
 
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_altitude_t));
+			this->sendDisplayPort(&msg, sizeof(msp_altitude_t));
 		}
+	}
+
+	// Vario (vertical speed) — vehicle_local_position.vz, NED sign corrected
+	if (enabled(SymbolIndex::NUMERICAL_VARIO)) {
+		vehicle_local_position_s vehicle_local_position{};
+		_vehicle_local_position_sub.copy(&vehicle_local_position);
+		const auto vario_msg = msp_osd::construct_rendor_VARIO(vehicle_local_position);
+		this->sendDisplayPort(&vario_msg, sizeof(msp_rendor_vario_t));
 	}
 
 	// MSP_MOTOR_TELEMETRY
@@ -486,18 +574,83 @@ void MspOsd::Run()
 		this->Send(MSP_STATUS, &msg, sizeof(msp_status_t));
 	}
 
-	// MSP_CROSSHAIRS
-	{
-		if (enabled(SymbolIndex::CROSSHAIRS)) {
-			const auto msg = msp_osd::construct_rendor_CROSSHAIRS(_param_osd_ch_pos_ver.get(), _param_osd_ch_pos_hor.get());
+	subcmd = MSP_DP_DRAW_SCREEN;
+	this->sendDisplayPort(&subcmd, 1);
+}
 
-			this->Send(MSP_CMD_DISPLAYPORT, &msg, sizeof(msp_rendor_crosshairs_t));
+// Draw one bounding box using MSP DisplayPort WRITE_STRING packets.
+// box.color is the MSP attr font-page byte: 0=white 1=green 2=red 3=yellow (VTX-dependent).
+void MspOsd::drawBbox(const SimBox &box)
+{
+	// HD OSD character grid — 53 × 20 typical for Walksnail Avatar / HDZero
+	static constexpr int kGridCols = 52;
+	static constexpr int kGridRows = 19;
+
+	// Map normalised coords → character grid
+	const int cx = math::constrain((int)(box.cx * kGridCols), 0, kGridCols - 1);
+	const int cy = math::constrain((int)(box.cy * kGridRows), 0, kGridRows - 1);
+	const int hw = math::max(2, (int)(box.hw * kGridCols));
+	const int hh = math::max(1, (int)(box.hh * kGridRows));
+
+	const int c0 = math::constrain(cx - hw, 0, kGridCols - 2);
+	const int c1 = math::constrain(cx + hw, c0 + 2, kGridCols - 1);
+	const int r0 = math::constrain(cy - hh, 0, kGridRows - 2);
+	const int r1 = math::constrain(cy + hh, r0 + 2, kGridRows - 1);
+
+	// edge_len: chars from c0 to c1 inclusive, capped at protocol max (30)
+	const int edge_len = math::min(c1 - c0 + 1, 30);
+	const int draw_c1  = c0 + edge_len - 1;
+
+	// Helper: pack and send one WRITE_STRING DisplayPort packet.
+	// attr = box.color (font page → colour on most digital VTX).
+	auto send_str = [&](int row, int col, const char *str, int len) {
+		uint8_t pkt[36];
+		pkt[0] = MSP_DP_WRITE_STRING;
+		pkt[1] = (uint8_t)row;
+		pkt[2] = (uint8_t)col;
+		pkt[3] = box.color & 0x03u;            // bits 0-1 = font page, rest reserved 0
+		const int slen = math::min(len, 30);
+		memcpy(&pkt[4], str, slen);
+		pkt[4 + slen] = 0x00;
+		this->sendDisplayPort(pkt, 4 + slen + 1);
+	};
+
+	// Top edge: "+---...---+"
+	{
+		char edge[31] = {};
+		edge[0] = '+';
+		for (int i = 1; i < edge_len - 1; i++) { edge[i] = '-'; }
+		edge[edge_len - 1] = '+';
+		send_str(r0, c0, edge, edge_len);
+	}
+
+	// Bottom edge: "+---...---+"
+	{
+		char edge[31] = {};
+		edge[0] = '+';
+		for (int i = 1; i < edge_len - 1; i++) { edge[i] = '-'; }
+		edge[edge_len - 1] = '+';
+		send_str(r1, c0, edge, edge_len);
+	}
+
+	if (!box.corners_only) {
+		// Left and right vertical edges — capped at 6 rows to stay within UART budget
+		const int vert_rows = math::min(r1 - r0 - 1, 6);
+
+		for (int i = 0; i < vert_rows; i++) {
+			const int r = r0 + 1 + i;
+			send_str(r, c0,      "|", 1);
+			send_str(r, draw_c1, "|", 1);
 		}
 	}
 
-	subcmd = MSP_DP_DRAW_SCREEN;
-	this->Send(MSP_CMD_DISPLAYPORT, &subcmd, 1);
+	// Label centred one row inside the top edge
+	if (box.label && box.label[0] != '\0') {
+		const int label_len = (int)strlen(box.label);
+		send_str(r0 + 1, cx - (label_len / 2), box.label, label_len);
+	}
 }
+
 
 void MspOsd::Send(const unsigned int message_type, const void *payload)
 {
@@ -516,6 +669,12 @@ void MspOsd::Send(const unsigned int message_type, const void *payload, int32_t 
 	} else {
 		_performance_data.unsuccessful_sends++;
 	}
+}
+
+void MspOsd::sendDisplayPort(const void *payload, int32_t payload_size)
+{
+	Send(MSP_CMD_DISPLAYPORT, payload, payload_size);
+	px4_usleep(kDisplayPortInterPacketDelayUs);
 }
 
 void MspOsd::Receive()

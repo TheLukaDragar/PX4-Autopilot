@@ -41,8 +41,10 @@
 
 #pragma once
 
-#include "course.h"
 #include "geofence.h"
+#if defined(CONFIG_MODULES_FW_MODE_MANAGER) && CONFIG_MODULES_FW_MODE_MANAGER
+#include "course.h"
+#endif
 #include "land.h"
 #include "precland.h"
 #include "loiter.h"
@@ -187,7 +189,9 @@ public:
 	MissionRouteCache           &get_mission_route_cache() { return _mission_route_cache; }
 
 	PrecLand *get_precland() { return &_precland; } /**< allow others, e.g. Mission, to use the precision land block */
+#if defined(CONFIG_MODULES_FW_MODE_MANAGER) && CONFIG_MODULES_FW_MODE_MANAGER
 	Course *get_course() { return &_course; }
+#endif
 #if CONFIG_NAVIGATOR_ADSB
 	DetectAndAvoid *get_detect_and_avoid() { return &_detect_and_avoid; }
 #endif // CONFIG_NAVIGATOR_ADSB
@@ -430,7 +434,9 @@ private:
 	Land		_land;			/**< class for handling land commands */
 	PrecLand	_precland;			/**< class for handling precision land commands */
 	RTL 		_rtl;				/**< class that handles RTL */
+#if defined(CONFIG_MODULES_FW_MODE_MANAGER) && CONFIG_MODULES_FW_MODE_MANAGER
 	Course		_course;			/**< class that handles course */
+#endif
 #if CONFIG_NAVIGATOR_ADSB
 	DetectAndAvoid _detect_and_avoid;
 #endif // CONFIG_NAVIGATOR_ADSB

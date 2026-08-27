@@ -103,8 +103,11 @@ void Timesync::update(const uint64_t now_us, const int64_t remote_timestamp_ns, 
 			// Increment counter if round trip time is too high for accurate timesync
 			_high_rtt_count++;
 
-			if (_high_rtt_count == MAX_CONSECUTIVE_HIGH_RTT) {
-				PX4_DEBUG("RTT too high for timesync: %llu ms", rtt_us / 1000ULL);
+			if (_high_rtt_count == 1 || _high_rtt_count % 50 == 0) {
+				PX4_WARN("timesync: RTT %llu ms exceeds gate %llu ms (count=%u)",
+					 (unsigned long long)(rtt_us / 1000ULL),
+					 (unsigned long long)(MAX_RTT_SAMPLE / 1000ULL),
+					 (unsigned)_high_rtt_count);
 			}
 		}
 

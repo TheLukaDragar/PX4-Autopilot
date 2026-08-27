@@ -78,7 +78,33 @@
 #include "streams/ESTIMATOR_STATUS.hpp"
 #include "streams/EXTENDED_SYS_STATE.hpp"
 #include "streams/FLIGHT_INFORMATION.hpp"
+#if defined(MAVLINK_MSG_ID_GLOBAL_POSITION_SENSOR)
 #include "streams/GLOBAL_POSITION_SENSOR.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+#include "streams/PARTICIPANT_POSITION.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TRACK_IDENTITY)
+#include "streams/TRACK_IDENTITY.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET)
+#include "streams/TARGET.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+#include "streams/TARGET_HANDOVER.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+#include "streams/TRITRI_TRACK.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+#include "streams/TRITRI_TARGET.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+#include "streams/MAVLINK_M_ACK.hpp"
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+#include "streams/BATTLE_DAMAGE_ASSESSMENT.hpp"
+#endif
 #include "streams/GLOBAL_POSITION_INT.hpp"
 #if defined(MAVLINK_MSG_ID_GNSS_INTEGRITY)
 #include "streams/GNSS_INTEGRITY.hpp"
@@ -529,6 +555,30 @@ static const StreamListItem streams_list[] = {
 #if defined(GLOBAL_POSITION_SENSOR_HPP)
 	create_stream_list_item<MavlinkStreamGlobalPositionSensor>(),
 #endif // GLOBAL_POSITION_SENSOR_HPP
+#if defined(PARTICIPANT_POSITION_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMParticipantPosition>(),
+#endif // PARTICIPANT_POSITION_HPP
+#if defined(TRACK_IDENTITY_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMTrackIdentity>(),
+#endif // TRACK_IDENTITY_HPP
+#if defined(MAVLINK_STREAM_TARGET_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMTarget>(),
+#endif // MAVLINK_STREAM_TARGET_HPP
+#if defined(TARGET_HANDOVER_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMTargetHandover>(),
+#endif // TARGET_HANDOVER_HPP
+#if defined(TRITRI_TRACK_HPP)
+	create_stream_list_item<MavlinkStreamTritriTrack>(),
+#endif // TRITRI_TRACK_HPP
+#if defined(TRITRI_TARGET_HPP)
+	create_stream_list_item<MavlinkStreamTritriTarget>(),
+#endif // TRITRI_TARGET_HPP
+#if defined(MAVLINK_M_ACK_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMAck>(),
+#endif // MAVLINK_M_ACK_HPP
+#if defined(BATTLE_DAMAGE_ASSESSMENT_HPP)
+	create_stream_list_item<MavlinkStreamMavlinkMBattleDamageAssessment>(),
+#endif // BATTLE_DAMAGE_ASSESSMENT_HPP
 };
 
 const char *get_stream_name(const uint16_t msg_id)

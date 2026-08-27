@@ -143,6 +143,13 @@ serial_ports = {
         "default_baudrate": 57600,
         },
 
+    # USB CDC ACM
+    "ACM0": {
+        "label": "USB CDC ACM",
+        "index": 500,
+        "default_baudrate": 3000000,
+        },
+
     }
 
 parser = argparse.ArgumentParser(description='Generate Serial params & startup script')

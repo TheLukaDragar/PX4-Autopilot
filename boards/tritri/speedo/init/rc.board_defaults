@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# board specific defaults
+#------------------------------------------------------------------------------
+
+# Battery - calibrate these to your actual voltage divider circuit
+param set-default BAT1_V_DIV 17.15999984
+# param set-default BAT1_A_PER_V -1.0
+param set-default BAT1_N_CELLS 12
+param set-default BAT1_V_CHARGED 4.2
+param set-default BAT1_V_EMPTY 3.2
+
+
+
+# # PWM outputs - Timer1 (4 channels), negative = dshot
+param set-default PWM_MAIN_TIM0 -4
+
+# # # UXRCE DDS over USB (ACM0)
+# param set-default SYS_USB_AUTO 0
+# param set-default UXRCE_DDS_CFG 500
+# param set-default SER_ACM0_BAUD 3000000
+
+# # RC input — crsf_rc only (do not enable rc_input on same UART)
+param set-default RC_INPUT_PROTO 0
+param set-default RC_CRSF_PRT_CFG 300
+param set-default RC_CRSF_TEL_EN 1
+
+# # Multi-EKF: use all 3 onboard IMUs (ICM42688P, BMI088, BMI270)
+param set-default SENS_IMU_MODE 0
+param set-default EKF2_MULTI_IMU 3
+
+# # Vehicle type
+param set-default MAV_TYPE 2
+param set-default CA_AIRFRAME 0
+param set-default CA_ROTOR_COUNT 4
+
+# # Telemetry Radio
+param set-default MAV_0_CONFIG 103
+param set-default MAV_0_FORWARD 0
+
+
+
+# # Mavlink UART Jetson
+param set-default MAV_1_CONFIG 102
+
+

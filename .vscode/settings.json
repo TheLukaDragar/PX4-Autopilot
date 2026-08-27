@@ -129,4 +129,6 @@
         "yaml.schemas": {
                 "${workspaceFolder}/validation/module_schema.yaml": "${workspaceFolder}/src/modules/*/module.yaml"
         },
+        "snyk.advanced.organization": "8577b710-dec4-4752-8804-aaec0eca65d1",
+        "snyk.advanced.autoSelectOrganization": true,
 }

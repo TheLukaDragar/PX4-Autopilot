@@ -15,5 +15,8 @@ bmi270 -s -b 3 -R 0 start
 # Internal baro
 spl06 -I -a 0x77 start
 
-# External mag
+# Onboard mag
 qmc5883l -I -a 0x0D -R 4 start
+
+# External IST8310 compass (Walksnail WS-M181 / C0PJ-18GPS) at I2C 0x0C
+ist8310 -X -b 1 -a 12 start

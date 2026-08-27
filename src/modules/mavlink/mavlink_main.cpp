@@ -69,6 +69,47 @@
 #include <sys/time.h>
 #endif
 
+/**
+ * Hop C2 radio → QGC even when the ingress instance has FORWARD off.
+ * Destination still needs MAV_X_FORWARD=1. Same exception as gimbal.
+ * Live COP is TRITRI_* (539xx) end-to-end — forward as-is (no expand).
+ */
+static bool should_always_forward(uint32_t msgid)
+{
+	switch (msgid) {
+	case MAVLINK_MSG_ID_GIMBAL_DEVICE_ATTITUDE_STATUS:
+	case MAVLINK_MSG_ID_GIMBAL_DEVICE_INFORMATION:
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+	case MAVLINK_MSG_ID_TRITRI_TRACK:
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+	case MAVLINK_MSG_ID_TRITRI_TARGET:
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+	case MAVLINK_MSG_ID_TARGET_HANDOVER:
+#endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+	case MAVLINK_MSG_ID_PARTICIPANT_POSITION:
+#endif
+#if defined(MAVLINK_MSG_ID_FIRES)
+	case MAVLINK_MSG_ID_FIRES:
+#endif
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+	case MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE:
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+	case MAVLINK_MSG_ID_MAVLINK_M_ACK:
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+	case MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT:
+#endif
+		return true;
+
+	default:
+		return false;
+	}
+}
+
 // Guard against MAVLink misconfiguration
 #ifndef MAVLINK_CRC_EXTRA
 #error MAVLINK_CRC_EXTRA has to be defined on PX4 systems
@@ -591,7 +632,9 @@ Mavlink::component_was_seen(int system_id, int component_id, Mavlink &self)
 void
 Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 {
-	const mavlink_msg_entry_t *meta = mavlink_get_msg_entry(msg->msgid);
+	const mavlink_message_t *fwd = msg;
+
+	const mavlink_msg_entry_t *meta = mavlink_get_msg_entry(fwd->msgid);
 
 	int target_system_id = 0;
 	int target_component_id = 0;
@@ -600,11 +643,11 @@ Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 	if (meta) {
 		// Extract target system and target component if set
 		if (meta->flags & MAV_MSG_ENTRY_FLAG_HAVE_TARGET_SYSTEM) {
-			target_system_id = static_cast<uint8_t>((_MAV_PAYLOAD(msg))[meta->target_system_ofs]);
+			target_system_id = static_cast<uint8_t>((_MAV_PAYLOAD(fwd))[meta->target_system_ofs]);
 		}
 
 		if (meta->flags & MAV_MSG_ENTRY_FLAG_HAVE_TARGET_COMPONENT) {
-			target_component_id = static_cast<uint8_t>((_MAV_PAYLOAD(msg))[meta->target_component_ofs]);
+			target_component_id = static_cast<uint8_t>((_MAV_PAYLOAD(fwd))[meta->target_component_ofs]);
 		}
 	}
 
@@ -619,11 +662,11 @@ Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 	}
 
 	// We don't forward heartbeats unless it's specifically enabled.
-	if (msg->msgid == MAVLINK_MSG_ID_HEARTBEAT && !self->forward_heartbeats_enabled()) {
+	if (fwd->msgid == MAVLINK_MSG_ID_HEARTBEAT && !self->forward_heartbeats_enabled()) {
 		return;
 	}
 
-	if (self->get_mode() == MAVLINK_MODE_LOW_BANDWIDTH && msg->msgid == MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS) {
+	if (self->get_mode() == MAVLINK_MODE_LOW_BANDWIDTH && fwd->msgid == MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS) {
 		return;
 	}
 
@@ -633,7 +676,7 @@ Mavlink::forward_message(const mavlink_message_t *msg, Mavlink *self)
 		if (inst && (inst != self) && (inst->get_forwarding_on())) {
 			// Pass message only if target component was seen before
 			if (inst->_receiver.component_was_seen(target_system_id, target_component_id)) {
-				inst->pass_message(msg);
+				inst->pass_message(fwd);
 			}
 		}
 	}
@@ -1227,16 +1270,8 @@ Mavlink::handle_message(const mavlink_message_t *msg)
 		return;
 	}
 
-	if (get_forwarding_on()) {
+	if (get_forwarding_on() || should_always_forward(msg->msgid)) {
 		/* forward any messages to other mavlink instances */
-		Mavlink::forward_message(msg, this);
-	}
-
-	// Special case for gimbals that need to forward GIMBAL_DEVICE_ATTITUDE_STATUS.
-	else if (msg->msgid == MAVLINK_MSG_ID_GIMBAL_DEVICE_ATTITUDE_STATUS) {
-		Mavlink::forward_message(msg, this);
-
-	} else if (msg->msgid == MAVLINK_MSG_ID_GIMBAL_DEVICE_INFORMATION) {
 		Mavlink::forward_message(msg, this);
 	}
 }
@@ -1635,6 +1670,24 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 	switch (_mode) {
 	case MAVLINK_MODE_NORMAL:
 		configure_stream_local("ADSB_VEHICLE", 5.f);
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+		configure_stream_local("PARTICIPANT_POSITION", 10.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+		configure_stream_local("TRITRI_TRACK", 20.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+		configure_stream_local("TRITRI_TARGET", 20.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+		configure_stream_local("TARGET_HANDOVER", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+		configure_stream_local("BATTLE_DAMAGE_ASSESSMENT", unlimited_rate);
+#endif
 		configure_stream_local("ALTITUDE", 1.0f);
 		configure_stream_local("ATTITUDE", 15.0f);
 		configure_stream_local("ATTITUDE_QUATERNION", 10.0f);
@@ -1725,6 +1778,24 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("ODOMETRY", 30.0f);
 
 		configure_stream_local("ADSB_VEHICLE", 5.f);
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+		configure_stream_local("PARTICIPANT_POSITION", 10.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+		configure_stream_local("TRITRI_TRACK", 20.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+		configure_stream_local("TRITRI_TARGET", 20.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+		configure_stream_local("TARGET_HANDOVER", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+		configure_stream_local("BATTLE_DAMAGE_ASSESSMENT", unlimited_rate);
+#endif
 		configure_stream_local("ATTITUDE_QUATERNION", 50.0f);
 		configure_stream_local("ATTITUDE_TARGET", 10.0f);
 		configure_stream_local("AVAILABLE_MODES", 0.3f);
@@ -1874,10 +1945,26 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 
 	case MAVLINK_MODE_MAGIC:
+		// stream nothing
+		break;
 
-	/* fallthrough */
 	case MAVLINK_MODE_CUSTOM:
-		//stream nothing
+		// C2: TRITRI COP + blue PPLI (one COP type end-to-end).
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+		configure_stream_local("TRITRI_TRACK", 1.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+		configure_stream_local("TRITRI_TARGET", 5.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+		configure_stream_local("PARTICIPANT_POSITION", 5.0f);
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+		configure_stream_local("MAVLINK_M_ACK", unlimited_rate);
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+		configure_stream_local("BATTLE_DAMAGE_ASSESSMENT", unlimited_rate);
+#endif
 		break;
 
 	case MAVLINK_MODE_CONFIG: // USB

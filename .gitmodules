@@ -1,7 +1,7 @@
 [submodule "src/modules/mavlink/mavlink"]
 	path = src/modules/mavlink/mavlink
-	url = https://github.com/mavlink/mavlink.git
-	branch = master
+	url = https://github.com/TheLukaDragar/mavlink.git
+	branch = TheLukaDragar/military-dialect
 [submodule "Tools/simulation/jmavsim/jMAVSim"]
 	path = Tools/simulation/jmavsim/jMAVSim
 	url = https://github.com/PX4/jMAVSim.git
@@ -58,6 +58,10 @@
 	path = src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client
 	url = https://github.com/PX4/Micro-XRCE-DDS-Client.git
 	branch = px4
+[submodule "src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client-v3"]
+	path = src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client-v3
+	url = https://github.com/PX4/Micro-XRCE-DDS-Client.git
+	branch = px4-release/3
 [submodule "src/lib/cdrstream/cyclonedds"]
 	path = src/lib/cdrstream/cyclonedds
 	url = https://github.com/px4/cyclonedds
@@ -72,10 +76,6 @@
 	path = src/lib/heatshrink/heatshrink
 	url = https://github.com/PX4/heatshrink.git
 	branch = px4
-[submodule "src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client-v3"]
-	path = src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client-v3
-	url = https://github.com/PX4/Micro-XRCE-DDS-Client.git
-	branch = px4-release/3
 [submodule "Tools/simulation/gz"]
 	path = Tools/simulation/gz
 	url = https://github.com/PX4/PX4-gazebo-models.git

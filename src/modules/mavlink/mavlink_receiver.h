@@ -90,6 +90,30 @@
 #include <uORB/topics/log_message.h>
 #include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/topics/mavlink_tunnel.h>
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+#include <uORB/topics/mavlink_m_tritri_track.h>
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+#include <uORB/topics/mavlink_m_tritri_target.h>
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+#include <uORB/topics/mavlink_m_target_handover.h>
+#endif
+#if defined(MAVLINK_MSG_ID_FIRES)
+#include <uORB/topics/mavlink_m_fires.h>
+#endif
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+#include <uORB/topics/mavlink_m_engagement_directive.h>
+#endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+#include <uORB/topics/mavlink_m_participant_position.h>
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+#include <uORB/topics/mavlink_m_ack.h>
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+#include <uORB/topics/mavlink_m_battle_damage_assessment.h>
+#endif
 #include <uORB/topics/obstacle_distance.h>
 #include <uORB/topics/offboard_control_mode.h>
 #include <uORB/topics/onboard_computer_status.h>
@@ -244,6 +268,31 @@ private:
 	void handle_message_ranging_beacon(mavlink_message_t *msg);
 #endif // MAVLINK_MSG_ID_RANGING_BEACON
 
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+	void handle_message_tritri_track(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+	void handle_message_tritri_target(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+	void handle_message_mavlink_m_target_handover(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_FIRES)
+	void handle_message_mavlink_m_fires(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+	void handle_message_mavlink_m_engagement_directive(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+	void handle_message_mavlink_m_participant_position(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+	void handle_message_mavlink_m_ack(mavlink_message_t *msg);
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+	void handle_message_mavlink_m_battle_damage_assessment(mavlink_message_t *msg);
+#endif
+
 #if !defined(CONSTRAINED_FLASH)
 	void handle_message_debug(mavlink_message_t *msg);
 	void handle_message_debug_float_array(mavlink_message_t *msg);
@@ -345,6 +394,30 @@ private:
 	uORB::Publication<cellular_status_s>			_cellular_status_pub{ORB_ID(cellular_status)};
 	uORB::Publication<differential_pressure_s>		_differential_pressure_pub{ORB_ID(differential_pressure)};
 	uORB::Publication<follow_target_s>			_follow_target_pub{ORB_ID(follow_target)};
+#if defined(MAVLINK_MSG_ID_TRITRI_TRACK)
+	uORB::Publication<mavlink_m_tritri_track_s>		_mavlink_m_tritri_track_pub{ORB_ID(mavlink_m_tritri_track)};
+#endif
+#if defined(MAVLINK_MSG_ID_TRITRI_TARGET)
+	uORB::Publication<mavlink_m_tritri_target_s>		_mavlink_m_tritri_target_pub{ORB_ID(mavlink_m_tritri_target)};
+#endif
+#if defined(MAVLINK_MSG_ID_TARGET_HANDOVER)
+	uORB::Publication<mavlink_m_target_handover_s>		_mavlink_m_target_handover_pub{ORB_ID(mavlink_m_target_handover)};
+#endif
+#if defined(MAVLINK_MSG_ID_FIRES)
+	uORB::Publication<mavlink_m_fires_s>			_mavlink_m_fires_pub{ORB_ID(mavlink_m_fires)};
+#endif
+#if defined(MAVLINK_MSG_ID_ENGAGEMENT_DIRECTIVE)
+	uORB::Publication<mavlink_m_engagement_directive_s>	_mavlink_m_engagement_directive_pub{ORB_ID(mavlink_m_engagement_directive)};
+#endif
+#if defined(MAVLINK_MSG_ID_PARTICIPANT_POSITION)
+	uORB::Publication<mavlink_m_participant_position_s>	_mavlink_m_participant_position_pub{ORB_ID(mavlink_m_participant_position)};
+#endif
+#if defined(MAVLINK_MSG_ID_MAVLINK_M_ACK)
+	uORB::Publication<mavlink_m_ack_s>			_mavlink_m_ack_pub{ORB_ID(mavlink_m_ack)};
+#endif
+#if defined(MAVLINK_MSG_ID_BATTLE_DAMAGE_ASSESSMENT)
+	uORB::Publication<mavlink_m_battle_damage_assessment_s>	_mavlink_m_battle_damage_assessment_pub{ORB_ID(mavlink_m_battle_damage_assessment)};
+#endif
 	uORB::Publication<gimbal_manager_set_attitude_s>	_gimbal_manager_set_attitude_pub{ORB_ID(gimbal_manager_set_attitude)};
 	uORB::Publication<gimbal_manager_set_manual_control_s>	_gimbal_manager_set_manual_control_pub{ORB_ID(gimbal_manager_set_manual_control)};
 	uORB::Publication<gimbal_device_information_s>		_gimbal_device_information_pub{ORB_ID(gimbal_device_information)};

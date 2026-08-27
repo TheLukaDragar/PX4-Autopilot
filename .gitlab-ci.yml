@@ -1,0 +1,218 @@
+# GitLab CI: sync ROS 2 msg/srv definitions to drones/px4_msgs.
+# GitHub Actions equivalents under .github/workflows/ are left untouched
+# (GitHub → TheLukaDragar/px4_msgs; GitLab → drones/px4_msgs).
+#
+# Required CI/CD variables on drones/px4-autopilot (Settings → CI/CD → Variables):
+#   PX4_MSGS_REPO_URL     https://gitlab.ssrdteam.com/drones/px4_msgs.git
+#   PX4_MSGS_PUSH_TOKEN   PAT / project access token with write_repository on px4_msgs (masked)
+#   PX4_MSGS_GIT_USER     commit author name (e.g. px4-msgs-sync)
+#   PX4_MSGS_GIT_EMAIL    commit author email (e.g. ci@ssrdteam.com)
+#
+# Runner: tags [ava] — amd64 project runner enabled on this project.
+
+stages:
+  - sync
+
+variables:
+  PX4_MSGS_REPO_URL:
+    value: "https://gitlab.ssrdteam.com/drones/px4_msgs.git"
+    description: "Git clone URL for the GitLab px4_msgs project"
+  GIT_STRATEGY: fetch
+  GIT_DEPTH: "0"
+
+.sync_runner:
+  tags:
+    - ava
+  # ava uses Docker executor; alpine+git is enough for this sync.
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache git bash >/dev/null
+    - |
+      set -euo pipefail
+      if [ -z "${PX4_MSGS_PUSH_TOKEN:-}" ]; then
+        echo "ERROR: CI variable PX4_MSGS_PUSH_TOKEN is not set (write access to px4_msgs)."
+        exit 1
+      fi
+      git config --global user.name "${PX4_MSGS_GIT_USER:-px4-msgs-sync}"
+      git config --global user.email "${PX4_MSGS_GIT_EMAIL:-ci@ssrdteam.com}"
+
+# -----------------------------------------------------------------------------
+# Push msg/srv changes on main/stable/beta/release/* → update px4_msgs branch
+# -----------------------------------------------------------------------------
+sync_to_px4_msgs:
+  extends: .sync_runner
+  stage: sync
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "stable" || $CI_COMMIT_BRANCH == "beta" || $CI_COMMIT_BRANCH =~ /^release\//
+      changes:
+        - msg/**/*
+        - srv/**/*
+  script:
+    - |
+      bash <<'EOS'
+      set -euo pipefail
+      REPO_URL="${PX4_MSGS_REPO_URL}"
+      # Inject token for HTTPS push (oauth2 username is conventional for GitLab PATs).
+      case "${REPO_URL}" in
+        https://*)
+          AUTH_URL="https://oauth2:${PX4_MSGS_PUSH_TOKEN}@${REPO_URL#https://}"
+          ;;
+        *)
+          echo "ERROR: PX4_MSGS_REPO_URL must be an https:// URL"
+          exit 1
+          ;;
+      esac
+
+      rm -rf px4_msgs
+      git clone "${AUTH_URL}" px4_msgs
+      cd px4_msgs
+
+      BRANCH="${CI_COMMIT_REF_NAME}"
+      if git fetch origin "${BRANCH}" 2>/dev/null && git checkout -B "${BRANCH}" "origin/${BRANCH}"; then
+        echo "Checked out existing branch ${BRANCH}"
+      else
+        git checkout -B "${BRANCH}"
+        echo "Created branch ${BRANCH}"
+      fi
+      cd ..
+
+      # PX4 keeps msg/ and msg/versioned/ separate; px4_msgs publishes a flat msg/ tree.
+      rm -f px4_msgs/msg/*.msg
+      rm -f px4_msgs/msg/versioned/*.msg
+      rm -f px4_msgs/srv/*.srv
+      rm -f px4_msgs/srv/versioned/*.srv
+      cp msg/*.msg px4_msgs/msg/
+      if ls msg/versioned/*.msg >/dev/null 2>&1; then
+        cp msg/versioned/*.msg px4_msgs/msg/
+      fi
+      cp srv/*.srv px4_msgs/srv/
+      if ls srv/versioned/*.srv >/dev/null 2>&1; then
+        cp srv/versioned/*.srv px4_msgs/srv/
+      fi
+
+      cd px4_msgs
+      git add -A
+      git status
+      if git diff --staged --quiet; then
+        echo "No ROS 2 message changes to publish (tree matches PX4 snapshot)."
+        exit 0
+      fi
+
+      git commit -m "Update to PX4 ${CI_COMMIT_SHA}"
+      if ! git push origin "${BRANCH}"; then
+        echo "ERROR: git push failed. Check PX4_MSGS_PUSH_TOKEN write access to px4_msgs."
+        exit 1
+      fi
+      EOS
+
+# -----------------------------------------------------------------------------
+# Stable release tags vX.Y.Z → identical tag on px4_msgs release/X.Y
+# -----------------------------------------------------------------------------
+tag_px4_msgs:
+  extends: .sync_runner
+  stage: sync
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
+  script:
+    - |
+      bash <<'EOS'
+      set -euo pipefail
+      TAG_NAME="${TAG_NAME:-${CI_COMMIT_TAG:-}}"
+      if [ -z "${TAG_NAME}" ]; then
+        echo "ERROR: Set TAG_NAME (web pipeline) or push a vX.Y.Z tag."
+        exit 1
+      fi
+
+      if [[ ! "${TAG_NAME}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        echo "Tag format is not stable vX.Y.Z, skipping: ${TAG_NAME}"
+        exit 0
+      fi
+
+      major="${BASH_REMATCH[1]}"
+      minor="${BASH_REMATCH[2]}"
+      release_branch="release/${major}.${minor}"
+
+      git fetch origin "${release_branch}" 2>/dev/null || true
+      if ! git show-ref --verify --quiet "refs/remotes/origin/${release_branch}" \
+         && ! git show-ref --verify --quiet "refs/heads/${release_branch}"; then
+        echo "PX4 branch ${release_branch} not found"
+        exit 1
+      fi
+
+      tag_date="$(git for-each-ref --format='%(creatordate:iso8601)' "refs/tags/${TAG_NAME}" 2>/dev/null || true)"
+      if [ -z "${tag_date}" ] && [ -n "${CI_COMMIT_TIMESTAMP:-}" ]; then
+        tag_date="${CI_COMMIT_TIMESTAMP}"
+      fi
+      if [ -z "${tag_date}" ]; then
+        echo "Unable to resolve tag date for ${TAG_NAME}"
+        exit 1
+      fi
+
+      REPO_URL="${PX4_MSGS_REPO_URL}"
+      case "${REPO_URL}" in
+        https://*)
+          AUTH_URL="https://oauth2:${PX4_MSGS_PUSH_TOKEN}@${REPO_URL#https://}"
+          ;;
+        *)
+          echo "ERROR: PX4_MSGS_REPO_URL must be an https:// URL"
+          exit 1
+          ;;
+      esac
+
+      rm -rf px4_msgs
+      git clone "${AUTH_URL}" px4_msgs
+      cd px4_msgs
+
+      if git show-ref --verify --quiet "refs/remotes/origin/${release_branch}"; then
+        git checkout -B "${release_branch}" "origin/${release_branch}"
+      else
+        echo "px4_msgs branch ${release_branch} does not exist"
+        exit 1
+      fi
+      cd ..
+
+      git checkout "${release_branch}" 2>/dev/null || git checkout -B "${release_branch}" "origin/${release_branch}"
+
+      rm -f px4_msgs/msg/*.msg
+      rm -f px4_msgs/msg/versioned/*.msg
+      rm -f px4_msgs/srv/*.srv
+      rm -f px4_msgs/srv/versioned/*.srv
+      cp msg/*.msg px4_msgs/msg/
+      if ls msg/versioned/*.msg >/dev/null 2>&1; then
+        cp msg/versioned/*.msg px4_msgs/msg/
+      fi
+      cp srv/*.srv px4_msgs/srv/
+      if ls srv/versioned/*.srv >/dev/null 2>&1; then
+        cp srv/versioned/*.srv px4_msgs/srv/
+      fi
+
+      if ! git -C px4_msgs diff --exit-code -- msg srv; then
+        echo "Message/service definitions differ between PX4 ${release_branch} and px4_msgs ${release_branch}"
+        exit 1
+      fi
+
+      cd px4_msgs
+      target="$(git rev-parse HEAD)"
+      existing_target="$(git rev-parse "refs/tags/${TAG_NAME}^{}" 2>/dev/null || true)"
+
+      if [ -n "${existing_target}" ]; then
+        if [ "${existing_target}" = "${target}" ]; then
+          echo "Tag ${TAG_NAME} already exists on ${target}; nothing to do"
+          exit 0
+        fi
+        echo "Tag ${TAG_NAME} already exists on ${existing_target}, expected ${target}"
+        exit 1
+      fi
+
+      GIT_COMMITTER_DATE="${tag_date}" \
+        git tag -a "${TAG_NAME}" "${target}" \
+          -m "PX4 msgs and srvs definitions matching PX4 stable release ${TAG_NAME#v}"
+
+      git push origin "refs/tags/${TAG_NAME}"
+      EOS

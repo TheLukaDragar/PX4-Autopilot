@@ -82,6 +82,7 @@ void TakeoffHandling::updateTakeoffState(const bool armed, const bool landed, co
 	case TakeoffState::rampup:
 		if (_takeoff_ramp_progress >= 1.f) {
 			_takeoff_state = TakeoffState::flight;
+			_have_taken_off_since_arming = true;
 
 		} else {
 			break;
@@ -106,6 +107,8 @@ void TakeoffHandling::updateTakeoffState(const bool armed, const bool landed, co
 	// TODO: need to consider free fall here
 	if (!armed) {
 		_takeoff_state = TakeoffState::disarmed;
+		_have_taken_off_since_arming = false;
+
 	}
 }
 

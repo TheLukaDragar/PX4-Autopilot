@@ -123,12 +123,14 @@ void getModeRequirements(uint8_t vehicle_type, failsafe_flags_s &flags)
 	setRequirement(vehicle_status_s::NAVIGATION_STATE_AUTO_LOITER, flags.mode_req_local_alt);
 	setRequirement(vehicle_status_s::NAVIGATION_STATE_AUTO_LOITER, flags.mode_req_wind_and_flight_time_compliance);
 
+#if defined(CONFIG_MODULES_FW_MODE_MANAGER) && CONFIG_MODULES_FW_MODE_MANAGER
 	// NAVIGATION_STATE_GUIDED_COURSE
 	setRequirement(vehicle_status_s::NAVIGATION_STATE_GUIDED_COURSE, flags.mode_req_angular_velocity);
 	setRequirement(vehicle_status_s::NAVIGATION_STATE_GUIDED_COURSE, flags.mode_req_attitude);
 	setRequirement(vehicle_status_s::NAVIGATION_STATE_GUIDED_COURSE, flags.mode_req_local_alt);
 	setRequirement(vehicle_status_s::NAVIGATION_STATE_GUIDED_COURSE, flags.mode_req_wind_and_flight_time_compliance);
 	setRequirement(vehicle_status_s::NAVIGATION_STATE_GUIDED_COURSE, flags.mode_req_local_position_relaxed);
+#endif
 
 	// NAVIGATION_STATE_AUTO_RTL
 	setRequirement(vehicle_status_s::NAVIGATION_STATE_AUTO_RTL, flags.mode_req_angular_velocity);
