@@ -117,7 +117,7 @@ private:
 		msg.cep_desired = NAN;
 		msg.cep_max = NAN;
 
-		static constexpr const char name[] = "leseni";
+		static constexpr const char name[] = "plampy";
 		strncpy(msg.target_name, name, sizeof(msg.target_name) - 1);
 		msg.target_name[sizeof(msg.target_name) - 1] = '\0';
 

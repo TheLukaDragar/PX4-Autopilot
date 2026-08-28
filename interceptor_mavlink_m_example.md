@@ -10,7 +10,7 @@ Two MicoAir H743-v2. **Do not flash `demo_enemy` onto the interceptor.** This fi
 | Aircraft    | Git                       | `MAV_SYS_ID` | Role                                 |
 | ----------- | ------------------------- | ------------ | ------------------------------------ |
 | Interceptor | `main` + **tritri** dialect | **1**        | Hear HOSTILE, forward COP to QGC     |
-| Enemy       | `demo_enemy`              | **2**        | Advertise self as HOSTILE (`leseni`) |
+| Enemy       | `demo_enemy`              | **2**        | Advertise self as HOSTILE (`plampy`) |
 
 
 Two **separate** [LR24-F](https://micoair.com/radio_telemetry_lr24f/) pairs (different **ADDR**). Do not share one pair for both jobs.
@@ -70,7 +70,7 @@ MAV_1_FORWARD   0         required — see "QGC on enemy USB" below
 MAV_1_CONFIG    TELEM 2   /dev/ttyS3 @57600
 ```
 
-Custom: **TRITRI_TRACK 1 Hz**, **TRITRI_TARGET 5 Hz**, SYS_STATUS 0.5 Hz, HEARTBEAT 1 Hz, plus HANDOVER/FIRES/ENGAGEMENT one-shots. Hardcoded `leseni` HOSTILE own-ship (no companion). EVENT/STATUSTEXT suppressed. Normal still streams full TRACK/TARGET @ 20 Hz for local USB debug.
+Custom: **TRITRI_TRACK 1 Hz**, **TRITRI_TARGET 5 Hz**, SYS_STATUS 0.5 Hz, HEARTBEAT 1 Hz, plus HANDOVER/FIRES/ENGAGEMENT one-shots. Hardcoded `plampy` HOSTILE own-ship (no companion). EVENT/STATUSTEXT suppressed. Normal still streams full TRACK/TARGET @ 20 Hz for local USB debug.
 
 **QGC on enemy USB:** USB always has `FORWARD` on. If `MAV_1_FORWARD=1`, QGC sees interceptor as vehicle 1 and `SET_MESSAGE_INTERVAL` opens a full GCS session on the LoRa hop. Interceptor C2 then shows `sysid 254`; enemy Custom UART `FIONSPACE` stays 0; HANDOVER never goes out. After `MAV_1_FORWARD=0` + reboot: C2 RX is interceptor HB only (~87 B/s), USB 20 kB/s stays on `ttyACM0`.
 
@@ -147,7 +147,7 @@ ROS does not use these numbers. Same payloads:
 ```text
 # interceptor nsh
 listener mavlink_m_track_identity    # uid[15]=2, HOSTILE/FOE, origin_sysid=2
-listener mavlink_m_target            # name=leseni, target_id=2
+listener mavlink_m_target            # name=plampy, target_id=2
 mavlink status                       # inst #2 RX: msgid 53900 ~1 Hz, 53901 ~5 Hz
 
 # Jetson
@@ -294,7 +294,7 @@ track_uid / origin_sysid / target_class=UAS_MULTIROTOR / target_force=HOSTILE
 ```text
 PPLI:           disabled
 TRACK_IDENTITY: track_uid[15]=MAV_SYS_ID, HOSTILE, FOE, UAS_MULTIROTOR, AIR
-TARGET:         own lat/lon/alt + NED vel, target_id=MAV_SYS_ID, name=leseni
+TARGET:         own lat/lon/alt + NED vel, target_id=MAV_SYS_ID, name=plampy
                 lat/lon=INT32_MAX if unknown; alt/vel/cov/CEP=NaN if unknown
 ```
 

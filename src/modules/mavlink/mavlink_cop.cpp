@@ -192,7 +192,7 @@ int publish_handover()
 	fill_kinematics(t.lat, t.lon, t.alt, t.vx, t.vy, t.vz);
 	t.cov_pos_x = t.cov_pos_y = t.cov_pos_z = NAN;
 	t.cov_vel_x = t.cov_vel_y = t.cov_vel_z = NAN;
-	strncpy(t.target_name, "leseni", sizeof(t.target_name) - 1);
+	strncpy(t.target_name, "plampy", sizeof(t.target_name) - 1);
 	t.confidence_score = 1.0f;
 	t.target_class = MAVLINK_M_TARGET_CLASS_UAS_MULTIROTOR;
 	t.target_force = MAVLINK_M_TARGET_FORCE_FOE;
