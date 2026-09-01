@@ -45,6 +45,8 @@
 
 #include "mc_att_control.hpp"
 
+#include <lib/mixer_module/hover_thrust_scale.hpp>
+
 #include <drivers/drv_hrt.h>
 #include <mathlib/math/Limits.hpp>
 #include <mathlib/math/Functions.hpp>
@@ -107,7 +109,7 @@ MulticopterAttitudeControl::parameters_updated()
 
 	// Update from hover thrust parameter if there's no valid estimate in use
 	if (!PX4_ISFINITE(_hover_thrust_estimate)) {
-		_hover_thrust_slew_rate.setForcedValue(_param_mpc_thr_hover.get());
+		_hover_thrust_slew_rate.setForcedValue(scaleHoverThrustForMotorLimit(_param_mpc_thr_hover.get()));
 	}
 
 	_man_tilt_max = math::radians(_param_mpc_man_tilt_max.get());
@@ -117,6 +119,7 @@ float
 MulticopterAttitudeControl::throttle_curve(float throttle_stick_input)
 {
 	float thrust = 0.f;
+	const float hover_thrust = scaleHoverThrustForMotorLimit(_param_mpc_thr_hover.get());
 
 	// throttle_stick_input is in range [-1, 1]
 	switch (_param_mpc_thr_curve.get()) {
@@ -128,7 +131,7 @@ MulticopterAttitudeControl::throttle_curve(float throttle_stick_input)
 	case 2: // rescale to hover thrust param at 0 stick input
 		thrust = math::interpolateNXY(throttle_stick_input,
 		{-1.f, 0.f, 1.f},
-		{_manual_throttle_minimum.getState(), _param_mpc_thr_hover.get(), _param_mpc_thr_max.get()});
+		{_manual_throttle_minimum.getState(), hover_thrust, _param_mpc_thr_max.get()});
 		break;
 
 	default: // 0 or other: rescale to HTE value
@@ -240,7 +243,7 @@ MulticopterAttitudeControl::Run()
 
 			} else {
 				// Possibly bad estimate before it got invalid, slew back to parameter
-				_hover_thrust_estimate = _param_mpc_thr_hover.get();
+				_hover_thrust_estimate = scaleHoverThrustForMotorLimit(_param_mpc_thr_hover.get());
 			}
 		}
 	}

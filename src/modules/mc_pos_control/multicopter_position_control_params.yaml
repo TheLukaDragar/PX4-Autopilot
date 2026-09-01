@@ -6,10 +6,14 @@ parameters:
       description:
         short: Vertical thrust required to hover
         long: |-
+          Hover thrust as a fraction of full (unscaled) motor output.
           Mapped to center throttle stick in Stabilized mode (see MPC_THR_CURVE).
           Used for initialization of the hover thrust estimator.
           The estimated hover thrust is used as base for zero vertical acceleration in altitude control.
           The hover thrust is important for land detection to work correctly.
+
+          When DSHOT_MOT_LIM is below 1, firmware applies MPC_THR_HOVER / DSHOT_MOT_LIM
+          so outer loops stay correct without changing this parameter.
       type: float
       default: 0.5
       unit: norm

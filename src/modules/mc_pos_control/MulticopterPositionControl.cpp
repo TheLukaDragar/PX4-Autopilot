@@ -36,6 +36,7 @@
 #include <float.h>
 #include <lib/mathlib/mathlib.h>
 #include <lib/matrix/matrix/math.hpp>
+#include <lib/mixer_module/hover_thrust_scale.hpp>
 #include <px4_platform_common/events.h>
 #include "PositionControl/ControlMath.hpp"
 
@@ -294,7 +295,7 @@ void MulticopterPositionControl::parameters_update(bool force)
 		}
 
 		if (!_hover_thrust_initialized) {
-			_control.setHoverThrust(_param_mpc_thr_hover.get());
+			_control.setHoverThrust(scaleHoverThrustForMotorLimit(_param_mpc_thr_hover.get()));
 			_hover_thrust_initialized = true;
 		}
 
@@ -508,7 +509,7 @@ void MulticopterPositionControl::Run()
 					|| flying_but_ground_contact);
 
 			if (!flying) {
-				_control.setHoverThrust(_param_mpc_thr_hover.get());
+				_control.setHoverThrust(scaleHoverThrustForMotorLimit(_param_mpc_thr_hover.get()));
 			}
 
 			// make sure takeoff ramp is not amended by acceleration feed-forward

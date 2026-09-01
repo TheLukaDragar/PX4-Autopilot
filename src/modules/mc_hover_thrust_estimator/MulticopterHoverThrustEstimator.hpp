@@ -120,6 +120,8 @@ private:
 
 	bool _valid{false};
 
+	float _scaled_hover_thrust{NAN};
+
 	systemlib::Hysteresis _valid_hysteresis{false};
 
 	perf_counter_t _cycle_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": cycle time")};

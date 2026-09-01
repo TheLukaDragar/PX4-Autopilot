@@ -137,8 +137,8 @@ private:
 	void Run() override;
 	void update_params();
 
-	// Per-channel minimums must match how calculate_output_value() encodes each channel.
-	void apply_min_values(uint32_t reversible);
+	// Per-channel min/max must match how calculate_output_value() encodes each channel.
+	void apply_output_limits(uint32_t reversible);
 	void reversibleMaskChanged(uint32_t reversible_mask) override;
 
 	// Mavlink command handlers
@@ -205,6 +205,7 @@ private:
 	int _3d_dead_l = 0;
 	int _3d_dead_h = 0;
 	float _dshot_min = 0.f;
+	float _dshot_mot_lim = 1.f;
 	int _esc_type = 0;
 	int32_t _esc_tmp_warn = 0;
 	int32_t _esc_tmp_over = 0;
@@ -272,6 +273,7 @@ private:
 	DEFINE_PARAMETERS(
 		(ParamInt<px4::params::DSHOT_ESC_TYPE>) _param_dshot_esc_type,
 		(ParamFloat<px4::params::DSHOT_MIN>)    _param_dshot_min,
+		(ParamFloat<px4::params::DSHOT_MOT_LIM>) _param_dshot_mot_lim,
 		(ParamBool<px4::params::DSHOT_3D_ENABLE>) _param_dshot_3d_enable,
 		(ParamInt<px4::params::DSHOT_3D_DEAD_H>) _param_dshot_3d_dead_h,
 		(ParamInt<px4::params::DSHOT_3D_DEAD_L>) _param_dshot_3d_dead_l,

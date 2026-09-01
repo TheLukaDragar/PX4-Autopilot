@@ -21,9 +21,9 @@ parameters:
             description:
                 short: Minimum DShot Motor Output
                 long: |
-                    Minimum Output Value for DShot in percent. The value depends on the ESC. Make
-                    sure to set this high enough so that the motors are always spinning while
-                    armed.
+                    Minimum Output Value for DShot in percent of the full DShot throttle range
+                    (not of DSHOT_MOT_LIM). The value depends on the ESC. Make sure to set this
+                    high enough so that the motors are always spinning while armed.
             type: float
             unit: norm
             min: 0
@@ -31,6 +31,28 @@ parameters:
             decimal: 2
             increment: 0.01
             default: 0.055
+        DSHOT_MOT_LIM:
+            description:
+                short: DShot Motor Output Limit
+                long: |
+                    Scales the top of the unidirectional DShot throttle range (Betaflight-style
+                    motor output limit). Mixer command 1.0 maps to this fraction of full DShot
+                    codes. Default 1.0 leaves stock behavior.
+
+                    Does not change DSHOT_MIN (idle stays absolute on the full-scale base).
+                    Not applied to 3D / reversible outputs.
+
+                    Keep MPC_THR_HOVER as the hover fraction of full (unscaled) ESC; controllers
+                    and the hover thrust estimator automatically use
+                    MPC_THR_HOVER / DSHOT_MOT_LIM (e.g. 0.21 / 0.61 ≈ 0.34). Retune external
+                    thrust models (Newtons at actuator 1.0) to match the limited top end.
+            type: float
+            unit: norm
+            min: 0.1
+            max: 1
+            decimal: 2
+            increment: 0.01
+            default: 1.0
         DSHOT_3D_ENABLE:
             description:
                 short: Allows for 3d mode when using DShot and suitable mixer

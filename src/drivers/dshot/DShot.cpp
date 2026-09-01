@@ -951,26 +951,37 @@ int DShot::get_pole_count(int motor_index) const
 	return 14;
 }
 
-void DShot::apply_min_values(uint32_t reversible)
+void DShot::apply_output_limits(uint32_t reversible)
 {
+	// DSHOT_MOT_LIM scales the top of the full unidirectional range (BF motor_output_limit).
+	// DSHOT_MIN stays relative to full scale so idle absolute code is unchanged.
+	const float mot_lim = math::constrain(_dshot_mot_lim, 0.1f, 1.f);
+	uint16_t limited_max = static_cast<uint16_t>(mot_lim * (float)DSHOT_MAX_THROTTLE);
+	limited_max = math::constrain(limited_max, static_cast<uint16_t>(DSHOT_MIN_THROTTLE + 1), DSHOT_MAX_THROTTLE);
+
 	for (uint8_t i = 0; i < DSHOT_MAXIMUM_CHANNELS; i++) {
 		if (reversible & (1u << i)) {
 			// Spans both halves, so neutral has to land on the split.
+			// MOT_LIM is not applied (would break reverse/forward symmetry).
 			_mixing_output.minValue(i) = DSHOT_MIN_THROTTLE;
+			_mixing_output.maxValue(i) = DSHOT_MAX_THROTTLE;
 
 		} else if (_3d_enabled) {
 			_mixing_output.minValue(i) = DSHOT_3D_FORWARD_START;
+			_mixing_output.maxValue(i) = DSHOT_MAX_THROTTLE;
 
 		} else {
-			const float min_value = _dshot_min * (float)DSHOT_MAX_THROTTLE;
-			_mixing_output.minValue(i) = math::constrain((uint16_t)min_value, DSHOT_MIN_THROTTLE, DSHOT_MAX_THROTTLE);
+			uint16_t min_value = static_cast<uint16_t>(_dshot_min * (float)DSHOT_MAX_THROTTLE);
+			min_value = math::constrain(min_value, DSHOT_MIN_THROTTLE, static_cast<uint16_t>(limited_max - 1));
+			_mixing_output.minValue(i) = min_value;
+			_mixing_output.maxValue(i) = limited_max;
 		}
 	}
 }
 
 void DShot::reversibleMaskChanged(uint32_t reversible_mask)
 {
-	apply_min_values(reversible_mask);
+	apply_output_limits(reversible_mask);
 }
 
 void DShot::update_params()
@@ -986,6 +997,7 @@ void DShot::update_params()
 	_3d_dead_l = _param_dshot_3d_dead_l.get();
 	_3d_dead_h = _param_dshot_3d_dead_h.get();
 	_dshot_min = _param_dshot_min.get();
+	_dshot_mot_lim = _param_dshot_mot_lim.get();
 	_esc_type = _param_dshot_esc_type.get();
 
 	if (_param_esc_tmp_warn != PARAM_INVALID) {
@@ -996,8 +1008,8 @@ void DShot::update_params()
 		param_get(_param_esc_tmp_over, &_esc_tmp_over);
 	}
 
-	// Re-apply after updateParams(), which reloads the minimums from the shared output params.
-	apply_min_values(_mixing_output.reversibleOutputs());
+	// Re-apply after updateParams(), which reloads min/max from the shared output params.
+	apply_output_limits(_mixing_output.reversibleOutputs());
 
 	// Update per-motor pole count param handles and cached values
 	for (int i = 0; i < DSHOT_MAX_MOTORS; i++) {
@@ -1178,6 +1190,7 @@ int DShot::print_status()
 
 	PX4_INFO("  ESC Type:           %s (%ld)", esc_type_str, _param_dshot_esc_type.get());
 	PX4_INFO("  3D Mode:            %s", _param_dshot_3d_enable.get() ? "Enabled" : "Disabled");
+	PX4_INFO("  Mot Limit:          %.2f (min=%.2f)", (double)_dshot_mot_lim, (double)_dshot_min);
 
 	// Per-motor pole counts
 	PX4_INFO("  Motor Poles:");

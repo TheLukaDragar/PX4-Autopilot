@@ -39,6 +39,8 @@
 
 #include "MulticopterHoverThrustEstimator.hpp"
 
+#include <lib/mixer_module/hover_thrust_scale.hpp>
+
 #include <mathlib/mathlib.h>
 
 using namespace time_literals;
@@ -71,7 +73,8 @@ bool MulticopterHoverThrustEstimator::init()
 
 void MulticopterHoverThrustEstimator::reset()
 {
-	_hover_thrust_ekf.setHoverThrust(_param_mpc_thr_hover.get());
+	_scaled_hover_thrust = scaleHoverThrustForMotorLimit(_param_mpc_thr_hover.get());
+	_hover_thrust_ekf.setHoverThrust(_scaled_hover_thrust);
 	_hover_thrust_ekf.setHoverThrustStdDev(_param_hte_ht_err_init.get());
 	_hover_thrust_ekf.resetAccelNoise();
 }
@@ -89,9 +92,16 @@ void MulticopterHoverThrustEstimator::updateParams()
 
 	_hover_thrust_ekf.setAccelInnovGate(_param_hte_acc_gate.get());
 
-	_hover_thrust_ekf.setMinHoverThrust(math::constrain(_param_mpc_thr_hover.get() - _param_hte_thr_range.get(), 0.f,
+	const float hover = scaleHoverThrustForMotorLimit(_param_mpc_thr_hover.get());
+
+	if (!PX4_ISFINITE(_scaled_hover_thrust) || fabsf(hover - _scaled_hover_thrust) > FLT_EPSILON) {
+		_hover_thrust_ekf.setHoverThrust(hover);
+		_scaled_hover_thrust = hover;
+	}
+
+	_hover_thrust_ekf.setMinHoverThrust(math::constrain(hover - _param_hte_thr_range.get(), 0.f,
 					    0.8f));
-	_hover_thrust_ekf.setMaxHoverThrust(math::constrain(_param_mpc_thr_hover.get() + _param_hte_thr_range.get(), 0.2f,
+	_hover_thrust_ekf.setMaxHoverThrust(math::constrain(hover + _param_hte_thr_range.get(), 0.2f,
 					    0.9f));
 }
 

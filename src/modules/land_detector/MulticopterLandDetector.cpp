@@ -67,6 +67,8 @@
 
 #include "MulticopterLandDetector.h"
 
+#include <lib/mixer_module/hover_thrust_scale.hpp>
+
 using matrix::Vector2f;
 using matrix::Vector3f;
 
@@ -139,6 +141,7 @@ void MulticopterLandDetector::_update_params()
 {
 	param_get(_paramHandle.minThrottle, &_params.minThrottle);
 	param_get(_paramHandle.mpc_thr_hover, &_params.mpc_thr_hover);
+	_params.mpc_thr_hover = scaleHoverThrustForMotorLimit(_params.mpc_thr_hover);
 	param_get(_paramHandle.minManThrottle, &_params.minManThrottle);
 	param_get(_paramHandle.landSpeed, &_params.landSpeed);
 	param_get(_paramHandle.crawlSpeed, &_params.crawlSpeed);
